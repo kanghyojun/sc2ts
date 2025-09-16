@@ -50,6 +50,114 @@ export interface MpqParseOptions {
   listFile?: string;
 }
 
+// SC2 Replay Types
+export interface SC2ReplayHeader {
+  signature: string;
+  version: {
+    major: number;
+    minor: number;
+    revision: number;
+    build: number;
+  };
+  length: number;
+  crc32: number;
+}
+
+export interface SC2ReplayDetails {
+  playerList: SC2Player[];
+  title: string;
+  difficulty: string;
+  thumbnail: {
+    file: string;
+  };
+  isBlizzardMap: boolean;
+  timeUTC: number;
+  timeLocalOffset: number;
+  description: string;
+  imageFilePath: string;
+  campaignIndex: number;
+  mapFileName: string;
+  cacheHandles: string[];
+  miniSave: boolean;
+  gameSpeed: number;
+  type: number;
+  realTimeLength: number;
+  mapSizeX: number;
+  mapSizeY: number;
+}
+
+export interface SC2Player {
+  name: string;
+  type: number;
+  race: string;
+  difficulty: number;
+  aiBuild: number;
+  handicap: number;
+  observe: number;
+  result: number;
+  workingSetSlotId: number;
+  color: {
+    a: number;
+    r: number;
+    g: number;
+    b: number;
+  };
+  control: number;
+  teamId: number;
+  userId: number;
+}
+
+export interface SC2GameEvent {
+  loop: number;
+  userId: number;
+  eventType: string;
+  eventData: any;
+}
+
+export interface SC2MessageEvent {
+  loop: number;
+  userId: number;
+  messageType: string;
+  messageData: any;
+}
+
+export interface SC2TrackerEvent {
+  loop: number;
+  eventType: string;
+  eventData: any;
+}
+
+export interface SC2ReplayInitData {
+  gameDescription: {
+    cacheHandles: string[];
+    gameOptions: any;
+    gameSpeed: number;
+    gameCacheName: string;
+    mapAuthorName: string;
+  };
+  lobbyState: {
+    slots: any[];
+  };
+  syncLobbyState: {
+    userInitialData: any[];
+  };
+}
+
+export interface SC2ReplayData {
+  header: SC2ReplayHeader;
+  details: SC2ReplayDetails;
+  initData: SC2ReplayInitData;
+  gameEvents: SC2GameEvent[];
+  messageEvents: SC2MessageEvent[];
+  trackerEvents: SC2TrackerEvent[];
+}
+
+export interface SC2ReplayOptions {
+  decodeGameEvents?: boolean;
+  decodeMessageEvents?: boolean;
+  decodeTrackerEvents?: boolean;
+}
+
 export enum MpqFileFlags {
   COMPRESSED = 0x00000200,
   ENCRYPTED = 0x00010000,

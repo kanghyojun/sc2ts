@@ -7,6 +7,7 @@ import { MpqFileNotFoundError } from './errors';
 export class MpqArchive {
   private reader: MpqReader;
   private header: MpqHeader | null = null;
+  private headerOffset: number = 0;
   private hashTable: MpqHashTableEntry[] = [];
   private blockTable: MpqBlockTableEntry[] = [];
   private files: Map<string, MpqFile> = new Map();
@@ -34,19 +35,22 @@ export class MpqArchive {
   }
 
   private parseSync(options?: MpqParseOptions): void {
-    // Read MPQ header
+    // Find and read MPQ header
+    this.headerOffset = this.reader.findMpqHeader();
     this.header = this.reader.readMpqHeader();
 
     // Read hash table
     this.hashTable = this.reader.readHashTable(
       this.header.hashTablePos,
-      this.header.hashTableSize
+      this.header.hashTableSize,
+      this.headerOffset
     );
 
     // Read block table
     this.blockTable = this.reader.readBlockTable(
       this.header.blockTablePos,
-      this.header.blockTableSize
+      this.header.blockTableSize,
+      this.headerOffset
     );
 
     // Process list file if provided
@@ -100,10 +104,35 @@ export class MpqArchive {
   }
 
   getFile(filename: string): MpqFile {
-    const file = this.files.get(filename);
+    let file = this.files.get(filename);
     if (!file) {
       throw new MpqFileNotFoundError(filename);
     }
+
+    // Load file data on demand if not already loaded
+    if (file.data.length === 0 && file.fileSize > 0) {
+      const hash = this.hashFilename(filename);
+      const hashEntry = this.findHashEntry(hash.name1, hash.name2);
+
+      if (hashEntry && hashEntry.blockIndex !== 0xFFFFFFFF) {
+        const blockEntry = this.blockTable[hashEntry.blockIndex];
+        if (blockEntry) {
+          const fileData = this.reader.readFileData(
+            blockEntry.filePos,
+            blockEntry.compressedSize,
+            this.headerOffset
+          );
+
+          // Update the file with actual data
+          file = {
+            ...file,
+            data: fileData
+          };
+          this.files.set(filename, file);
+        }
+      }
+    }
+
     return file;
   }
 

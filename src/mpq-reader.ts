@@ -48,7 +48,58 @@ export class MpqReader {
     return this.buffer.length;
   }
 
+  findMpqHeader(): number {
+    // Search for MPQ signature starting from current position
+    const MPQ_SIGNATURES = [0x1A51504D, 0x1B51504D];
+
+    for (let offset = this.offset; offset < this.buffer.length - 32; offset += 4) {
+      const signature = this.buffer.readUInt32LE(offset);
+      if (MPQ_SIGNATURES.includes(signature)) {
+        // Found potential signature, validate by checking if we can read a reasonable header
+        const tempOffset = this.offset;
+        this.seek(offset);
+
+        try {
+          // Try to read header fields to see if they look reasonable
+          this.readUInt32LE(); // magic
+          const headerSize = this.readUInt32LE();
+          const archiveSize = this.readUInt32LE();
+          const formatVersion = this.readUInt16LE();
+          this.readUInt16LE(); // blockSize
+          const hashTablePos = this.readUInt32LE();
+          const blockTablePos = this.readUInt32LE();
+
+          // More strict validation for proper MPQ header
+          const isValidHeader = (
+            headerSize >= 32 && headerSize <= 1024 &&
+            archiveSize > 0 && archiveSize <= this.buffer.length &&
+            formatVersion >= 0 && formatVersion <= 4 &&
+            hashTablePos > 0 && hashTablePos < archiveSize &&
+            blockTablePos > 0 && blockTablePos < archiveSize &&
+            (offset + hashTablePos) < this.buffer.length &&
+            (offset + blockTablePos) < this.buffer.length
+          );
+
+          if (isValidHeader) {
+            this.seek(tempOffset); // Restore original position
+            return offset;
+          }
+        } catch {
+          // Continue searching if we can't read the header
+        }
+
+        this.seek(tempOffset); // Restore position
+      }
+    }
+
+    throw new MpqInvalidFormatError('No valid MPQ header found in file');
+  }
+
   readMpqHeader(): MpqHeader {
+    // Find the MPQ header first
+    const headerOffset = this.findMpqHeader();
+    this.seek(headerOffset);
+
     const startOffset = this.offset;
 
     // Read magic signature (MPQ\x1A or MPQ\x1B)
@@ -91,8 +142,8 @@ export class MpqReader {
     return header;
   }
 
-  readHashTable(offset: number, size: number): MpqHashTableEntry[] {
-    this.seek(offset);
+  readHashTable(offset: number, size: number, headerOffset: number = 0): MpqHashTableEntry[] {
+    this.seek(headerOffset + offset);
     const entries: MpqHashTableEntry[] = [];
 
     for (let i = 0; i < size; i++) {
@@ -108,8 +159,8 @@ export class MpqReader {
     return entries;
   }
 
-  readBlockTable(offset: number, size: number): MpqBlockTableEntry[] {
-    this.seek(offset);
+  readBlockTable(offset: number, size: number, headerOffset: number = 0): MpqBlockTableEntry[] {
+    this.seek(headerOffset + offset);
     const entries: MpqBlockTableEntry[] = [];
 
     for (let i = 0; i < size; i++) {
@@ -122,5 +173,10 @@ export class MpqReader {
     }
 
     return entries;
+  }
+
+  readFileData(filePos: number, size: number, headerOffset: number = 0): Buffer {
+    this.seek(headerOffset + filePos);
+    return this.readBytes(size);
   }
 }
