@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an MPQ (MoPaQ) file format parsing library implementation in TypeScript. MPQ is a proprietary archive format used by Blizzard Entertainment games.
+A comprehensive TypeScript library for parsing MPQ (MoPaQ) archive files and StarCraft II replay files. This library provides a modern, type-safe interface for reading Blizzard Entertainment's proprietary archive format.
 
 ## Development Setup
 

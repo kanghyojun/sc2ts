@@ -1,4 +1,4 @@
-# MPQTS
+# sc2ts
 
 A comprehensive TypeScript library for parsing MPQ (MoPaQ) archive files and StarCraft II replay files. This library provides a modern, type-safe interface for reading Blizzard Entertainment's proprietary archive format.
 
