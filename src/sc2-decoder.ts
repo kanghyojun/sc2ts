@@ -106,11 +106,11 @@ export class BitPackedBuffer {
   }
 
   get offset(): number {
-    return this.byteOffset;
+    return this.byteOffset + (this.bitOffset > 0 ? 1 : 0);
   }
 
   get remainingBytes(): number {
-    return this.buffer.length - this.byteOffset;
+    return this.buffer.length - this.offset;
   }
 }
 

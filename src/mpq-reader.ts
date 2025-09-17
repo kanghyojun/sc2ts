@@ -72,12 +72,10 @@ export class MpqReader {
           // More strict validation for proper MPQ header
           const isValidHeader = (
             headerSize >= 32 && headerSize <= 1024 &&
-            archiveSize > 0 && archiveSize <= this.buffer.length &&
+            archiveSize > 0 &&
             formatVersion >= 0 && formatVersion <= 4 &&
-            hashTablePos > 0 && hashTablePos < archiveSize &&
-            blockTablePos > 0 && blockTablePos < archiveSize &&
-            (offset + hashTablePos) < this.buffer.length &&
-            (offset + blockTablePos) < this.buffer.length
+            hashTablePos >= 0 && hashTablePos < archiveSize &&
+            blockTablePos >= 0 && blockTablePos < archiveSize
           );
 
           if (isValidHeader) {

@@ -14,11 +14,11 @@ A comprehensive TypeScript library for parsing MPQ (MoPaQ) archive files and Sta
 ## Installation
 
 ```bash
-npm install mpqts
+npm install sc2ts
 # or
-pnpm add mpqts
+pnpm add sc2ts
 # or
-yarn add mpqts
+yarn add sc2ts
 ```
 
 ## Quick Start
@@ -26,7 +26,7 @@ yarn add mpqts
 ### Basic MPQ Archive Usage
 
 ```typescript
-import { MpqArchive } from 'mpqts';
+import { MpqArchive } from 'sc2ts';
 import { readFileSync } from 'fs';
 
 // Load an MPQ archive from file
@@ -51,7 +51,7 @@ console.log('Archive version:', archive.formatVersion);
 ### StarCraft II Replay Analysis
 
 ```typescript
-import { SC2Replay } from 'mpqts';
+import { SC2Replay } from 'sc2ts';
 import { readFileSync } from 'fs';
 
 // Load and parse a StarCraft II replay
@@ -89,7 +89,7 @@ console.log('Chat messages:', replayData.messageEvents.length);
 ### Advanced Replay Parsing with Options
 
 ```typescript
-import { SC2Replay } from 'mpqts';
+import { SC2Replay } from 'sc2ts';
 
 const replay = SC2Replay.fromBuffer(buffer, {
   // Enable/disable specific event parsing for performance
@@ -118,7 +118,7 @@ events.message.forEach(msg => {
 ### Low-Level MPQ Reader Usage
 
 ```typescript
-import { MpqReader } from 'mpqts';
+import { MpqReader } from 'sc2ts';
 
 const reader = new MpqReader(buffer);
 
@@ -138,7 +138,7 @@ console.log('Block entries:', blockTable.length);
 ### Error Handling
 
 ```typescript
-import { MpqError, MpqInvalidFormatError, SC2Replay } from 'mpqts';
+import { MpqError, MpqInvalidFormatError, SC2Replay } from 'sc2ts';
 
 try {
   const replay = SC2Replay.fromBuffer(buffer);
@@ -211,7 +211,7 @@ import type {
   SC2GameEvent,
   SC2MessageEvent,
   SC2TrackerEvent
-} from 'mpqts';
+} from 'sc2ts';
 ```
 
 ## Development
@@ -221,7 +221,7 @@ import type {
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd mpqts
+cd sc2ts
 
 # Install dependencies
 pnpm install
