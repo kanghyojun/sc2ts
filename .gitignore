@@ -75,3 +75,8 @@ pids
 # Temporary folders
 tmp/
 temp/
+
+# Debug scripts
+.debug/
+.reference/
+.venv

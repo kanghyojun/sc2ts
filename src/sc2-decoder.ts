@@ -133,13 +133,13 @@ export class VersionedDecoder {
     return this.buffer.readBits(1) === 1;
   }
 
-  decodeBlob(_typeInfo: any): Buffer {
+  decodeBlob(): Buffer {
     const length = this.buffer.readVarInt();
     return this.buffer.readBytes(length);
   }
 
   decodeString(): string {
-    const blob = this.decodeBlob({});
+    const blob = this.decodeBlob();
     return blob.toString('utf8');
   }
 
@@ -178,7 +178,7 @@ export class VersionedDecoder {
       const choice = typeInfo.choices[index];
       return {
         choice: choice.name,
-        value: this.decodeValue(choice.type)
+        value: this.decodeValue(choice.type),
       };
     }
 
@@ -191,24 +191,24 @@ export class VersionedDecoder {
     }
 
     switch (typeInfo.type) {
-      case 'int':
-        return this.decodeInt(typeInfo);
-      case 'bool':
-        return this.decodeBool();
-      case 'blob':
-        return this.decodeBlob(typeInfo);
-      case 'string':
-        return this.decodeString();
-      case 'struct':
-        return this.decodeStruct(typeInfo);
-      case 'array':
-        return this.decodeArray(typeInfo);
-      case 'optional':
-        return this.decodeOptional(typeInfo);
-      case 'choice':
-        return this.decodeChoice(typeInfo);
-      default:
-        throw new Error(`Unknown type: ${typeInfo.type}`);
+    case 'int':
+      return this.decodeInt(typeInfo);
+    case 'bool':
+      return this.decodeBool();
+    case 'blob':
+      return this.decodeBlob();
+    case 'string':
+      return this.decodeString();
+    case 'struct':
+      return this.decodeStruct(typeInfo);
+    case 'array':
+      return this.decodeArray(typeInfo);
+    case 'optional':
+      return this.decodeOptional(typeInfo);
+    case 'choice':
+      return this.decodeChoice(typeInfo);
+    default:
+      throw new Error(`Unknown type: ${typeInfo.type}`);
     }
   }
 

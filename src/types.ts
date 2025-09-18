@@ -1,5 +1,12 @@
 // MPQ Archive Type Definitions
 
+export interface MpqUserData {
+  magic: number; // 'MPQ\x1B' (0x1B51504D)
+  userDataSize: number; // Maximum size of the user data
+  mpqHeaderOffset: number; // Offset to the MPQ header from start of file
+  userDataHeaderSize: number; // Size of this header
+}
+
 export interface MpqHeader {
   magic: number;
   headerSize: number;
@@ -14,6 +21,17 @@ export interface MpqHeader {
   hiBlockTablePos64?: bigint;
   hashTablePosHi?: number;
   blockTablePosHi?: number;
+  // Extended header fields for format version 3+ (208-byte header)
+  hetTablePos64?: bigint;
+  betTablePos64?: bigint;
+  hetTableSize64?: bigint;
+  betTableSize64?: bigint;
+  rawChunkSize?: number;
+  blockTableArrayHash?: Buffer;
+  hashTableArrayHash?: Buffer;
+  betTableArrayHash?: Buffer;
+  hetTableArrayHash?: Buffer;
+  compressionLevel?: number;
 }
 
 export interface MpqHashTableEntry {
@@ -29,6 +47,46 @@ export interface MpqBlockTableEntry {
   compressedSize: number;
   fileSize: number;
   flags: number;
+}
+
+// HET/BET Table types for format version 3+
+export interface HetTableHeader {
+  signature: number; // 'HET\x1A'
+  version: number;
+  dataSize: number;
+  tableSize: number;
+  maxFileCount: number;
+  hashTableSize: number;
+  hashEntrySize: number;
+  totalIndexSize: number;
+  indexSizeExtra: number;
+  indexSize: number;
+  blockTableSize: number;
+}
+
+export interface BetTableHeader {
+  signature: number; // 'BET\x1A'
+  version: number;
+  dataSize: number;
+  tableSize: number;
+  fileCount: number;
+  unknown: number;
+  tableEntrySize: number;
+  bitIndexFilePos: number;
+  bitIndexFileSize: number;
+  bitIndexCmpSize: number;
+  bitIndexFlagIndex: number;
+  bitIndexNameHash2: number;
+  bitCountFilePos: number;
+  bitCountFileSize: number;
+  bitCountCmpSize: number;
+  bitCountFlagIndex: number;
+  bitCountNameHash2: number;
+  totalBetHashSize: number;
+  betHashSizeExtra: number;
+  betHashSize: number;
+  betHashArraySize: number;
+  flagCount: number;
 }
 
 export interface MpqFile {

@@ -2,12 +2,13 @@
 
 import { readFile } from 'node:fs/promises';
 import { Buffer } from 'node:buffer';
-import type { MpqHeader, MpqHashTableEntry, MpqBlockTableEntry } from './types';
+// import zlib from 'zlib'; // Not used yet
+import type { MpqHeader, MpqUserData, MpqHashTableEntry, MpqBlockTableEntry } from './types';
 import { MpqInvalidFormatError } from './errors';
 
 export class MpqReader {
   private buffer: Buffer;
-  private offset: number = 0;
+  private offset = 0;
 
   constructor(buffer: Buffer) {
     this.buffer = buffer;
@@ -55,42 +56,87 @@ export class MpqReader {
     for (let offset = this.offset; offset < this.buffer.length - 32; offset += 4) {
       const signature = this.buffer.readUInt32LE(offset);
       if (MPQ_SIGNATURES.includes(signature)) {
-        // Found potential signature, validate by checking if we can read a reasonable header
-        const tempOffset = this.offset;
-        this.seek(offset);
 
-        try {
-          // Try to read header fields to see if they look reasonable
-          this.readUInt32LE(); // magic
-          const headerSize = this.readUInt32LE();
-          const archiveSize = this.readUInt32LE();
-          const formatVersion = this.readUInt16LE();
-          this.readUInt16LE(); // blockSize
-          const hashTablePos = this.readUInt32LE();
-          const blockTablePos = this.readUInt32LE();
+        if (signature === 0x1B51504D) {
+          // User data header - validate as user data structure
+          const tempOffset = this.offset;
+          this.seek(offset);
 
-          // More strict validation for proper MPQ header
-          const isValidHeader = (
-            headerSize >= 32 && headerSize <= 1024 &&
-            archiveSize > 0 &&
-            formatVersion >= 0 && formatVersion <= 4 &&
-            hashTablePos >= 0 && hashTablePos < archiveSize &&
-            blockTablePos >= 0 && blockTablePos < archiveSize
-          );
+          try {
+            this.readUInt32LE(); // magic
+            const userDataSize = this.readUInt32LE();
+            const mpqHeaderOffset = this.readUInt32LE();
+            const userDataHeaderSize = this.readUInt32LE();
 
-          if (isValidHeader) {
-            this.seek(tempOffset); // Restore original position
-            return offset;
+            // Basic validation for user data structure
+            const isValidUserData = (
+              userDataSize >= 16 && userDataSize <= 0x100000 &&
+              mpqHeaderOffset >= 16 && mpqHeaderOffset < this.buffer.length &&
+              userDataHeaderSize >= 16 && userDataHeaderSize <= 1024
+            );
+
+            if (isValidUserData) {
+              this.seek(tempOffset); // Restore original position
+              return mpqHeaderOffset;
+            }
+          } catch {
+            // Continue searching if we can't read the user data header
           }
-        } catch {
-          // Continue searching if we can't read the header
-        }
 
-        this.seek(tempOffset); // Restore position
+          this.seek(tempOffset); // Restore position
+        } else {
+          // Direct MPQ header - validate as MPQ structure
+          const tempOffset = this.offset;
+          this.seek(offset);
+
+          try {
+            // Try to read header fields to see if they look reasonable
+            this.readUInt32LE(); // magic
+            const headerSize = this.readUInt32LE();
+            const archiveSize = this.readUInt32LE();
+            const formatVersion = this.readUInt16LE();
+            this.readUInt16LE(); // blockSize
+            const hashTablePos = this.readUInt32LE();
+            const blockTablePos = this.readUInt32LE();
+
+            // More strict validation for proper MPQ header
+            const isValidHeader = (
+              headerSize >= 32 && headerSize <= 1024 &&
+              archiveSize > 0 &&
+              formatVersion >= 0 && formatVersion <= 4 &&
+              hashTablePos >= 0 && hashTablePos < archiveSize &&
+              blockTablePos >= 0 && blockTablePos < archiveSize
+            );
+
+            if (isValidHeader) {
+              this.seek(tempOffset); // Restore original position
+              return offset;
+            }
+          } catch {
+            // Continue searching if we can't read the header
+          }
+
+          this.seek(tempOffset); // Restore position
+        }
       }
     }
 
     throw new MpqInvalidFormatError('No valid MPQ header found in file');
+  }
+
+  readMpqUserData(): MpqUserData {
+    // Read MPQ user data header structure
+    const magic = this.readUInt32LE();
+    if (magic !== 0x1B51504D) {
+      throw new MpqInvalidFormatError(`Invalid MPQ user data magic signature: 0x${magic.toString(16)}`);
+    }
+
+    return {
+      magic,
+      userDataSize: this.readUInt32LE(),
+      mpqHeaderOffset: this.readUInt32LE(),
+      userDataHeaderSize: this.readUInt32LE(),
+    };
   }
 
   readMpqHeader(): MpqHeader {
@@ -106,74 +152,503 @@ export class MpqReader {
       throw new MpqInvalidFormatError(`Invalid MPQ magic signature: 0x${magic.toString(16)}`);
     }
 
-    const headerSize = this.readUInt32LE();
-    const archiveSize = this.readUInt32LE();
-    const formatVersion = this.readUInt16LE();
-    const blockSize = this.readUInt16LE();
-    const hashTablePos = this.readUInt32LE();
-    const blockTablePos = this.readUInt32LE();
-    const hashTableSize = this.readUInt32LE();
-    const blockTableSize = this.readUInt32LE();
+    // Handle user data header (MPQ\x1B)
+    if (magic === 0x1B51504D) {
+      // Reset to read the full user data header
+      this.seek(headerOffset);
+      const userData = this.readMpqUserData();
+      console.log(headerOffset, userData.mpqHeaderOffset.toString(16));
 
-    const header: MpqHeader = {
-      magic,
-      headerSize,
-      archiveSize,
-      formatVersion,
-      blockSize,
-      hashTablePos,
-      blockTablePos,
-      hashTableSize,
-      blockTableSize
+      // Navigate to the actual MPQ header (relative to the begin of user data header)
+      this.seek(headerOffset + userData.mpqHeaderOffset);
+      const actualStartOffset = this.offset;
+
+      // Read the actual MPQ header magic
+      const actualMagic = this.readUInt32LE();
+      if (actualMagic !== 0x1A51504D) {
+        throw new MpqInvalidFormatError(`Invalid MPQ header magic at offset ${userData.mpqHeaderOffset}: 0x${actualMagic.toString(16)}`);
+      }
+
+      // Continue reading the actual MPQ header
+      const headerSize = this.readUInt32LE();
+      const archiveSize = this.readUInt32LE();
+      const formatVersion = this.readUInt16LE();
+      const blockSize = this.readUInt16LE();
+      const hashTablePos = this.readUInt32LE();
+      const blockTablePos = this.readUInt32LE();
+      const hashTableSize = this.readUInt32LE();
+      const blockTableSize = this.readUInt32LE();
+
+      const header: MpqHeader = {
+        magic: actualMagic,
+        headerSize,
+        archiveSize,
+        formatVersion,
+        blockSize,
+        hashTablePos,
+        blockTablePos,
+        hashTableSize,
+        blockTableSize,
+      };
+      console.log('MPQ Header found at offset', actualStartOffset.toString(16), {
+        magic: actualMagic.toString(16),
+        headerSize: headerSize.toString(16),
+        archiveSize: archiveSize.toString(16),
+        formatVersion: formatVersion.toString(16),
+        blockSize: blockSize.toString(16 ),
+        hashTablePos: hashTablePos.toString(16),
+        blockTablePos: blockTablePos.toString(16),
+        hashTableSize: hashTableSize.toString(16),
+        blockTableSize: blockTableSize.toString(16),
+      });
+
+      // Read extended header for format version 2+
+      if (formatVersion >= 2) {
+        const hiBlockTablePosLow = this.readUInt32LE();
+        const hiBlockTablePosHigh = this.readUInt32LE();
+        header.hiBlockTablePos64 = BigInt(hiBlockTablePosHigh) << 32n | BigInt(hiBlockTablePosLow);
+        header.hashTablePosHi = this.readUInt16LE();
+        header.blockTablePosHi = this.readUInt16LE();
+      }
+
+      // Read extended header for format version 3+ (208-byte header)
+      if (formatVersion >= 3 && headerSize >= 68) {
+        // Additional fields for 208-byte header
+        header.hetTablePos64 = BigInt(this.readUInt32LE()) << 32n | BigInt(this.readUInt32LE());
+        header.betTablePos64 = BigInt(this.readUInt32LE()) << 32n | BigInt(this.readUInt32LE());
+        header.hetTableSize64 = BigInt(this.readUInt32LE()) << 32n | BigInt(this.readUInt32LE());
+        header.betTableSize64 = BigInt(this.readUInt32LE()) << 32n | BigInt(this.readUInt32LE());
+        header.rawChunkSize = this.readUInt32LE();
+
+        // Read MD5 hashes (16 bytes each)
+        header.blockTableArrayHash = this.readBytes(16);
+        header.hashTableArrayHash = this.readBytes(16);
+        header.betTableArrayHash = this.readBytes(16);
+        header.hetTableArrayHash = this.readBytes(16);
+
+        // Skip to compression level if header is large enough
+        if (headerSize >= 208) {
+          // Skip remaining fields and read compression level
+          const remainingBytes = headerSize - (this.offset - actualStartOffset);
+          if (remainingBytes >= 4) {
+            this.seek(actualStartOffset + headerSize - 4);
+            header.compressionLevel = this.readUInt32LE();
+          }
+        }
+      }
+
+      // Reset to end of header
+      this.seek(actualStartOffset + headerSize);
+      return header;
+    } else {
+      // Handle direct MPQ header (MPQ\x1A)
+      const headerSize = this.readUInt32LE();
+      const archiveSize = this.readUInt32LE();
+      const formatVersion = this.readUInt16LE();
+      const blockSize = this.readUInt16LE();
+      const hashTablePos = this.readUInt32LE();
+      const blockTablePos = this.readUInt32LE();
+      const hashTableSize = this.readUInt32LE();
+      const blockTableSize = this.readUInt32LE();
+
+      const header: MpqHeader = {
+        magic,
+        headerSize,
+        archiveSize,
+        formatVersion,
+        blockSize,
+        hashTablePos,
+        blockTablePos,
+        hashTableSize,
+        blockTableSize,
+      };
+
+      // Read extended header for format version 2+
+      if (formatVersion >= 2) {
+        const hiBlockTablePosLow = this.readUInt32LE();
+        const hiBlockTablePosHigh = this.readUInt32LE();
+        header.hiBlockTablePos64 = BigInt(hiBlockTablePosHigh) << 32n | BigInt(hiBlockTablePosLow);
+        header.hashTablePosHi = this.readUInt16LE();
+        header.blockTablePosHi = this.readUInt16LE();
+      }
+
+      // Read extended header for format version 3+ (208-byte header)
+      if (formatVersion >= 3 && headerSize >= 68) {
+        // Additional fields for 208-byte header
+        header.hetTablePos64 = BigInt(this.readUInt32LE()) << 32n | BigInt(this.readUInt32LE());
+        header.betTablePos64 = BigInt(this.readUInt32LE()) << 32n | BigInt(this.readUInt32LE());
+        header.hetTableSize64 = BigInt(this.readUInt32LE()) << 32n | BigInt(this.readUInt32LE());
+        header.betTableSize64 = BigInt(this.readUInt32LE()) << 32n | BigInt(this.readUInt32LE());
+        header.rawChunkSize = this.readUInt32LE();
+
+        // Read MD5 hashes (16 bytes each)
+        header.blockTableArrayHash = this.readBytes(16);
+        header.hashTableArrayHash = this.readBytes(16);
+        header.betTableArrayHash = this.readBytes(16);
+        header.hetTableArrayHash = this.readBytes(16);
+
+        // Skip to compression level if header is large enough
+        if (headerSize >= 208) {
+          // Skip remaining fields and read compression level
+          const remainingBytes = headerSize - (this.offset - startOffset);
+          if (remainingBytes >= 4) {
+            this.seek(startOffset + headerSize - 4);
+            header.compressionLevel = this.readUInt32LE();
+          }
+        }
+      }
+
+      // Reset to end of header
+      this.seek(startOffset + headerSize);
+
+      return header;
+    }
+  }
+
+  private cryptTable: number[] = [];
+
+  private initializeCryptTable(): void {
+    if (this.cryptTable.length > 0) return;
+
+    let seed = 0x00100001;
+
+    for (let index1 = 0; index1 < 0x100; index1++) {
+      for (let index2 = index1, i = 0; i < 5; i++, index2 += 0x100) {
+        seed = (seed * 125 + 3) % 0x2AAAAB;
+        const temp1 = (seed & 0xFFFF) << 0x10;
+        seed = (seed * 125 + 3) % 0x2AAAAB;
+        const temp2 = (seed & 0xFFFF);
+        this.cryptTable[index2] = (temp1 | temp2) >>> 0;
+      }
+    }
+  }
+
+  private decrypt(data: Buffer, key: number): Buffer {
+    this.initializeCryptTable();
+
+    const result = Buffer.from(data); // Copy the data
+    let seed1 = key;
+    let seed2 = 0xEEEEEEEE;
+
+    for (let i = 0; i < data.length; i += 4) {
+      // Step 1: Update seed2 - exactly like mpyq
+      seed2 = (seed2 + this.cryptTable[0x400 + (seed1 & 0xFF)]) >>> 0;
+
+      // Step 2: Read 4 bytes as little-endian 32-bit unsigned integer
+      const value = data.readUInt32LE(i);
+
+      // Step 3: XOR operation with seeds - exactly like mpyq
+      const ch = (value ^ (seed1 + seed2)) >>> 0;
+
+      // Step 4: Seed1 transformation - exactly like mpyq
+      seed1 = (((~seed1 << 0x15) + 0x11111111) | (seed1 >>> 0x0B)) >>> 0;
+
+      // Step 5: Seed2 transformation - exactly like mpyq
+      seed2 = (ch + seed2 + (seed2 << 5) + 3) >>> 0;
+
+      // Step 6: Write decrypted bytes back
+      result.writeUInt32LE(ch, i);
+    }
+
+    return result;
+  }
+
+  /*
+  private _tryMultipleDecryption(data: Buffer, tableType: 'hash' | 'block'): Buffer {
+    const attempts = [
+      // Standard MPQ encryption keys
+      this.hashString(`(${tableType} table)`, 3),
+      // Alternative key variations for formatVersion 3
+      this.hashString(`(${tableType}table)`, 3), // No space
+      this.hashString(`${tableType} table`, 3), // No parentheses
+      this.hashString(`${tableType.toUpperCase()} TABLE`, 3), // Uppercase
+      // Raw keys from other MPQ implementations
+      0xc3af3770, // Hash table key from some implementations
+      0xec83b3a3, // Block table key from some implementations
+      // Try without encryption (unencrypted tables)
+      0,
+    ];
+
+    let bestResult = data;
+    let bestScore = 0;
+
+    for (const key of attempts) {
+      let decryptedData: Buffer;
+
+      if (key === 0) {
+        // Try unencrypted
+        decryptedData = Buffer.from(data);
+      } else {
+        decryptedData = this.decrypt(data, key);
+      }
+
+      // Score the decryption attempt
+      const score = this.scoreDecryptionAttempt(decryptedData, tableType);
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestResult = decryptedData;
+      }
+    }
+
+    return bestResult;
+  }
+  */
+
+  /*
+  private scoreDecryptionAttempt(data: Buffer, tableType: 'hash' | 'block'): number {
+    if (data.length < 16) return 0;
+
+    let score = 0;
+    const entryCount = data.length / 16;
+
+    for (let i = 0; i < Math.min(entryCount, 10); i++) { // Check first 10 entries
+      const offset = i * 16;
+
+      if (tableType === 'hash') {
+        const name1 = data.readUInt32LE(offset);
+        const name2 = data.readUInt32LE(offset + 4);
+        const locale = data.readUInt16LE(offset + 8);
+        const platform = data.readUInt16LE(offset + 10);
+        const blockIndex = data.readUInt32LE(offset + 12);
+
+        // Check for reasonable hash entry values
+        if (blockIndex < 0x10000 || blockIndex === 0xFFFFFFFF) score += 2;
+        if (locale <= 0x409 || locale === 0) score += 1; // Common locale values
+        if (platform <= 2 || platform === 0) score += 1; // Common platform values
+        if (name1 !== 0 || name2 !== 0) score += 1; // Not all zeros
+      } else {
+        const filePos = data.readUInt32LE(offset);
+        const compressedSize = data.readUInt32LE(offset + 4);
+        const fileSize = data.readUInt32LE(offset + 8);
+        const flags = data.readUInt32LE(offset + 12);
+
+        // Check for reasonable block entry values
+        if (filePos < 0x100000000 && filePos > 0) score += 2; // Reasonable file position
+        if (compressedSize < 0x10000000 && compressedSize > 0) score += 2; // Reasonable size
+        if (fileSize < 0x10000000 && fileSize > 0) score += 2; // Reasonable size
+        if (fileSize >= compressedSize) score += 1; // File size >= compressed size
+        if ((flags & 0x80000000) !== 0) score += 1; // EXISTS flag set
+      }
+    }
+
+    return score;
+  }
+  */
+
+  readHashTableUnencrypted(offset: number, size: number, headerOffset = 0): MpqHashTableEntry[] {
+    this.seek(headerOffset + offset);
+    const rawData = this.readBytes(size * 16); // Each entry is 16 bytes
+
+    const entries: MpqHashTableEntry[] = [];
+    for (let i = 0; i < size; i++) {
+      const entryOffset = i * 16;
+      entries.push({
+        name1: rawData.readUInt32LE(entryOffset),
+        name2: rawData.readUInt32LE(entryOffset + 4),
+        locale: rawData.readUInt16LE(entryOffset + 8),
+        platform: rawData.readUInt16LE(entryOffset + 10),
+        blockIndex: rawData.readUInt32LE(entryOffset + 12),
+      });
+    }
+
+    return entries;
+  }
+
+  private hashString(str: string, hashType: number): number {
+    this.initializeCryptTable();
+
+    let seed1 = 0x7FED7FED;
+    let seed2 = 0xEEEEEEEE;
+
+    str = str.toUpperCase().replace(/\//g, '\\');
+
+    for (let i = 0; i < str.length; i++) {
+      const ch = str.charCodeAt(i);
+      const tableIndex = (hashType << 8) + ch;
+      const cryptValue = this.cryptTable[tableIndex] || 0;
+      seed1 = (cryptValue ^ (seed1 + seed2)) >>> 0;
+      seed2 = (ch + seed1 + seed2 + (seed2 << 5) + 3) >>> 0;
+    }
+
+    return seed1;
+  }
+
+  readHashTable(offset: number, size: number, headerOffset = 0): MpqHashTableEntry[] {
+    console.log('Start readHashTable', (headerOffset + offset).toString(16), size * 16);
+    this.seek(headerOffset + offset);
+    const rawData = this.readBytes(size * 16); // Each entry is 16 bytes
+
+    // Log raw data for debugging
+    console.log('Raw hash table data (first 32 bytes):', rawData.subarray(0, 32).toString('hex'));
+
+    // Decrypt the hash table using the standard MPQ key
+    const key = this.hashString('(hash table)', 3);
+    console.log('Decryption key for "(hash table)":', key.toString(16));
+
+    const decryptedData = this.decrypt(rawData, key);
+
+    // Log decrypted data for debugging
+    console.log('Decrypted hash table data (first 32 bytes):', decryptedData.subarray(0, 32).toString('hex'));
+    const firstEntry = {
+      name1: decryptedData.readUInt32LE(0),
+      name2: decryptedData.readUInt32LE(4),
+      locale: decryptedData.readUInt16LE(8),
+      platform: decryptedData.readUInt16LE(10),
+      blockIndex: decryptedData.readUInt32LE(12),
+    };
+    console.log('First decrypted hash entry:', {
+      name1: firstEntry.name1.toString(16),
+      name2: firstEntry.name2.toString(16),
+      locale: firstEntry.locale,
+      platform: firstEntry.platform,
+      blockIndex: firstEntry.blockIndex.toString(16),
+    });
+
+    const entries: MpqHashTableEntry[] = [];
+    for (let i = 0; i < size; i++) {
+      const entryOffset = i * 16;
+
+      // Parse according to struct format '2I2HI'
+      // 2I = two unsigned ints (hash_a, hash_b)
+      // 2H = two unsigned shorts (locale, platform)
+      // I = one unsigned int (block_table_index)
+      entries.push({
+        name1: decryptedData.readUInt32LE(entryOffset),      // hash_a
+        name2: decryptedData.readUInt32LE(entryOffset + 4),  // hash_b
+        locale: decryptedData.readUInt16LE(entryOffset + 8), // locale
+        platform: decryptedData.readUInt16LE(entryOffset + 10), // platform
+        blockIndex: decryptedData.readUInt32LE(entryOffset + 12), // block_table_index
+      });
+    }
+
+    return entries;
+  }
+
+  readBlockTable(offset: number, size: number, headerOffset = 0): MpqBlockTableEntry[] {
+    this.seek(headerOffset + offset);
+    const rawData = this.readBytes(size * 16); // Each entry is 16 bytes
+
+    // Decrypt the block table using the standard MPQ key
+    const key = this.hashString('(block table)', 3);
+    const decryptedData = this.decrypt(rawData, key);
+
+    const entries: MpqBlockTableEntry[] = [];
+    for (let i = 0; i < size; i++) {
+      const entryOffset = i * 16;
+
+      // Parse according to struct format '4I' (4 unsigned ints)
+      entries.push({
+        filePos: decryptedData.readUInt32LE(entryOffset),
+        compressedSize: decryptedData.readUInt32LE(entryOffset + 4),
+        fileSize: decryptedData.readUInt32LE(entryOffset + 8),
+        flags: decryptedData.readUInt32LE(entryOffset + 12),
+      });
+    }
+
+    return entries;
+  }
+
+  readBlockTableUnencrypted(offset: number, size: number, headerOffset = 0): MpqBlockTableEntry[] {
+    this.seek(headerOffset + offset);
+    const rawData = this.readBytes(size * 16); // Each entry is 16 bytes
+
+    const entries: MpqBlockTableEntry[] = [];
+    for (let i = 0; i < size; i++) {
+      const entryOffset = i * 16;
+      entries.push({
+        filePos: rawData.readUInt32LE(entryOffset),
+        compressedSize: rawData.readUInt32LE(entryOffset + 4),
+        fileSize: rawData.readUInt32LE(entryOffset + 8),
+        flags: rawData.readUInt32LE(entryOffset + 12),
+      });
+    }
+
+    return entries;
+  }
+
+  readHetTable(hetTablePos: number, hetTableSize: number, headerOffset = 0): any {
+    if (hetTablePos === 0 || hetTableSize === 0) {
+      return null; // No HET table
+    }
+
+    this.seek(headerOffset + Number(hetTablePos));
+
+    // Read HET table header
+    const signature = this.readUInt32LE();
+    if (signature !== 0x1A544548) { // 'HET\x1A'
+      console.warn('Invalid HET table signature:', signature.toString(16));
+      return null;
+    }
+
+    const hetHeader = {
+      signature,
+      version: this.readUInt32LE(),
+      dataSize: this.readUInt32LE(),
+      tableSize: this.readUInt32LE(),
+      maxFileCount: this.readUInt32LE(),
+      hashTableSize: this.readUInt32LE(),
+      hashEntrySize: this.readUInt32LE(),
+      totalIndexSize: this.readUInt32LE(),
+      indexSizeExtra: this.readUInt32LE(),
+      indexSize: this.readUInt32LE(),
+      blockTableSize: this.readUInt32LE(),
     };
 
-    // Read extended header for format version 2+
-    if (formatVersion >= 2) {
-      header.hiBlockTablePos64 = BigInt(this.readUInt32LE()) << 32n | BigInt(this.readUInt32LE());
-      header.hashTablePosHi = this.readUInt16LE();
-      header.blockTablePosHi = this.readUInt16LE();
-    }
+    console.log('HET Table found:', hetHeader);
 
-    // Reset to end of header
-    this.seek(startOffset + headerSize);
-
-    return header;
+    // TODO: Implement full HET table parsing
+    // For now, return header info
+    return hetHeader;
   }
 
-  readHashTable(offset: number, size: number, headerOffset: number = 0): MpqHashTableEntry[] {
-    this.seek(headerOffset + offset);
-    const entries: MpqHashTableEntry[] = [];
-
-    for (let i = 0; i < size; i++) {
-      entries.push({
-        name1: this.readUInt32LE(),
-        name2: this.readUInt32LE(),
-        locale: this.readUInt16LE(),
-        platform: this.readUInt16LE(),
-        blockIndex: this.readUInt32LE()
-      });
+  readBetTable(betTablePos: number, betTableSize: number, headerOffset = 0): any {
+    if (betTablePos === 0 || betTableSize === 0) {
+      return null; // No BET table
     }
 
-    return entries;
-  }
+    this.seek(headerOffset + Number(betTablePos));
 
-  readBlockTable(offset: number, size: number, headerOffset: number = 0): MpqBlockTableEntry[] {
-    this.seek(headerOffset + offset);
-    const entries: MpqBlockTableEntry[] = [];
-
-    for (let i = 0; i < size; i++) {
-      entries.push({
-        filePos: this.readUInt32LE(),
-        compressedSize: this.readUInt32LE(),
-        fileSize: this.readUInt32LE(),
-        flags: this.readUInt32LE()
-      });
+    // Read BET table header
+    const signature = this.readUInt32LE();
+    if (signature !== 0x1A544542) { // 'BET\x1A'
+      console.warn('Invalid BET table signature:', signature.toString(16));
+      return null;
     }
 
-    return entries;
+    const betHeader = {
+      signature,
+      version: this.readUInt32LE(),
+      dataSize: this.readUInt32LE(),
+      tableSize: this.readUInt32LE(),
+      fileCount: this.readUInt32LE(),
+      unknown: this.readUInt32LE(),
+      tableEntrySize: this.readUInt32LE(),
+      bitIndexFilePos: this.readUInt32LE(),
+      bitIndexFileSize: this.readUInt32LE(),
+      bitIndexCmpSize: this.readUInt32LE(),
+      bitIndexFlagIndex: this.readUInt32LE(),
+      bitIndexNameHash2: this.readUInt32LE(),
+      bitCountFilePos: this.readUInt32LE(),
+      bitCountFileSize: this.readUInt32LE(),
+      bitCountCmpSize: this.readUInt32LE(),
+      bitCountFlagIndex: this.readUInt32LE(),
+      bitCountNameHash2: this.readUInt32LE(),
+      totalBetHashSize: this.readUInt32LE(),
+      betHashSizeExtra: this.readUInt32LE(),
+      betHashSize: this.readUInt32LE(),
+      betHashArraySize: this.readUInt32LE(),
+      flagCount: this.readUInt32LE(),
+    };
+
+    console.log('BET Table found:', betHeader);
+
+    // TODO: Implement full BET table parsing
+    // For now, return header info
+    return betHeader;
   }
 
-  readFileData(filePos: number, size: number, headerOffset: number = 0): Buffer {
+  readFileData(filePos: number, size: number, headerOffset = 0): Buffer {
     this.seek(headerOffset + filePos);
     return this.readBytes(size);
   }

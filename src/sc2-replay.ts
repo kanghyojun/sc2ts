@@ -20,9 +20,7 @@ export class SC2Replay {
 
   static async fromFile(filepath: string, options?: SC2ReplayOptions): Promise<SC2Replay> {
     // SC2 replays have standard file structure
-    const listFile = `(attributes)
-(listfile)
-replay.attributes.events
+    const listFile = `replay.attributes.events
 replay.details
 replay.game.events
 replay.initData
@@ -40,9 +38,7 @@ replay.tracker.events`;
 
   static fromBuffer(buffer: Buffer, options?: SC2ReplayOptions): SC2Replay {
     // SC2 replays have standard file structure
-    const listFile = `(attributes)
-(listfile)
-replay.attributes.events
+    const listFile = `replay.attributes.events
 replay.details
 replay.game.events
 replay.initData
@@ -104,10 +100,10 @@ replay.tracker.events`;
         major: 2,
         minor: 0,
         revision: 0,
-        build: this.detectBuildVersion()
+        build: this.detectBuildVersion(),
       },
       length: mpqHeader.archiveSize,
-      crc32: 0 // Would need to calculate from actual data
+      crc32: 0, // Would need to calculate from actual data
     };
   }
 
@@ -141,7 +137,7 @@ replay.tracker.events`;
         type: 0,
         realTimeLength: 0,
         mapSizeX: 0,
-        mapSizeY: 0
+        mapSizeY: 0,
       };
     } catch (error) {
       console.warn('Could not parse replay details:', error);
@@ -169,12 +165,12 @@ replay.tracker.events`;
           color: { a: 255, r: 255, g: 255, b: 255 },
           control: 1,
           teamId: i % 2,
-          userId: i
+          userId: i,
         });
       }
 
       return players;
-    } catch (error) {
+    } catch {
       return this.getDefaultPlayers();
     }
   }
@@ -190,14 +186,14 @@ replay.tracker.events`;
           gameOptions: {},
           gameSpeed: 1,
           gameCacheName: '',
-          mapAuthorName: ''
+          mapAuthorName: '',
         },
         lobbyState: {
-          slots: []
+          slots: [],
         },
         syncLobbyState: {
-          userInitialData: []
-        }
+          userInitialData: [],
+        },
       };
     } catch (error) {
       console.warn('Could not parse init data:', error);
@@ -258,12 +254,12 @@ replay.tracker.events`;
         const eventId = decoder.decodeValue({ type: 'int', size: 8 });
 
         // Skip event data for now - would need protocol-specific parsing
-        const eventData = this.parseEventData(decoder, eventId, eventType);
+        const eventData = this.parseEventData(decoder, eventId);
 
         const event: any = {
           loop: currentLoop,
           eventType: `${eventType}_event_${eventId}`,
-          eventData
+          eventData,
         };
 
         if (userId !== undefined) {
@@ -277,13 +273,13 @@ replay.tracker.events`;
         }
       }
     } catch (error) {
-      console.warn(`Event parsing stopped due to error:`, error);
+      console.warn('Event parsing stopped due to error:', error);
     }
 
     return events;
   }
 
-  private parseEventData(_decoder: VersionedDecoder, eventId: number, _eventType: string): any {
+  private parseEventData(_decoder: VersionedDecoder, eventId: number): any {
     try {
       // Very basic event data parsing - real implementation would be protocol-specific
       return { eventId, raw: true };
@@ -311,7 +307,7 @@ replay.tracker.events`;
       type: 0,
       realTimeLength: 0,
       mapSizeX: 0,
-      mapSizeY: 0
+      mapSizeY: 0,
     };
   }
 
@@ -330,7 +326,7 @@ replay.tracker.events`;
         color: { a: 255, r: 255, g: 0, b: 0 },
         control: 1,
         teamId: 0,
-        userId: 0
+        userId: 0,
       },
       {
         name: 'Player 2',
@@ -345,8 +341,8 @@ replay.tracker.events`;
         color: { a: 255, r: 0, g: 0, b: 255 },
         control: 1,
         teamId: 1,
-        userId: 1
-      }
+        userId: 1,
+      },
     ];
   }
 
@@ -357,14 +353,14 @@ replay.tracker.events`;
         gameOptions: {},
         gameSpeed: 1,
         gameCacheName: '',
-        mapAuthorName: ''
+        mapAuthorName: '',
       },
       lobbyState: {
-        slots: []
+        slots: [],
       },
       syncLobbyState: {
-        userInitialData: []
-      }
+        userInitialData: [],
+      },
     };
   }
 
@@ -389,7 +385,7 @@ replay.tracker.events`;
     return {
       game: this.gameEvents,
       message: this.messageEvents,
-      tracker: this.trackerEvents
+      tracker: this.trackerEvents,
     };
   }
 
@@ -404,7 +400,7 @@ replay.tracker.events`;
       initData: this.initData,
       gameEvents: this.gameEvents,
       messageEvents: this.messageEvents,
-      trackerEvents: this.trackerEvents
+      trackerEvents: this.trackerEvents,
     };
   }
 

@@ -1,3 +1,4 @@
+import { hash } from 'crypto';
 import { SC2Replay } from '../sc2-replay';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -106,6 +107,7 @@ describe('SC2Replay - Real Files', () => {
       expect(header?.length).toBeLessThan(replayBuffer.length);
       expect(header?.length).toBeGreaterThan(1000); // Reasonable minimum
     });
+
   });
 
   it('should handle all test files consistently', () => {
@@ -137,4 +139,5 @@ describe('SC2Replay - Real Files', () => {
     // Should have processed all files successfully
     expect(results).toHaveLength(replayFiles.length);
   });
+
 });

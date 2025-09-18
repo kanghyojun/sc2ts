@@ -20,7 +20,7 @@ export type {
   SC2TrackerEvent,
   SC2ReplayInitData,
   SC2ReplayData,
-  SC2ReplayOptions
+  SC2ReplayOptions,
 } from './types';
 
 export { MpqError } from './errors';

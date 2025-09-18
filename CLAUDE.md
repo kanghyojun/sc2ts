@@ -51,7 +51,7 @@ pnpm run clean
 ## Project Structure
 
 ```
-mpqts/
+/
 ├── src/
 │   ├── index.ts              # Main entry point
 │   ├── mpq-archive.ts        # Main MPQ archive class
@@ -59,6 +59,7 @@ mpqts/
 │   ├── types.ts              # TypeScript type definitions
 │   ├── errors.ts             # Custom error classes
 │   └── __tests__/            # Test files
+├── .debug/                   # Debug scripts and analysis tools
 ├── dist/                     # Build output (generated)
 ├── package.json              # Project configuration
 ├── tsconfig.json             # Main TypeScript config
@@ -99,3 +100,81 @@ The library is structured around these main components:
    - MpqError (base class)
    - MpqInvalidFormatError, MpqDecryptionError, MpqDecompressionError
    - MpqFileNotFoundError
+
+## Testing and Quality Assurance
+
+### Regression Testing Requirements
+
+**IMPORTANT**: When fixing any bug or issue in the codebase, you MUST add regression tests to prevent the same issue from occurring again in the future.
+
+#### Guidelines for Regression Tests:
+
+1. **Identify the Root Cause**: Understand what caused the bug and what specific behavior was broken
+2. **Create Targeted Tests**: Write tests that specifically validate the fixed behavior
+3. **Use Real Data When Possible**: For MPQ/SC2 replay parsing, use actual replay files to test against known good hash table values
+4. **Document the Issue**: Include comments in tests explaining what bug the test prevents
+5. **Test Edge Cases**: Consider boundary conditions and edge cases related to the original bug
+
+#### Test Categories for Regression:
+
+- **Hash Table Parsing**: When fixing hash table parsing issues, validate name1/name2 values against known good data
+- **File Format Compatibility**: Test with multiple SC2 replay versions and MPQ format versions
+- **Memory and Performance**: Add performance regression tests for large files
+- **Error Handling**: Ensure error conditions are properly caught and reported
+
+#### Example Regression Test Pattern:
+
+```typescript
+// Regression test for issue #123: Hash table parsing returns incorrect name1/name2
+it('should correctly parse hash table name1/name2 values (regression test)', () => {
+  // This test prevents regression of hash table parsing bug found in a.SC2Replay
+  const expectedEntries = [
+    { filename: 'replay.details', name1: 0xD383C29C, name2: 0xEF402E92 },
+    // ... more expected values from known good data
+  ];
+
+  // Validate that parsing produces expected hash values
+  // ... test implementation
+});
+```
+
+## Debugging and Development Tools
+
+### Debug Scripts Directory
+
+All debugging and analysis scripts should be placed in the `.debug/` directory to keep them organized and separate from the main codebase. These scripts are typically Node.js files used for investigating issues, analyzing binary data, or testing specific algorithms.
+
+#### Guidelines for Debug Scripts:
+
+1. **Location**: Always create debug scripts in the `.debug/` directory
+2. **File naming**: Use descriptive names like `analyze-hash-mismatch.js`, `test-sc2-decryption.js`
+3. **Node.js compatibility**: Write scripts as plain Node.js files (not TypeScript) for quick execution
+4. **Self-contained**: Include all necessary functions within the script for easy execution
+5. **Documentation**: Add comments explaining what the script does and how to interpret results
+
+#### Example Debug Script Structure:
+
+```javascript
+// .debug/analyze-issue.js
+const fs = require('fs');
+
+// Helper functions
+function helperFunction() {
+  // Implementation
+}
+
+// Main analysis
+console.log('Starting analysis...');
+// Analysis code here
+console.log('Analysis complete.');
+```
+
+#### Running Debug Scripts:
+
+```bash
+# Execute debug scripts directly with Node.js
+node .debug/analyze-hash-mismatch.js
+node .debug/test-sc2-decryption.js
+```
+
+**Note**: Debug scripts are excluded from linting and TypeScript compilation as they are development tools, not part of the library codebase.
