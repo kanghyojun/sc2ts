@@ -1,7 +1,7 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { createLogger } from '../../logger.js';
-import type { MpqFile } from '../../types.js';
+import { createLogger } from '../../logger';
+import type { MpqFile } from '../../types';
 
 const logger = createLogger('cli-formatter');
 

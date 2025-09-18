@@ -178,3 +178,40 @@ node .debug/test-sc2-decryption.js
 ```
 
 **Note**: Debug scripts are excluded from linting and TypeScript compilation as they are development tools, not part of the library codebase.
+
+## Import Guidelines
+
+### TypeScript Import Rules
+
+#### ❌ **NEVER do this:**
+```typescript
+// Wrong: Using .js extension in TypeScript files
+import { something } from './module.js';
+import type { Type } from '../types.js';
+```
+
+#### ✅ **ALWAYS do this:**
+```typescript
+// Correct: No extension in TypeScript files
+import { something } from './module';
+import type { Type } from '../types';
+```
+
+#### Why?
+- TypeScript compiler handles extension resolution automatically
+- `.js` extensions in TypeScript source cause module resolution issues
+- Build tools (webpack, esbuild, etc.) expect TypeScript-style imports
+- Mixing extensions creates inconsistency and potential runtime errors
+
+#### How to Check:
+```bash
+# Search for problematic imports
+grep -r "\.js';" src/
+```
+
+#### Auto-fix with ESLint:
+Consider adding ESLint rules to catch these issues automatically:
+```typescript
+// Add to eslint rules if needed
+"@typescript-eslint/consistent-type-imports": "error"
+```

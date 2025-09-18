@@ -24,6 +24,7 @@ export default tseslint.config(
       '@typescript-eslint/no-inferrable-types': 'error',
       '@typescript-eslint/prefer-const': 'off', // Using built-in prefer-const
       '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/consistent-type-imports': 'error',
 
       // General JavaScript rules
       'no-console': 'warn',

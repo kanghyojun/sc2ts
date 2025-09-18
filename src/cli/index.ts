@@ -14,9 +14,9 @@ import {
 } from '@optique/core/parser';
 import { choice, string } from '@optique/core/valueparser';
 import { path, run } from '@optique/run';
-import { configureLogger, createLogger } from '../logger.js';
-import { FileExtractor } from './utils/extractor.js';
-import { OutputFormatter } from './utils/formatter.js';
+import { configureLogger, createLogger } from '../logger';
+import { FileExtractor } from './utils/extractor';
+import { OutputFormatter } from './utils/formatter';
 
 // Initialize logger
 configureLogger().catch(console.error);

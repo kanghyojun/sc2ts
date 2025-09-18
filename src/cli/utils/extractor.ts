@@ -1,7 +1,7 @@
-import { MpqArchive } from '../../mpq-archive.js';
-import { SC2Replay } from '../../sc2-replay.js';
-import { createLogger } from '../../logger.js';
-import type { MpqFile } from '../../types.js';
+import { MpqArchive } from '../../mpq-archive';
+import { SC2Replay } from '../../sc2-replay';
+import { createLogger } from '../../logger';
+import type { MpqFile } from '../../types';
 
 const logger = createLogger('cli-extractor');
 
