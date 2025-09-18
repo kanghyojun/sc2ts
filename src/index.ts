@@ -1,10 +1,16 @@
 // MPQ (MoPaQ) Archive Parser Library with SC2 Replay Support
 // Main entry point
 
+import { configureLogger } from './logger';
+
+// Initialize logger on module load
+configureLogger().catch(console.error);
+
 export { MpqArchive } from './mpq-archive';
 export { MpqReader } from './mpq-reader';
 export { SC2Replay } from './sc2-replay';
 export { VersionedDecoder, BitPackedBuffer } from './sc2-decoder';
+export { configureLogger } from './logger';
 
 export type {
   MpqHeader,

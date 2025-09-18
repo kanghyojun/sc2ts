@@ -3,7 +3,10 @@
 
 import { MpqArchive } from './mpq-archive';
 import { VersionedDecoder } from './sc2-decoder';
+import { createLogger } from './logger';
 import type { SC2ReplayData, SC2ReplayHeader, SC2ReplayDetails, SC2ReplayInitData, SC2ReplayOptions, SC2GameEvent, SC2MessageEvent, SC2TrackerEvent } from './types';
+
+const logger = createLogger('sc2-replay');
 
 export class SC2Replay {
   private mpqArchive: MpqArchive;
@@ -73,7 +76,7 @@ export class SC2Replay {
         this.parseTrackerEvents();
       }
     } catch (error) {
-      console.warn('SC2 replay parsing warning:', error);
+      logger.warn(`SC2 replay parsing warning: ${error}`);
     }
   }
 
@@ -131,7 +134,7 @@ export class SC2Replay {
         mapSizeY: 0,
       };
     } catch (error) {
-      console.warn('Could not parse replay details:', error);
+      logger.warn(`Could not parse replay details: ${error}`);
       this.details = this.getDefaultDetails();
     }
   }
@@ -187,7 +190,7 @@ export class SC2Replay {
         },
       };
     } catch (error) {
-      console.warn('Could not parse init data:', error);
+      logger.warn(`Could not parse init data: ${error}`);
       this.initData = this.getDefaultInitData();
     }
   }
@@ -200,7 +203,7 @@ export class SC2Replay {
       // Simplified event parsing
       this.gameEvents = this.parseEvents(decoder, 'game');
     } catch (error) {
-      console.warn('Could not parse game events:', error);
+      logger.warn(`Could not parse game events: ${error}`);
       this.gameEvents = [];
     }
   }
@@ -212,7 +215,7 @@ export class SC2Replay {
 
       this.messageEvents = this.parseEvents(decoder, 'message') as SC2MessageEvent[];
     } catch (error) {
-      console.warn('Could not parse message events:', error);
+      logger.warn(`Could not parse message events: ${error}`);
       this.messageEvents = [];
     }
   }
@@ -224,7 +227,7 @@ export class SC2Replay {
 
       this.trackerEvents = this.parseEvents(decoder, 'tracker') as SC2TrackerEvent[];
     } catch (error) {
-      console.warn('Could not parse tracker events:', error);
+      logger.warn(`Could not parse tracker events: ${error}`);
       this.trackerEvents = [];
     }
   }
@@ -264,7 +267,7 @@ export class SC2Replay {
         }
       }
     } catch (error) {
-      console.warn('Event parsing stopped due to error:', error);
+      logger.warn(`Event parsing stopped due to error: ${error}`);
     }
 
     return events;

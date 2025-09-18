@@ -1,8 +1,11 @@
 // MPQ Archive Main Class
 
 import { MpqReader } from './mpq-reader';
+import { createLogger } from './logger';
 import type { MpqHeader, MpqHashTableEntry, MpqBlockTableEntry, MpqFile, MpqParseOptions } from './types';
 import { MpqFileNotFoundError } from './errors';
+
+const logger = createLogger('mpq-archive');
 
 export class MpqArchive {
   private reader: MpqReader;
@@ -37,7 +40,7 @@ export class MpqArchive {
   private parseSync(options?: MpqParseOptions): void {
     // Find and read MPQ header
     this.headerOffset = this.reader.findMpqHeader();
-    console.log('MPQ Header Offset:', this.headerOffset.toString(16));
+    logger.debug(`MPQ Header Offset: ${this.headerOffset.toString(16)}`);
     this.header = this.reader.readMpqHeader();
 
     // MPQ formatVersion 3 support implemented with HET/BET table detection
@@ -48,23 +51,23 @@ export class MpqArchive {
 
     if (this.header.formatVersion >= 2 && this.header.hashTablePosHi !== undefined) {
       actualHashTablePos = this.header.hashTablePos + (this.header.hashTablePosHi << 16);
-      console.log('  calculated hashTablePos:', actualHashTablePos.toString(16));
+      logger.debug(`Calculated hashTablePos: ${actualHashTablePos.toString(16)}`);
     }
 
     if (this.header.formatVersion >= 2 && this.header.blockTablePosHi !== undefined) {
       actualBlockTablePos = this.header.blockTablePos + (this.header.blockTablePosHi << 16);
-      console.log('  calculated blockTablePos:', actualBlockTablePos.toString(16));
+      logger.debug(`Calculated blockTablePos: ${actualBlockTablePos.toString(16)}`);
     }
 
     // Calculate actual table sizes (compressed tables in formatVersion 3+)
     const hashTableDataSize = actualBlockTablePos - actualHashTablePos;
     const blockTableDataSize = Number(this.header.archiveSize) - actualBlockTablePos;
 
-    console.log('  hashTableDataSize:', hashTableDataSize, 'bytes');
-    console.log('  blockTableDataSize:', blockTableDataSize, 'bytes');
-    console.log('  expected hash entries:', this.header.hashTableSize);
-    console.log('  expected block entries:', this.header.blockTableSize);
-    console.log('  archiveSize:', this.header.archiveSize.toString());
+    logger.debug(`Hash table data size: ${hashTableDataSize} bytes`);
+    logger.debug(`Block table data size: ${blockTableDataSize} bytes`);
+    logger.debug(`Expected hash entries: ${this.header.hashTableSize}`);
+    logger.debug(`Expected block entries: ${this.header.blockTableSize}`);
+    logger.debug(`Archive size: ${this.header.archiveSize.toString()}`);
 
     // For formatVersion 3+, try HET/BET tables first
     if (this.header.formatVersion >= 3) {
@@ -79,7 +82,7 @@ export class MpqArchive {
           this.headerOffset,
         );
       } catch (error) {
-        console.log('  -> Error reading HET table:', error);
+        logger.debug(`Error reading HET table: ${error}`);
       }
 
       try {
@@ -89,42 +92,42 @@ export class MpqArchive {
           this.headerOffset,
         );
       } catch (error) {
-        console.log('  -> Error reading BET table:', error);
+        logger.debug(`Error reading BET table: ${error}`);
       }
 
       if (hetTable && betTable) {
-        console.log('  -> Using HET/BET tables');
+        logger.debug('Using HET/BET tables');
         // TODO: Implement file search using HET/BET tables
         // For now, fall back to traditional tables
       } else {
-        console.log('  -> No valid HET/BET tables found, using traditional Hash/Block tables');
+        logger.debug('No valid HET/BET tables found, using traditional Hash/Block tables');
       }
 
       // Check if tables might be compressed
       const expectedHashTableSize = this.header.hashTableSize * 16;
       const expectedBlockTableSize = this.header.blockTableSize * 16;
 
-      console.log('  expected hash table size:', expectedHashTableSize, 'bytes');
-      console.log('  expected block table size:', expectedBlockTableSize, 'bytes');
+      logger.debug(`Expected hash table size: ${expectedHashTableSize} bytes`);
+      logger.debug(`Expected block table size: ${expectedBlockTableSize} bytes`);
 
       if (hashTableDataSize < expectedHashTableSize || blockTableDataSize < expectedBlockTableSize) {
-        console.log('  -> Tables appear to be compressed! Attempting decompression...');
+        logger.warn('Tables appear to be compressed! Attempting decompression...');
         // For now, try to read as uncompressed anyway
-        console.log('  -> WARNING: Compressed table decompression not fully implemented, trying as uncompressed...');
+        logger.warn('WARNING: Compressed table decompression not fully implemented, trying as uncompressed...');
       } else {
-        console.log('  -> Tables appear to be uncompressed');
+        logger.debug('Tables appear to be uncompressed');
         // Try both encrypted and unencrypted to see which gives better results
-        console.log('  -> Trying unencrypted tables...');
+        logger.debug('Trying unencrypted tables...');
         try {
           this.hashTable = this.reader.readHashTableUnencrypted(
             actualHashTablePos,
             this.header.hashTableSize,
             this.headerOffset,
           );
-          console.log('  -> First unencrypted hash entry:', {
+          logger.debug(`First unencrypted hash entry: ${JSON.stringify({
             name1: this.hashTable[0]?.name1.toString(16),
             name2: this.hashTable[0]?.name2.toString(16),
-          });
+          })}`);
           this.blockTable = this.reader.readBlockTableUnencrypted(
             actualBlockTablePos,
             this.header.blockTableSize,
@@ -146,12 +149,12 @@ export class MpqArchive {
             entry.fileSize < (100 * 1024 * 1024), // Less than 100MB
           ).length;
 
-          console.log(`  -> Unencrypted: ${validHashEntries}/${this.hashTable.length} valid hash entries, ${validBlockEntries}/${this.blockTable.length} valid block entries`);
+          logger.debug(`Unencrypted: ${validHashEntries}/${this.hashTable.length} valid hash entries, ${validBlockEntries}/${this.blockTable.length} valid block entries`);
 
           // For SC2 replays (formatVersion 3+), try encrypted hash table
           // to see if it matches the expected values
           if (this.header.formatVersion >= 3) {
-            console.log('  -> SC2 replay (formatVersion 3+), trying encrypted hash table...');
+            logger.debug('SC2 replay (formatVersion 3+), trying encrypted hash table...');
             this.hashTable = this.reader.readHashTable(
               actualHashTablePos,
               this.header.hashTableSize,
@@ -161,28 +164,28 @@ export class MpqArchive {
             // SC2 replays use the encrypted hash table - keep using the decrypted one
 
           } else if (validHashEntries === 0) {
-            console.log('  -> Hash table looks invalid, trying encrypted...');
+            logger.debug('Hash table looks invalid, trying encrypted...');
             this.hashTable = this.reader.readHashTable(
               actualHashTablePos,
               this.header.hashTableSize,
               this.headerOffset,
             );
           } else {
-            console.log('  -> Using unencrypted hash table');
+            logger.debug('Using unencrypted hash table');
           }
 
           if (validBlockEntries === 0) {
-            console.log('  -> Block table looks invalid, trying encrypted...');
+            logger.debug('Block table looks invalid, trying encrypted...');
             this.blockTable = this.reader.readBlockTable(
               actualBlockTablePos,
               this.header.blockTableSize,
               this.headerOffset,
             );
           } else {
-            console.log('  -> Using unencrypted block table');
+            logger.debug('Using unencrypted block table');
           }
         } catch {
-          console.log('  -> Error reading unencrypted tables, trying encrypted...');
+          logger.debug('Error reading unencrypted tables, trying encrypted...');
           this.hashTable = this.reader.readHashTable(
             actualHashTablePos,
             this.header.hashTableSize,

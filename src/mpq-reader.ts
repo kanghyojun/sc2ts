@@ -3,8 +3,11 @@
 import { readFile } from 'node:fs/promises';
 import { Buffer } from 'node:buffer';
 // import zlib from 'zlib'; // Not used yet
+import { createLogger } from './logger';
 import type { MpqHeader, MpqUserData, MpqHashTableEntry, MpqBlockTableEntry } from './types';
 import { MpqInvalidFormatError } from './errors';
+
+const logger = createLogger('mpq-reader');
 
 export class MpqReader {
   private buffer: Buffer;
@@ -157,7 +160,7 @@ export class MpqReader {
       // Reset to read the full user data header
       this.seek(headerOffset);
       const userData = this.readMpqUserData();
-      console.log(headerOffset, userData.mpqHeaderOffset.toString(16));
+      logger.debug(`Header offset: ${headerOffset}, MPQ header offset: ${userData.mpqHeaderOffset.toString(16)}`);
 
       // Navigate to the actual MPQ header (relative to the begin of user data header)
       this.seek(headerOffset + userData.mpqHeaderOffset);
@@ -190,17 +193,17 @@ export class MpqReader {
         hashTableSize,
         blockTableSize,
       };
-      console.log('MPQ Header found at offset', actualStartOffset.toString(16), {
+      logger.debug(`MPQ Header found at offset ${actualStartOffset.toString(16)}: ${JSON.stringify({
         magic: actualMagic.toString(16),
         headerSize: headerSize.toString(16),
         archiveSize: archiveSize.toString(16),
         formatVersion: formatVersion.toString(16),
-        blockSize: blockSize.toString(16 ),
+        blockSize: blockSize.toString(16),
         hashTablePos: hashTablePos.toString(16),
         blockTablePos: blockTablePos.toString(16),
         hashTableSize: hashTableSize.toString(16),
         blockTableSize: blockTableSize.toString(16),
-      });
+      })}`);
 
       // Read extended header for format version 2+
       if (formatVersion >= 2) {
@@ -332,7 +335,7 @@ export class MpqReader {
 
     for (let i = 0; i < data.length; i += 4) {
       // Step 1: Update seed2 - exactly like mpyq
-      seed2 = (seed2 + this.cryptTable[0x400 + (seed1 & 0xFF)]) >>> 0;
+      seed2 = (seed2 + (this.cryptTable[0x400 + (seed1 & 0xFF)] || 0)) >>> 0;
 
       // Step 2: Read 4 bytes as little-endian 32-bit unsigned integer
       const value = data.readUInt32LE(i);
@@ -392,21 +395,21 @@ export class MpqReader {
   }
 
   readHashTable(offset: number, size: number, headerOffset = 0): MpqHashTableEntry[] {
-    console.log('Start readHashTable', (headerOffset + offset).toString(16), size * 16);
+    logger.debug(`Start readHashTable at ${(headerOffset + offset).toString(16)}, size: ${size * 16}`);
     this.seek(headerOffset + offset);
     const rawData = this.readBytes(size * 16); // Each entry is 16 bytes
 
     // Log raw data for debugging
-    console.log('Raw hash table data (first 32 bytes):', rawData.subarray(0, 32).toString('hex'));
+    logger.debug(`Raw hash table data (first 32 bytes): ${rawData.subarray(0, 32).toString('hex')}`);
 
     // Decrypt the hash table using the standard MPQ key
     const key = this.hashString('(hash table)', 3);
-    console.log('Decryption key for "(hash table)":', key.toString(16));
+    logger.debug(`Decryption key for "(hash table)": ${key.toString(16)}`);
 
     const decryptedData = this.decrypt(rawData, key);
 
     // Log decrypted data for debugging
-    console.log('Decrypted hash table data (first 32 bytes):', decryptedData.subarray(0, 32).toString('hex'));
+    logger.debug(`Decrypted hash table data (first 32 bytes): ${decryptedData.subarray(0, 32).toString('hex')}`);
     const firstEntry = {
       name1: decryptedData.readUInt32LE(0),
       name2: decryptedData.readUInt32LE(4),
@@ -414,13 +417,13 @@ export class MpqReader {
       platform: decryptedData.readUInt16LE(10),
       blockIndex: decryptedData.readUInt32LE(12),
     };
-    console.log('First decrypted hash entry:', {
+    logger.debug(`First decrypted hash entry: ${JSON.stringify({
       name1: firstEntry.name1.toString(16),
       name2: firstEntry.name2.toString(16),
       locale: firstEntry.locale,
       platform: firstEntry.platform,
       blockIndex: firstEntry.blockIndex.toString(16),
-    });
+    })}`);
 
     const entries: MpqHashTableEntry[] = [];
     for (let i = 0; i < size; i++) {
@@ -494,7 +497,7 @@ export class MpqReader {
     // Read HET table header
     const signature = this.readUInt32LE();
     if (signature !== 0x1A544548) { // 'HET\x1A'
-      console.warn('Invalid HET table signature:', signature.toString(16));
+      logger.warn(`Invalid HET table signature: ${signature.toString(16)}`);
       return null;
     }
 
@@ -512,7 +515,7 @@ export class MpqReader {
       blockTableSize: this.readUInt32LE(),
     };
 
-    console.log('HET Table found:', hetHeader);
+    logger.debug(`HET Table found: ${JSON.stringify(hetHeader)}`);
 
     // TODO: Implement full HET table parsing
     // For now, return header info
@@ -529,7 +532,7 @@ export class MpqReader {
     // Read BET table header
     const signature = this.readUInt32LE();
     if (signature !== 0x1A544542) { // 'BET\x1A'
-      console.warn('Invalid BET table signature:', signature.toString(16));
+      logger.warn(`Invalid BET table signature: ${signature.toString(16)}`);
       return null;
     }
 
@@ -558,7 +561,7 @@ export class MpqReader {
       flagCount: this.readUInt32LE(),
     };
 
-    console.log('BET Table found:', betHeader);
+    logger.debug(`BET Table found: ${JSON.stringify(betHeader)}`);
 
     // TODO: Implement full BET table parsing
     // For now, return header info
