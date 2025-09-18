@@ -108,7 +108,7 @@ export class SC2Replay {
   private parseDetails(): void {
     try {
       const detailsFile = this.mpqArchive.getFile('replay.details');
-      const details = decodeReplayDetails(detailsFile.data, this.header?.build);
+      const details = decodeReplayDetails(detailsFile.data, this.header?.version?.build);
 
       // Basic structure for replay.details - simplified
       this.details = {

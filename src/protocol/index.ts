@@ -95,7 +95,7 @@ export function decodeReplayHeader(
 ): { baseBuild: number; version: SC2ReplayHeaderDecoded['version'] } {
   const protocol = getProtocol(buildVersion || getLatestBuildVersion());
   const targetBuildVersion = buildVersion || getLatestBuildVersion();
-  const decodedHeader = protocol.decode_replay_header(headerData);
+  const decodedHeader = protocol.decodeReplayHeader(headerData);
   if (decodedHeader.m_version === undefined) {
     throw new Error('Failed to decode replay header: version info missing');
   }
@@ -123,26 +123,26 @@ export function decodeReplayHeaderAsync(
 // Expose all ProtocolDecoder functions with build version support
 
 export function decodeReplayDetails(data: Buffer, buildVersion?: number): any {
-  return getProtocol(buildVersion || getLatestBuildVersion()).decode_replay_details(data);
+  return getProtocol(buildVersion || getLatestBuildVersion()).decodeReplayDetails(data);
 }
 
 export function decodeReplayInitdata(data: Buffer, buildVersion?: number): any {
-  return getProtocol(buildVersion || getLatestBuildVersion()).decode_replay_initdata(data);
+  return getProtocol(buildVersion || getLatestBuildVersion()).decodeReplayInitdata(data);
 }
 
 export function decodeReplayGameEvents(data: Buffer, buildVersion?: number): any[] {
-  return getProtocol(buildVersion || getLatestBuildVersion()).decode_replay_game_events(data);
+  return getProtocol(buildVersion || getLatestBuildVersion()).decodeReplayGameEvents(data);
 }
 
 export function decodeReplayMessageEvents(data: Buffer, buildVersion?: number): any[] {
-  return getProtocol(buildVersion || getLatestBuildVersion()).decode_replay_message_events(data);
+  return getProtocol(buildVersion || getLatestBuildVersion()).decodeReplayMessageEvents(data);
 }
 
 export function decodeReplayTrackerEvents(data: Buffer, buildVersion?: number): any[] {
   const protocol = getProtocol(buildVersion || getLatestBuildVersion());
-  return protocol.decode_replay_tracker_events?.(data) || [];
+  return protocol.decodeReplayTrackerEvents?.(data) || [];
 }
 
 export function decodeReplayAttributesEvents(data: Buffer, buildVersion?: number): any {
-  return getProtocol(buildVersion || getLatestBuildVersion()).decode_replay_attributes_events(data);
+  return getProtocol(buildVersion || getLatestBuildVersion()).decodeReplayAttributesEvents(data);
 }

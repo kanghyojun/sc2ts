@@ -366,7 +366,7 @@ function varuint32_value(value: Record<string, unknown>): number {
   return 0;
 }
 
-function* decode_event_stream(
+function* decodeEventStream(
   decoder: VersionedDecoder,
   eventid_typeid: number,
   event_types: Record<number, [number, string]>,
@@ -417,55 +417,55 @@ function* decode_event_stream(
 }
 
 const protocol80949: ProtocolDecoder = {
-  decode_replay_header(data: Buffer): any {
+  decodeReplayHeader(data: Buffer): any {
     const decoder = new VersionedDecoder(data, typeinfos);
     return decoder.instance(replay_header_typeid);
   },
 
-  decode_replay_details(data: Buffer): any {
+  decodeReplayDetails(data: Buffer): any {
     const decoder = new VersionedDecoder(data, typeinfos);
     return decoder.instance(game_details_typeid);
   },
 
-  decode_replay_initdata(data: Buffer): any {
+  decodeReplayInitdata(data: Buffer): any {
     const decoder = new VersionedDecoder(data, typeinfos);
     return decoder.instance(replay_initdata_typeid);
   },
 
-  decode_replay_game_events(data: Buffer): any[] {
+  decodeReplayGameEvents(data: Buffer): any[] {
     const decoder = new VersionedDecoder(data, typeinfos);
     const events = [];
 
-    for (const event of decode_event_stream(decoder, game_eventid_typeid, game_event_types, true)) {
+    for (const event of decodeEventStream(decoder, game_eventid_typeid, game_event_types, true)) {
       events.push(event);
     }
 
     return events;
   },
 
-  decode_replay_message_events(data: Buffer): any[] {
+  decodeReplayMessageEvents(data: Buffer): any[] {
     const decoder = new VersionedDecoder(data, typeinfos);
     const events = [];
 
-    for (const event of decode_event_stream(decoder, message_eventid_typeid, message_event_types, true)) {
+    for (const event of decodeEventStream(decoder, message_eventid_typeid, message_event_types, true)) {
       events.push(event);
     }
 
     return events;
   },
 
-  decode_replay_tracker_events(data: Buffer): any[] {
+  decodeReplayTrackerEvents(data: Buffer): any[] {
     const decoder = new VersionedDecoder(data, typeinfos);
     const events = [];
 
-    for (const event of decode_event_stream(decoder, tracker_eventid_typeid, tracker_event_types, false)) {
+    for (const event of decodeEventStream(decoder, tracker_eventid_typeid, tracker_event_types, false)) {
       events.push(event);
     }
 
     return events;
   },
 
-  decode_replay_attributes_events(data: Buffer): any {
+  decodeReplayAttributesEvents(data: Buffer): any {
     const buffer = new BitPackedBuffer(data, 'little');
     const attributes: Record<string, unknown> = {};
 
