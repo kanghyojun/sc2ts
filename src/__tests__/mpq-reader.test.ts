@@ -78,10 +78,10 @@ describe('MpqReader', () => {
       mockBuffer.writeUInt32LE(0x0002, 0x11C);       // Block table size
     });
 
-    it('should find user data header at offset 0', () => {
+    it('should find MPQ header through user data header at offset 0', () => {
       const reader = new MpqReader(mockBuffer);
       const headerOffset = reader.findMpqHeader();
-      expect(headerOffset).toBe(0);
+      expect(headerOffset).toBe(0x100); // Should return actual MPQ header offset, not user data header offset
     });
 
     it('should read user data and navigate to actual MPQ header', () => {
@@ -121,17 +121,17 @@ describe('MpqReader', () => {
       expect(() => reader.readMpqHeader()).toThrow(/No valid MPQ header found/);
     });
 
-    it('should find user data header at non-zero offset', () => {
+    it('should find MPQ header through user data header at non-zero offset', () => {
       // Create buffer with user data header at offset 0x50
       const bufferWithOffset = Buffer.alloc(1024);
       mockBuffer.copy(bufferWithOffset, 0x50);
 
-      // Update the MPQ header offset in the copied user data header (relative to user data header)
-      bufferWithOffset.writeUInt32LE(0x100, 0x50 + 8); // MPQ header at relative offset 0x100 from user data header
+      // Update the MPQ header offset in the copied user data header (absolute offset)
+      bufferWithOffset.writeUInt32LE(0x150, 0x50 + 8); // MPQ header at absolute offset 0x150
 
       const reader = new MpqReader(bufferWithOffset);
       const headerOffset = reader.findMpqHeader();
-      expect(headerOffset).toBe(0x50);
+      expect(headerOffset).toBe(0x150); // Should return absolute MPQ header offset
     });
   });
 
