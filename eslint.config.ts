@@ -6,6 +6,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     files: ['src/**/*.ts'],
+    ignores: ['src/__tests__/**/*.ts', 'src/cli/**/*.ts'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -47,6 +48,7 @@ export default tseslint.config(
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
+        project: './tsconfig.test.json',
       },
     },
     rules: {
@@ -55,6 +57,22 @@ export default tseslint.config(
       'no-console': 'off',
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/no-inferrable-types': 'off',
+    },
+  },
+  {
+    files: ['src/cli/**/*.ts'],
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        // CLI 파일은 별도 project 없이 처리
+      },
+    },
+    rules: {
+      // CLI는 사용자 출력을 위해 console 사용 허용 (LogTape 사용하므로)
+      'no-console': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
   {

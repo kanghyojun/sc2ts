@@ -2,7 +2,6 @@
 
 import { readFile } from 'node:fs/promises';
 import { Buffer } from 'node:buffer';
-// import zlib from 'zlib'; // Not used yet
 import { createLogger } from './logger';
 import type { MpqHeader, MpqUserData, MpqHashTableEntry, MpqBlockTableEntry } from './types';
 import { MpqInvalidFormatError } from './errors';

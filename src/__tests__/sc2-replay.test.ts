@@ -1,5 +1,5 @@
 import { SC2Replay } from '../sc2-replay';
-import { MpqArchive } from '../mpq-archive';
+// import { MpqArchive } from '../mpq-archive';
 
 describe('SC2Replay', () => {
   let mockBuffer: Buffer;
@@ -61,16 +61,16 @@ describe('SC2Replay', () => {
 
   describe('fromBuffer', () => {
     it('should create SC2Replay from buffer', () => {
-      const listFile = `replay.details
-replay.initData
-replay.game.events
-replay.message.events
-replay.tracker.events`;
+      // const listFile = `replay.details
+// replay.initData
+// replay.game.events
+// replay.message.events
+// replay.tracker.events`;
 
       const replay = SC2Replay.fromBuffer(mockBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
-        decodeTrackerEvents: false
+        decodeTrackerEvents: false,
       });
 
       expect(replay).toBeInstanceOf(SC2Replay);
@@ -115,7 +115,7 @@ replay.tracker.events`;
       const replay = SC2Replay.fromBuffer(mockBuffer, {
         decodeGameEvents: true,
         decodeMessageEvents: false,
-        decodeTrackerEvents: false
+        decodeTrackerEvents: false,
       });
 
       expect(replay.events.game).toBeInstanceOf(Array);
@@ -129,7 +129,7 @@ replay.tracker.events`;
       replay = SC2Replay.fromBuffer(mockBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
-        decodeTrackerEvents: false
+        decodeTrackerEvents: false,
       });
     });
 

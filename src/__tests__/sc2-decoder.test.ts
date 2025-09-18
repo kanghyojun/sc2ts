@@ -11,7 +11,7 @@ describe('BitPackedBuffer', () => {
       0b10101010, // 0xAA = 170
       0x12, 0x34, 0x56, 0x78, // Multi-byte data
       0x87, 0x32, // VarInt: 50*128 + 7 = 6407
-      0x7F, 0x00  // VarInt: 127
+      0x7F, 0x00,  // VarInt: 127
     ]);
     buffer = new BitPackedBuffer(data);
   });
@@ -148,7 +148,7 @@ describe('VersionedDecoder', () => {
       Buffer.from([0xFF]), // Optional: has value (bit 1 = true)
       Buffer.from([0x42]), // Optional value
       Buffer.from([0x01]), // Choice index (1, not 0)
-      Buffer.from([0xAB])  // Choice value
+      Buffer.from([0xAB]),  // Choice value
     ]);
     decoder = new VersionedDecoder(data);
   });
@@ -179,7 +179,7 @@ describe('VersionedDecoder', () => {
     it('should decode arrays', () => {
       const mockTypeInfo = {
         type: 'array',
-        element: { type: 'int', size: 8 }
+        element: { type: 'int', size: 8 },
       };
 
       decoder.reset(19); // Skip to array data
@@ -191,7 +191,7 @@ describe('VersionedDecoder', () => {
     it('should decode optional types with value', () => {
       const mockTypeInfo = {
         type: 'optional',
-        element: { type: 'int', size: 8 }
+        element: { type: 'int', size: 8 },
       };
 
       decoder.reset(23); // Skip to optional data (after array)
@@ -205,7 +205,7 @@ describe('VersionedDecoder', () => {
 
       const mockTypeInfo = {
         type: 'optional',
-        element: { type: 'int', size: 8 }
+        element: { type: 'int', size: 8 },
       };
 
       const optional = decoder2.decodeOptional(mockTypeInfo);
@@ -217,8 +217,8 @@ describe('VersionedDecoder', () => {
         type: 'choice',
         choices: [
           { name: 'option1', type: { type: 'int', size: 8 } },
-          { name: 'option2', type: { type: 'int', size: 8 } }
-        ]
+          { name: 'option2', type: { type: 'int', size: 8 } },
+        ],
       };
 
       decoder.reset(25); // Skip to choice data (after optional)
@@ -232,8 +232,8 @@ describe('VersionedDecoder', () => {
       const mockTypeInfo = {
         type: 'choice',
         choices: [
-          { name: 'option1', type: { type: 'int', size: 8 } }
-        ]
+          { name: 'option1', type: { type: 'int', size: 8 } },
+        ],
       };
 
       const data = Buffer.from([0x02, 0xFF]); // Invalid choice index 2
@@ -249,8 +249,8 @@ describe('VersionedDecoder', () => {
         type: 'struct',
         fields: [
           { name: 'field1', type: { type: 'bool' } },
-          { name: 'field2', type: { type: 'bool' } }
-        ]
+          { name: 'field2', type: { type: 'bool' } },
+        ],
       };
 
       decoder.reset();

@@ -1,4 +1,4 @@
-import { hash } from 'crypto';
+// import { hash } from 'crypto';
 import { SC2Replay } from '../sc2-replay';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -18,7 +18,7 @@ describe('SC2Replay - Real Files', () => {
       replay = SC2Replay.fromBuffer(replayBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
-        decodeTrackerEvents: false
+        decodeTrackerEvents: false,
       });
     });
 
@@ -118,14 +118,14 @@ describe('SC2Replay - Real Files', () => {
       const replay = SC2Replay.fromBuffer(buffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
-        decodeTrackerEvents: false
+        decodeTrackerEvents: false,
       });
 
       return {
         filename,
         playerCount: replay.players.length,
         duration: replay.getDuration(),
-        headerLength: replay.replayHeader?.length || 0
+        headerLength: replay.replayHeader?.length || 0,
       };
     });
 

@@ -8,7 +8,7 @@
     "module": "ESNext",
     "target": "es2022",
     "lib": ["es2022"],
-    "types": ["node"],
+    "types": ["node", "jest"],
 
     // Other Outputs
     "sourceMap": true,
@@ -31,7 +31,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
 
     // Recommended Options
     "isolatedModules": true,
@@ -39,5 +39,5 @@
     "skipLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts", ".debug", ".reference"]
+  "exclude": ["node_modules", "dist", ".debug", ".reference", "src/__tests__/**/*", "src/cli/**/*"]
 }
