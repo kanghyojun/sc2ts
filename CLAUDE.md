@@ -103,6 +103,98 @@ The library is structured around these main components:
 
 ## Testing and Quality Assurance
 
+### Test-Driven Development (TDD) Requirements
+
+**CRITICAL**: When writing or modifying any code, you MUST follow Test-Driven Development practices. Always write tests BEFORE implementing the functionality.
+
+#### TDD Workflow:
+
+1. **Write Tests First**: Before implementing any feature or fix, write comprehensive tests that define the expected behavior
+2. **Run Tests (Red)**: Verify that tests fail initially (since the implementation doesn't exist yet)
+3. **Implement Code**: Write the minimal code necessary to make the tests pass
+4. **Run Tests (Green)**: Verify that all tests pass
+5. **Refactor**: Clean up and optimize the implementation while keeping tests green
+
+#### ❌ **NEVER do this:**
+```typescript
+// Wrong: Writing implementation first
+function parseHashTable(buffer: Buffer): MpqHashTableEntry[] {
+  // Implementation code here...
+  return entries;
+}
+
+// Then writing tests afterwards
+it('should parse hash table', () => {
+  // Test written after implementation
+});
+```
+
+#### ✅ **ALWAYS do this:**
+```typescript
+// Correct: Write test first
+it('should parse hash table with correct name1/name2 values', () => {
+  const testBuffer = Buffer.from([/* test data */]);
+  const expectedEntries = [
+    { filename: 'replay.details', name1: 0xD383C29C, name2: 0xEF402E92 },
+    { filename: 'replay.initData', name1: 0x12345678, name2: 0x87654321 }
+  ];
+
+  const entries = parseHashTable(testBuffer);
+
+  expect(entries).toHaveLength(2);
+  expect(entries[0]).toEqual(expectedEntries[0]);
+  expect(entries[1]).toEqual(expectedEntries[1]);
+});
+
+// Then implement the function
+function parseHashTable(buffer: Buffer): MpqHashTableEntry[] {
+  // Implementation to make the test pass
+}
+```
+
+#### TDD Guidelines for This Project:
+
+1. **New Features**: Always write unit tests that define the expected API and behavior
+2. **Bug Fixes**: Write failing tests that reproduce the bug, then fix the implementation
+3. **Refactoring**: Ensure existing tests continue to pass throughout the refactoring process
+4. **Edge Cases**: Write tests for boundary conditions, error cases, and invalid inputs
+5. **Integration Tests**: For complex workflows, write integration tests that test multiple components together
+
+#### Test File Organization:
+
+- Place test files in `src/__tests__/` directory
+- Use descriptive test names that explain the expected behavior
+- Group related tests using `describe` blocks
+- Use `beforeEach`/`afterEach` for test setup and cleanup
+
+#### Example TDD Process:
+
+```typescript
+// Step 1: Write failing test
+describe('MpqArchive', () => {
+  it('should throw MpqInvalidFormatError for corrupted headers', () => {
+    const corruptedBuffer = Buffer.from([0x00, 0x00, 0x00, 0x00]); // Invalid signature
+
+    expect(() => new MpqArchive(corruptedBuffer))
+      .toThrow(MpqInvalidFormatError);
+  });
+});
+
+// Step 2: Run test (should fail)
+// Step 3: Implement minimal code to pass test
+export class MpqArchive {
+  constructor(buffer: Buffer) {
+    if (buffer.readUInt32LE(0) !== 0x1A51504D) { // 'MPQ\x1A'
+      throw new MpqInvalidFormatError('Invalid MPQ signature');
+    }
+    // ... rest of implementation
+  }
+}
+
+// Step 4: Run test (should pass)
+// Step 5: Refactor if needed while keeping tests green
+```
+
 ### Regression Testing Requirements
 
 **IMPORTANT**: When fixing any bug or issue in the codebase, you MUST add regression tests to prevent the same issue from occurring again in the future.
