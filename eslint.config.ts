@@ -64,7 +64,6 @@ export default tseslint.config(
       '*.js',
       '*.mjs',
       'coverage/**',
-      'src/__tests__/**',
       'jest.config.ts',
       '.debug/**',
       '.reference/**',

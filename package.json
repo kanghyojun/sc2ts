@@ -50,6 +50,7 @@
     "@typescript-eslint/parser": "^8.44.0",
     "eslint": "^9.35.0",
     "jest": "^29.7.0",
+    "jiti": "^2.5.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",

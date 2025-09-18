@@ -13,42 +13,33 @@ export class SC2Replay {
   private gameEvents: SC2GameEvent[] = [];
   private messageEvents: SC2MessageEvent[] = [];
   private trackerEvents: SC2TrackerEvent[] = [];
+  private static listFiles: string[] = [
+    '(attributes)',
+    '(listfile)',
+    'replay.attributes.events',
+    'replay.details',
+    'replay.game.events',
+    'replay.initData',
+    'replay.load.info',
+    'replay.message.events',
+    'replay.server.battlelobby',
+    'replay.sync.events',
+    'replay.tracker.events`;',
+  ];
 
   constructor(mpqArchive: MpqArchive) {
     this.mpqArchive = mpqArchive;
   }
 
   static async fromFile(filepath: string, options?: SC2ReplayOptions): Promise<SC2Replay> {
-    // SC2 replays have standard file structure
-    const listFile = `replay.attributes.events
-replay.details
-replay.game.events
-replay.initData
-replay.load.info
-replay.message.events
-replay.server.battlelobby
-replay.sync.events
-replay.tracker.events`;
-
-    const mpqArchive = await MpqArchive.open(filepath, { listFile });
+    const mpqArchive = await MpqArchive.open(filepath, { listFile: this.listFiles.join('\n') });
     const replay = new SC2Replay(mpqArchive);
     await replay.parse(options);
     return replay;
   }
 
   static fromBuffer(buffer: Buffer, options?: SC2ReplayOptions): SC2Replay {
-    // SC2 replays have standard file structure
-    const listFile = `replay.attributes.events
-replay.details
-replay.game.events
-replay.initData
-replay.load.info
-replay.message.events
-replay.server.battlelobby
-replay.sync.events
-replay.tracker.events`;
-
-    const mpqArchive = MpqArchive.fromBuffer(buffer, { listFile });
+    const mpqArchive = MpqArchive.fromBuffer(buffer, { listFile: this.listFiles.join('\n') });
     const replay = new SC2Replay(mpqArchive);
     replay.parseSync(options);
     return replay;
