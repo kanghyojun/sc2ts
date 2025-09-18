@@ -11,6 +11,7 @@ export async function configureLogger(): Promise<void> {
       console: getConsoleSink(),
     },
     loggers: [
+      { category: ['logtape', 'meta'], sinks: ['console'], lowestLevel: 'warning' },
       {
         category: 'sc2ts',
         lowestLevel: process.env['NODE_ENV'] === 'development' ? 'debug' : 'warning',

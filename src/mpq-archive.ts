@@ -395,4 +395,34 @@ export class MpqArchive {
   get archiveHeader(): MpqHeader | null {
     return this.header;
   }
+
+  /**
+   * Get user data content from SC2 replay archives
+   * This contains the actual game header information (matches s2protocol behavior)
+   */
+  getUserDataContent(): Buffer | null {
+    if (!this.header) {
+      return null;
+    }
+
+    try {
+      // Seek to the beginning of the archive to read user data
+      this.reader.seek(0);
+      const userData = this.reader.readMpqUserData();
+
+      // Read the content portion (user_data_header_size bytes after the 16-byte header)
+      // This matches mpyq's behavior: header['content'] = self.file.read(header['user_data_header_size'])
+      const contentSize = userData.userDataHeaderSize;
+      if (contentSize <= 0) {
+        return null;
+      }
+
+      // We're already positioned right after the 16-byte user data header
+      // Read the content portion
+      return this.reader.readBytes(contentSize);
+    } catch (error) {
+      logger.warn(`Failed to read user data content: ${error}`);
+      return null;
+    }
+  }
 }

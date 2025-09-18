@@ -30,8 +30,8 @@ describe('SC2Replay - Real Files', () => {
       const header = replay.replayHeader;
       expect(header).not.toBeNull();
       expect(header?.signature).toBe('SC2Replay');
-      expect(header?.version.major).toBe(2);
-      expect(header?.version.minor).toBe(0);
+      expect(header?.version.major).toBeGreaterThanOrEqual(2); // Real files may have higher version
+      expect(header?.version.minor).toBeGreaterThanOrEqual(0);
       expect(header?.version.build).toBeGreaterThan(0);
       expect(header?.length).toBeGreaterThan(0);
     });
@@ -108,6 +108,101 @@ describe('SC2Replay - Real Files', () => {
       expect(header?.length).toBeGreaterThan(1000); // Reasonable minimum
     });
 
+    it('should parse MPQ archive header correctly', () => {
+      // Test that parseHeader (via parseSync) correctly extracts MPQ header values
+      // This tests the underlying MPQ archive parsing through SC2Replay
+      const mpqArchive = replay['mpqArchive']; // Access private property for testing
+      const header = mpqArchive.archiveHeader;
+
+      expect(header).not.toBeNull();
+      expect(header!.magic).toBe(441536589); // MPQ signature
+      expect(header!.formatVersion).toBe(3); // SC2 uses format version 3
+      expect(header!.headerSize).toBeGreaterThan(0);
+      expect(header!.archiveSize).toBeGreaterThan(0);
+      expect(header!.hashTableSize).toBeGreaterThan(0);
+      expect(header!.blockTableSize).toBeGreaterThan(0);
+    });
+
+  });
+
+  describe('parseHeader functionality', () => {
+    it('should parse SC2ReplayHeader correctly from a.SC2Replay using SC2Replay.parse() (regression test)', () => {
+      // Regression test for SC2Replay parseHeader - validates SC2ReplayHeader structure from a.SC2Replay
+      // This test prevents regression of SC2 replay header parsing bugs
+      // Updated to match actual decoded values from the real replay file
+      const expectedSC2Header = {
+        signature: 'SC2Replay',
+        version: {
+          major: 5, // Actual major version from real replay
+          minor: 0,
+          revision: 14, // Actual revision from real replay
+          build: 94137,
+        },
+        length: 60521,
+        crc32: 0,
+      };
+
+      const replayPath = resolve('replays', 'a.SC2Replay');
+      const replayBuffer = readFileSync(replayPath);
+      const replay = SC2Replay.fromBuffer(replayBuffer, {
+        decodeGameEvents: false,
+        decodeMessageEvents: false,
+        decodeTrackerEvents: false,
+      });
+
+      const header = replay.replayHeader;
+
+      expect(header).not.toBeNull();
+      expect(header!.signature).toBe(expectedSC2Header.signature);
+      expect(header!.version.major).toBe(expectedSC2Header.version.major);
+      expect(header!.version.minor).toBe(expectedSC2Header.version.minor);
+      expect(header!.version.revision).toBe(expectedSC2Header.version.revision);
+      expect(header!.version.build).toBe(expectedSC2Header.version.build);
+      expect(header!.length).toBe(expectedSC2Header.length);
+      expect(header!.crc32).toBe(expectedSC2Header.crc32);
+    });
+
+    it('should parse MPQ archive header correctly from a.SC2Replay (regression test)', () => {
+      // Regression test for MPQ parseHeader - validates against known good MPQ header values from a.SC2Replay
+      // This test prevents regression of MPQ header parsing bugs by testing against actual SC2 replay data
+      const expectedMpqHeader = {
+        magic: 441536589,
+        headerSize: 208,
+        archiveSize: 60521,
+        formatVersion: 3,
+        blockSize: 5,
+        hashTablePos: 59737,
+        blockTablePos: 60249,
+        hashTableSize: 32,
+        blockTableSize: 17,
+        hashTablePosHi: 0,
+        blockTablePosHi: 0
+      };
+
+      const replayPath = resolve('replays', 'a.SC2Replay');
+      const replayBuffer = readFileSync(replayPath);
+      const replay = SC2Replay.fromBuffer(replayBuffer, {
+        decodeGameEvents: false,
+        decodeMessageEvents: false,
+        decodeTrackerEvents: false,
+      });
+
+      const mpqArchive = replay['mpqArchive']; // Access private property for testing
+      const header = mpqArchive.archiveHeader;
+
+      expect(header).not.toBeNull();
+      expect(header!.magic).toBe(expectedMpqHeader.magic);
+      expect(header!.headerSize).toBe(expectedMpqHeader.headerSize);
+      expect(header!.archiveSize).toBe(expectedMpqHeader.archiveSize);
+      expect(header!.formatVersion).toBe(expectedMpqHeader.formatVersion);
+      expect(header!.blockSize).toBe(expectedMpqHeader.blockSize);
+      expect(header!.hashTablePos).toBe(expectedMpqHeader.hashTablePos);
+      expect(header!.blockTablePos).toBe(expectedMpqHeader.blockTablePos);
+      expect(header!.hashTableSize).toBe(expectedMpqHeader.hashTableSize);
+      expect(header!.blockTableSize).toBe(expectedMpqHeader.blockTableSize);
+      expect(header!.hashTablePosHi).toBe(expectedMpqHeader.hashTablePosHi);
+      expect(header!.blockTablePosHi).toBe(expectedMpqHeader.blockTablePosHi);
+    });
   });
 
   it('should handle all test files consistently', () => {

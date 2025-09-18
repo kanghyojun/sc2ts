@@ -4,6 +4,7 @@
 import { MpqArchive } from './mpq-archive';
 import { VersionedDecoder } from './sc2-decoder';
 import { createLogger } from './logger';
+import { decodeReplayDetails, decodeReplayHeader } from './protocol';
 import type { SC2ReplayData, SC2ReplayHeader, SC2ReplayDetails, SC2ReplayInitData, SC2ReplayOptions, SC2GameEvent, SC2MessageEvent, SC2TrackerEvent } from './types';
 
 const logger = createLogger('sc2-replay');
@@ -44,39 +45,31 @@ export class SC2Replay {
   static fromBuffer(buffer: Buffer, options?: SC2ReplayOptions): SC2Replay {
     const mpqArchive = MpqArchive.fromBuffer(buffer, { listFile: this.listFiles.join('\n') });
     const replay = new SC2Replay(mpqArchive);
-    replay.parseSync(options);
+    replay.parse(options);
     return replay;
   }
 
-  private async parse(options?: SC2ReplayOptions): Promise<void> {
-    this.parseSync(options);
-  }
+  private parse(options?: SC2ReplayOptions): void {
+    // Parse header from MPQ archive header
+    this.parseHeader();
 
-  private parseSync(options?: SC2ReplayOptions): void {
-    try {
-      // Parse header from MPQ archive header
-      this.parseHeader();
+    // Parse details
+    this.parseDetails();
 
-      // Parse details
-      this.parseDetails();
+    // Parse init data
+    this.parseInitData();
 
-      // Parse init data
-      this.parseInitData();
+    // Parse events if requested
+    if (options?.decodeGameEvents !== false) {
+      this.parseGameEvents();
+    }
 
-      // Parse events if requested
-      if (options?.decodeGameEvents !== false) {
-        this.parseGameEvents();
-      }
+    if (options?.decodeMessageEvents !== false) {
+      this.parseMessageEvents();
+    }
 
-      if (options?.decodeMessageEvents !== false) {
-        this.parseMessageEvents();
-      }
-
-      if (options?.decodeTrackerEvents !== false) {
-        this.parseTrackerEvents();
-      }
-    } catch (error) {
-      logger.warn(`SC2 replay parsing warning: ${error}`);
+    if (options?.decodeTrackerEvents !== false) {
+      this.parseTrackerEvents();
     }
   }
 
@@ -86,31 +79,36 @@ export class SC2Replay {
       throw new Error('No MPQ header found');
     }
 
-    // SC2 replay header is embedded in MPQ format
-    // For now, create a basic header from MPQ data
+    // Get user data content from the MPQ archive
+    const userDataContent = this.mpqArchive.getUserDataContent();
+    if (!userDataContent) {
+      logger.warn('No user data content found, using default values');
+      throw new Error('No user data content');
+    }
+
+    // Parse the header using protocol decoder to get all version info
+    const headerInfo = decodeReplayHeader(userDataContent);
+
+    logger.debug('Decoded header info:', headerInfo);
+
+    // Create SC2 replay header using all information from headerInfo
     this.header = {
       signature: 'SC2Replay',
       version: {
-        major: 2,
-        minor: 0,
-        revision: 0,
-        build: this.detectBuildVersion(),
+        major: headerInfo.version.major,
+        minor: headerInfo.version.minor,
+        revision: headerInfo.version.revision,
+        build: headerInfo.version.build,
       },
       length: mpqHeader.archiveSize,
       crc32: 0, // Would need to calculate from actual data
     };
   }
 
-  private detectBuildVersion(): number {
-    // Try to detect build version from file structure or content
-    // This is a simplified approach - real implementation would analyze specific files
-    return 88500; // Default to a recent build
-  }
-
   private parseDetails(): void {
     try {
       const detailsFile = this.mpqArchive.getFile('replay.details');
-      const decoder = new VersionedDecoder(detailsFile.data);
+      const details = decodeReplayDetails(detailsFile.data, this.header?.build);
 
       // Basic structure for replay.details - simplified
       this.details = {

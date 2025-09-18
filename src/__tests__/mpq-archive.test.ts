@@ -52,6 +52,7 @@ describe('MpqArchive', () => {
     });
   });
 
+
   describe('file operations', () => {
     it('should process list file', () => {
       // For testing, we'll create an archive that uses the actual proper MPQ hashing

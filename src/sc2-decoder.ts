@@ -1,222 +1,382 @@
-// SC2 Replay Binary Decoder
-// Based on Blizzard's s2protocol implementation
+// S2Protocol TypeScript decoder implementation
+// Simplified version of s2protocol's VersionedDecoder
 
 export class BitPackedBuffer {
-  private buffer: Buffer;
-  private byteOffset = 0;
-  private bitOffset = 0;
+  private data: Buffer;
+  private used = 0;
+  private next = 0;
+  private nextbits = 0;
+  private bigendian: boolean;
 
-  constructor(buffer: Buffer) {
-    this.buffer = buffer;
+  constructor(contents: Buffer, endian: 'big' | 'little' = 'big') {
+    this.data = contents;
+    this.bigendian = endian === 'big';
   }
 
-  reset(offset = 0): void {
-    this.byteOffset = offset;
-    this.bitOffset = 0;
+  done(): boolean {
+    return this.nextbits === 0 && this.used >= this.data.length;
   }
 
-  readBits(numBits: number): number {
-    if (numBits === 0) return 0;
-    if (numBits > 32) throw new Error('Cannot read more than 32 bits at once');
+  usedBits(): number {
+    return this.used * 8 - this.nextbits;
+  }
 
+  byteAlign(): void {
+    this.nextbits = 0;
+  }
+
+  readAlignedBytes(bytes: number): Buffer {
+    this.byteAlign();
+    const data = this.data.subarray(this.used, this.used + bytes);
+    this.used += bytes;
+    if (data.length !== bytes) {
+      throw new Error('TruncatedError: not enough data');
+    }
+    return data;
+  }
+
+  readBits(bits: number): number {
     let result = 0;
-    let bitsToRead = numBits;
-    let resultBitOffset = 0;
+    let resultbits = 0;
 
-    while (bitsToRead > 0) {
-      if (this.byteOffset >= this.buffer.length) {
-        throw new Error('Buffer overflow: not enough data');
+    while (resultbits !== bits) {
+      if (this.nextbits === 0) {
+        if (this.done()) {
+          throw new Error('TruncatedError: buffer exhausted');
+        }
+        this.next = this.data[this.used] || 0;
+        this.used += 1;
+        this.nextbits = 8;
       }
 
-      const bitsInCurrentByte = 8 - this.bitOffset;
-      const bitsFromThisByte = Math.min(bitsToRead, bitsInCurrentByte);
+      const copybits = Math.min(bits - resultbits, this.nextbits);
+      const copy = this.next & ((1 << copybits) - 1);
 
-      // Read bits from most significant to least significant (left to right)
-      const mask = (1 << bitsFromThisByte) - 1;
-      const shift = 8 - this.bitOffset - bitsFromThisByte;
-      const bits = (this.buffer[this.byteOffset]! >> shift) & mask;
-
-      result |= bits << (numBits - resultBitOffset - bitsFromThisByte);
-
-      resultBitOffset += bitsFromThisByte;
-      bitsToRead -= bitsFromThisByte;
-      this.bitOffset += bitsFromThisByte;
-
-      if (this.bitOffset === 8) {
-        this.bitOffset = 0;
-        this.byteOffset++;
+      if (this.bigendian) {
+        result |= copy << (bits - resultbits - copybits);
+      } else {
+        result |= copy << resultbits;
       }
+
+      this.next >>= copybits;
+      this.nextbits -= copybits;
+      resultbits += copybits;
     }
 
     return result;
-  }
-
-  readBytes(numBytes: number): Buffer {
-    if (this.bitOffset !== 0) {
-      throw new Error('Cannot read bytes when not byte-aligned');
-    }
-
-    if (this.byteOffset + numBytes > this.buffer.length) {
-      throw new Error('Buffer overflow: not enough data');
-    }
-
-    const result = this.buffer.subarray(this.byteOffset, this.byteOffset + numBytes);
-    this.byteOffset += numBytes;
-    return result;
-  }
-
-  readUInt8(): number {
-    return this.readBytes(1)[0]!;
-  }
-
-  readUInt16LE(): number {
-    return this.readBytes(2).readUInt16LE(0);
-  }
-
-  readUInt32LE(): number {
-    return this.readBytes(4).readUInt32LE(0);
-  }
-
-  readVarInt(): number {
-    let result = 0;
-    let shift = 0;
-
-    while (true) {
-      const byte = this.readUInt8();
-      result |= (byte & 0x7F) << shift;
-
-      if ((byte & 0x80) === 0) {
-        break;
-      }
-
-      shift += 7;
-      if (shift >= 32) {
-        throw new Error('VarInt too long');
-      }
-    }
-
-    return result;
-  }
-
-  align(): void {
-    if (this.bitOffset !== 0) {
-      this.bitOffset = 0;
-      this.byteOffset++;
-    }
-  }
-
-  get offset(): number {
-    return this.byteOffset + (this.bitOffset > 0 ? 1 : 0);
-  }
-
-  get remainingBytes(): number {
-    return this.buffer.length - this.offset;
   }
 }
 
+interface BaseTypeInfo {
+  type: string;
+}
+
+interface IntTypeInfo extends BaseTypeInfo {
+  type: '_int';
+  args: [number | bigint, number][];
+}
+
+interface StructTypeInfo extends BaseTypeInfo {
+  type: '_struct';
+  args: [string, number, number][][];
+}
+
+interface BlobTypeInfo extends BaseTypeInfo {
+  type: '_blob';
+  args: [number, number][];
+}
+
+interface BoolTypeInfo extends BaseTypeInfo {
+  type: '_bool';
+  args: [];
+}
+
+interface OptionalTypeInfo extends BaseTypeInfo {
+  type: '_optional';
+  args: [number];
+}
+
+interface ArrayTypeInfo extends BaseTypeInfo {
+  type: '_array';
+  args: [[number, number], number];
+}
+
+interface ChoiceTypeInfo extends BaseTypeInfo {
+  type: '_choice';
+  args: [[number, number], Record<number, [string, number]>];
+}
+
+interface FourccTypeInfo extends BaseTypeInfo {
+  type: '_fourcc';
+  args: [];
+}
+
+interface NullTypeInfo extends BaseTypeInfo {
+  type: '_null';
+  args: [];
+}
+
+interface BitarrayTypeInfo extends BaseTypeInfo {
+  type: '_bitarray';
+  args: [number, number][];
+}
+
+interface Real32TypeInfo extends BaseTypeInfo {
+  type: '_real32';
+  args: [];
+}
+
+interface Real64TypeInfo extends BaseTypeInfo {
+  type: '_real64';
+  args: [];
+}
+
+export type TypeInfo =
+  | IntTypeInfo
+  | StructTypeInfo
+  | BlobTypeInfo
+  | BoolTypeInfo
+  | OptionalTypeInfo
+  | ArrayTypeInfo
+  | ChoiceTypeInfo
+  | FourccTypeInfo
+  | NullTypeInfo
+  | BitarrayTypeInfo
+  | Real32TypeInfo
+  | Real64TypeInfo;
+
 export class VersionedDecoder {
   private buffer: BitPackedBuffer;
+  private typeinfos: TypeInfo[];
 
-  constructor(buffer: Buffer) {
-    this.buffer = new BitPackedBuffer(buffer);
+  constructor(contents: Buffer, typeinfos: TypeInfo[]) {
+    this.buffer = new BitPackedBuffer(contents);
+    this.typeinfos = typeinfos;
   }
 
-  reset(offset = 0): void {
-    this.buffer.reset(offset);
+  done(): boolean {
+    return this.buffer.done();
   }
 
-  decodeInt(typeInfo: any): number {
-    return this.buffer.readBits(typeInfo.size || 32);
+  used_bits(): number {
+    return this.buffer.usedBits();
   }
 
-  decodeBool(): boolean {
-    return this.buffer.readBits(1) === 1;
+  byte_align(): void {
+    this.buffer.byteAlign();
   }
 
-  decodeBlob(): Buffer {
-    const length = this.buffer.readVarInt();
-    return this.buffer.readBytes(length);
+  private _expect_skip(expected: number): void {
+    if (this.buffer.readBits(8) !== expected) {
+      throw new Error('CorruptedError: unexpected skip byte');
+    }
   }
 
-  decodeString(): string {
-    const blob = this.decodeBlob();
-    return blob.toString('utf8');
+  private _vint(): number {
+    let b = this.buffer.readBits(8);
+    const negative = b & 1;
+    let result = (b >> 1) & 0x3f;
+    let bits = 6;
+
+    while ((b & 0x80) !== 0) {
+      b = this.buffer.readBits(8);
+      result |= (b & 0x7f) << bits;
+      bits += 7;
+    }
+
+    return negative ? -result : result;
   }
 
-  decodeStruct(typeInfo: any): any {
-    const result: any = {};
+  private _skip_instance(): void {
+    const skip = this.buffer.readBits(8);
+    if (skip === 0) { // array
+      const length = this._vint();
+      for (let i = 0; i < length; i++) {
+        this._skip_instance();
+      }
+    } else if (skip === 1) { // bitblob
+      const length = this._vint();
+      this.buffer.readAlignedBytes(Math.floor((length + 7) / 8));
+    } else if (skip === 2) { // blob
+      const length = this._vint();
+      this.buffer.readAlignedBytes(length);
+    } else if (skip === 3) { // choice
+      this._vint(); // tag
+      this._skip_instance();
+    } else if (skip === 4) { // optional
+      const exists = this.buffer.readBits(8) !== 0;
+      if (exists) {
+        this._skip_instance();
+      }
+    } else if (skip === 5) { // struct
+      const length = this._vint();
+      for (let i = 0; i < length; i++) {
+        this._vint(); // tag
+        this._skip_instance();
+      }
+    } else if (skip === 6) { // u8
+      this.buffer.readAlignedBytes(1);
+    } else if (skip === 7) { // u32
+      this.buffer.readAlignedBytes(4);
+    } else if (skip === 8) { // u64
+      this.buffer.readAlignedBytes(8);
+    } else if (skip === 9) { // vint
+      this._vint();
+    }
+  }
 
-    if (typeInfo.fields) {
-      for (const field of typeInfo.fields) {
-        result[field.name] = this.decodeValue(field.type);
+  instance(typeid: number): unknown {
+    if (typeid >= this.typeinfos.length) {
+      throw new Error(`CorruptedError: invalid typeid ${typeid}`);
+    }
+
+    const typeinfo = this.typeinfos[typeid];
+    if (!typeinfo) {
+      throw new Error(`Invalid typeinfo for typeid ${typeid}`);
+    }
+    switch (typeinfo.type) {
+    case '_int': {
+      return this._int(...typeinfo.args);
+    }
+    case '_struct': {
+      if (typeinfo.args[0] == null || typeinfo.args.length !== 1) {
+        throw new Error(`Invalid struct args for typeid ${typeid}`);
+      }
+      return this._struct(...typeinfo.args[0]);
+    }
+    case '_blob':
+      if (typeinfo.args[0] == null) {
+        throw new Error(`Invalid _blob args for typeid ${typeid}`);
+      } else {
+        return this._blob(typeinfo.args[0]);
+      }
+    case '_bool':
+      return this._bool();
+    case '_optional':
+      return this._optional(typeinfo.args[0]);
+    case '_array':
+      return this._array(typeinfo.args[0], typeinfo.args[1]);
+    case '_choice':
+      return this._choice(typeinfo.args[0], typeinfo.args[1]);
+    case '_fourcc':
+      return this._fourcc();
+    case '_null':
+      return null;
+    case '_bitarray':
+      return this._bitarray(...typeinfo.args);
+    case '_real32':
+      return this._real32();
+    case '_real64':
+      return this._real64();
+    default: {
+      const t: never = typeinfo;
+      throw new Error(`Unsupported type: ${t}`);
+    }
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _int(..._bounds: IntTypeInfo['args']): number {
+    this._expect_skip(9);
+    return this._vint();
+  }
+
+  private _struct(...fields: StructTypeInfo['args'][number]): Record<string, unknown> {
+    this._expect_skip(5);
+    const result: Record<string, unknown> = {};
+    const length = this._vint();
+
+    for (let i = 0; i < length; i++) {
+      const tag = this._vint();
+      const field = fields.find(f => f[2] === tag);
+
+      if (field) {
+        const [name, typeid] = field as [string, number, number];
+
+        if (name === '__parent') {
+          const parent = this.instance(typeid);
+          if (typeof parent === 'object' && parent !== null) {
+            Object.assign(result, parent);
+          } else if (fields.length === 1) {
+            return parent as Record<string, unknown>;
+          } else {
+            result[name] = parent;
+          }
+        } else {
+          result[name] = this.instance(typeid);
+        }
+      } else {
+        this._skip_instance();
       }
     }
 
     return result;
   }
 
-  decodeArray(typeInfo: any): any[] {
-    const length = this.buffer.readVarInt();
-    const result: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _blob(_bounds: [number, number]): Buffer {
+    this._expect_skip(2);
+    const length = this._vint();
+    return this.buffer.readAlignedBytes(length);
+  }
 
+  private _bool(): boolean {
+    this._expect_skip(6);
+    return this.buffer.readBits(8) !== 0;
+  }
+
+  private _optional(typeid: number): unknown {
+    this._expect_skip(4);
+    const exists = this.buffer.readBits(8) !== 0;
+    return exists ? this.instance(typeid) : null;
+  }
+
+  private _array(_bounds: [number, number], typeid: number): unknown[] {
+    this._expect_skip(0);
+    const length = this._vint();
+    const result: unknown[] = [];
     for (let i = 0; i < length; i++) {
-      result.push(this.decodeValue(typeInfo.element));
+      result.push(this.instance(typeid));
     }
-
     return result;
   }
 
-  decodeOptional(typeInfo: any): any {
-    const hasValue = this.decodeBool();
-    return hasValue ? this.decodeValue(typeInfo.element) : null;
-  }
-
-  decodeChoice(typeInfo: any): any {
-    const index = this.buffer.readVarInt();
-
-    if (typeInfo.choices && index < typeInfo.choices.length) {
-      const choice = typeInfo.choices[index];
-      return {
-        choice: choice.name,
-        value: this.decodeValue(choice.type),
-      };
+  private _choice(_bounds: [number, number], fields: Record<number, [string, number]>): unknown {
+    this._expect_skip(3);
+    const tag = this._vint();
+    const field = fields[tag];
+    if (!field) {
+      this._skip_instance();
+      return {};
     }
-
-    throw new Error(`Invalid choice index: ${index}`);
+    const [name, typeid] = field;
+    return { [name]: this.instance(typeid) };
   }
 
-  decodeValue(typeInfo: any): any {
-    if (!typeInfo || !typeInfo.type) {
-      throw new Error('Invalid type info');
-    }
-
-    switch (typeInfo.type) {
-    case 'int':
-      return this.decodeInt(typeInfo);
-    case 'bool':
-      return this.decodeBool();
-    case 'blob':
-      return this.decodeBlob();
-    case 'string':
-      return this.decodeString();
-    case 'struct':
-      return this.decodeStruct(typeInfo);
-    case 'array':
-      return this.decodeArray(typeInfo);
-    case 'optional':
-      return this.decodeOptional(typeInfo);
-    case 'choice':
-      return this.decodeChoice(typeInfo);
-    default:
-      throw new Error(`Unknown type: ${typeInfo.type}`);
-    }
+  private _fourcc(): string {
+    this._expect_skip(7);
+    const bytes = this.buffer.readAlignedBytes(4);
+    return bytes.toString('ascii');
   }
 
-  get offset(): number {
-    return this.buffer.offset;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private _bitarray(..._bounds: BitarrayTypeInfo['args']): [number, Buffer] {
+    this._expect_skip(1);
+    const length = this._vint();
+    return [length, this.buffer.readAlignedBytes(Math.floor((length + 7) / 8))];
   }
 
-  get remainingBytes(): number {
-    return this.buffer.remainingBytes;
+  private _real32(): number {
+    this._expect_skip(7);
+    const bytes = this.buffer.readAlignedBytes(4);
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    return view.getFloat32(0, false); // big-endian
+  }
+
+  private _real64(): number {
+    this._expect_skip(8);
+    const bytes = this.buffer.readAlignedBytes(8);
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    return view.getFloat64(0, false); // big-endian
   }
 }
