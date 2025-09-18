@@ -215,3 +215,121 @@ Consider adding ESLint rules to catch these issues automatically:
 // Add to eslint rules if needed
 "@typescript-eslint/consistent-type-imports": "error"
 ```
+
+## TypeScript Type Safety Guidelines
+
+### Strict Type Safety Requirements
+
+**CRITICAL**: This project prioritizes type safety above all else. Always leverage TypeScript's type system to its fullest potential.
+
+#### ❌ **NEVER do this:**
+```typescript
+// Wrong: Avoid any and unknown types
+const data: any = parseResponse(buffer);
+const result: unknown = processData(input);
+
+// Wrong: Avoid forced type casting
+const header = buffer as MpqHeader;
+const entry = data as MpqHashTableEntry;
+```
+
+#### ✅ **ALWAYS do this:**
+```typescript
+// Correct: Define proper interfaces and use type guards
+interface ParsedResponse {
+  header: MpqHeader;
+  entries: MpqHashTableEntry[];
+}
+
+function parseResponse(buffer: Buffer): ParsedResponse {
+  // Implementation with proper typing
+}
+
+// Correct: Use type guards instead of casting
+function isMpqHeader(data: unknown): data is MpqHeader {
+  return typeof data === 'object' && data !== null &&
+         'signature' in data && 'headerSize' in data;
+}
+```
+
+#### Guidelines for Type Safety:
+
+1. **Ban `any` and `unknown`**: Never use `any` or `unknown` types in production code
+2. **No Type Casting**: Avoid forced type casting with `as` - use type guards instead
+3. **Proper Interface Design**: Create specific interfaces for all data structures
+4. **Type Guards**: Implement runtime type checking with proper type guard functions
+5. **Strict Null Checks**: Handle null/undefined cases explicitly
+
+#### When Data Structure is Unknown:
+
+If you encounter data with an unknown structure, follow this process:
+
+1. **Create Debug Script**: Write a debug script in `.debug/` to analyze the data structure
+2. **Log and Inspect**: Output the data structure to understand its shape
+3. **Design Interface**: Create a proper TypeScript interface based on findings
+4. **Implement Type Guards**: Add runtime validation for the new interface
+5. **Add Tests**: Write tests to validate the interface works correctly
+
+#### Example Process for Unknown Data:
+
+```javascript
+// Step 1: Create .debug/analyze-data-structure.js
+const fs = require('fs');
+
+function analyzeUnknownData(buffer) {
+  // Parse and log the structure
+  console.log('Data structure analysis:');
+  console.log(JSON.stringify(parsed, null, 2));
+
+  // Identify field types and patterns
+  Object.entries(parsed).forEach(([key, value]) => {
+    console.log(`${key}: ${typeof value} (${Array.isArray(value) ? 'array' : 'single'})`);
+  });
+}
+
+// Run analysis
+analyzeUnknownData(testBuffer);
+```
+
+```typescript
+// Step 2: Create interface based on analysis
+interface NewDataStructure {
+  field1: string;
+  field2: number;
+  field3: Array<{
+    subField1: string;
+    subField2: number;
+  }>;
+}
+
+// Step 3: Implement type guard
+function isNewDataStructure(data: unknown): data is NewDataStructure {
+  return typeof data === 'object' && data !== null &&
+         'field1' in data && typeof (data as any).field1 === 'string' &&
+         'field2' in data && typeof (data as any).field2 === 'number' &&
+         'field3' in data && Array.isArray((data as any).field3);
+}
+
+// Step 4: Use in production code
+function parseNewData(buffer: Buffer): NewDataStructure {
+  const parsed = parseBuffer(buffer);
+
+  if (!isNewDataStructure(parsed)) {
+    throw new Error('Invalid data structure');
+  }
+
+  return parsed; // TypeScript now knows this is NewDataStructure
+}
+```
+
+#### Type Safety Enforcement:
+
+- **Review Process**: All PRs must demonstrate proper typing without `any`/`unknown`
+- **ESLint Rules**: Configure ESLint to ban `any` and `unknown` types:
+  ```typescript
+  "@typescript-eslint/no-explicit-any": "error",
+  "@typescript-eslint/no-unsafe-assignment": "error",
+  "@typescript-eslint/no-unsafe-call": "error",
+  "@typescript-eslint/no-unsafe-member-access": "error"
+  ```
+- **Build Verification**: TypeScript strict mode must pass without warnings
