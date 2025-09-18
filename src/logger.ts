@@ -16,6 +16,11 @@ export async function configureLogger(): Promise<void> {
         lowestLevel: process.env['NODE_ENV'] === 'development' ? 'debug' : 'warning',
         sinks: ['console'],
       },
+      {
+        category: ['sc2ts', 'cli'],
+        lowestLevel: 'info', // CLI 메시지는 항상 info 레벨 이상 출력
+        sinks: ['console'],
+      },
     ],
   });
 

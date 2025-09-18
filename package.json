@@ -5,6 +5,9 @@
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "bin": {
+    "sc2ts": "./bin/run.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -14,15 +17,18 @@
   },
   "files": [
     "dist",
+    "bin",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "build": "pnpm run clean && pnpm run build:cjs && pnpm run build:esm",
+    "build": "pnpm run clean && pnpm run build:cjs && pnpm run build:esm && pnpm run build:cli",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
-    "clean": "rm -rf dist",
+    "build:cli": "node scripts/build-cli.js",
+    "clean": "rm -rf dist bin",
     "dev": "tsc --watch",
+    "dev:cli": "tsx src/cli/index.ts",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "typecheck": "tsc --noEmit",
@@ -53,10 +59,13 @@
     "jiti": "^2.5.1",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.0"
   },
   "dependencies": {
-    "@logtape/logtape": "^1.1.0"
+    "@logtape/logtape": "^1.1.0",
+    "@optique/core": "^0.4.4",
+    "@optique/run": "^0.4.4"
   }
 }

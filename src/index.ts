@@ -4,6 +4,7 @@
 import { configureLogger } from './logger';
 
 // Initialize logger on module load
+// eslint-disable-next-line no-console
 configureLogger().catch(console.error);
 
 export { MpqArchive } from './mpq-archive';
