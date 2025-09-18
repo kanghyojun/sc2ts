@@ -17,6 +17,7 @@ import { path, run } from '@optique/run';
 import { configureLogger, createLogger } from '../logger';
 import { FileExtractor } from './utils/extractor';
 import { OutputFormatter } from './utils/formatter';
+import { SC2Replay } from '../sc2-replay';
 
 // Initialize logger
 configureLogger().catch(console.error);
@@ -65,8 +66,20 @@ const infoCommand = command('info', merge(
   }),
 ));
 
+// Parse command parser - 새로운 파싱 명령어
+const parseCommand = command('parse', merge(
+  object({ action: constant('parse') }),
+  commonOptions,
+  object('Parse Options', {
+    replayFile: argument(path({ mustExist: true })),
+    output: withDefault(option('-o', '--output', path()), './parsed'),
+    json: optional(option('-j', '--json')),
+    pretty: optional(option('--pretty')),
+  }),
+));
+
 // Main CLI parser
-const cli = or(extractCommand, listCommand, infoCommand);
+const cli = or(extractCommand, listCommand, infoCommand, parseCommand);
 
 type Config = InferValue<typeof cli>;
 
@@ -86,6 +99,9 @@ async function executeCommand(config: Config) {
       break;
     case 'info':
       await executeInfo(config, extractor);
+      break;
+    case 'parse':
+      await executeParse(config);
       break;
     }
   } catch (error) {
@@ -316,6 +332,127 @@ const config = run(cli, {
   help: 'both',
   colors: true,
 });
+
+async function executeParse(config: InferValue<typeof parseCommand>) {
+  if (config.verbose) {
+    logger.info('Parsing replay', { replayFile: config.replayFile });
+    logger.info(`Parsing replay: ${config.replayFile}`);
+    logger.info(`Output directory: ${config.output}`);
+  }
+
+  try {
+    // SC2Replay 클래스를 사용해서 리플레이 파싱
+    const replay = await SC2Replay.fromFile(config.replayFile, {
+      decodeGameEvents: true,
+      decodeMessageEvents: true,
+      decodeTrackerEvents: true,
+    });
+
+    // 파싱된 데이터 수집
+    const parsedData = {
+      header: replay.replayHeader,
+      details: replay.replayDetails,
+      initData: replay.replayInitData,
+      players: replay.players,
+      events: {
+        game: replay.events.game.slice(0, 100), // 처음 100개만 (너무 많을 수 있음)
+        message: replay.events.message,
+        tracker: replay.events.tracker.slice(0, 100), // 처음 100개만
+      },
+      summary: {
+        duration: replay.getDuration(),
+        gameLength: replay.getGameLength(),
+        winner: replay.getWinner(),
+        totalGameEvents: replay.events.game.length,
+        totalMessageEvents: replay.events.message.length,
+        totalTrackerEvents: replay.events.tracker.length,
+      },
+    };
+
+    if (config.json) {
+      // JSON 출력
+      const jsonOutput = config.pretty
+        ? JSON.stringify(parsedData, null, 2)
+        : JSON.stringify(parsedData);
+
+      if (config.output) {
+        // 파일로 저장
+        const { writeFile, mkdir } = await import('node:fs/promises');
+        const { dirname } = await import('node:path');
+        await mkdir(dirname(config.output), { recursive: true });
+        await writeFile(config.output, jsonOutput, 'utf8');
+        logger.info(`Parsed data saved to: ${config.output}`);
+      } else {
+        // 콘솔 출력
+        jsonOutput.split('\n').forEach(line => logger.info(line));
+      }
+    } else {
+      // 사람이 읽기 쉬운 형태로 출력
+      logger.info('='.repeat(60));
+      logger.info('SC2 REPLAY PARSED DATA');
+      logger.info('='.repeat(60));
+      logger.info('');
+
+      // 기본 정보
+      if (parsedData.details) {
+        logger.info('📋 GAME DETAILS:');
+        logger.info(`  Title: ${parsedData.details.title || 'Unknown'}`);
+        logger.info(`  Map: ${parsedData.details.mapFileName || 'Unknown'}`);
+        logger.info(`  Duration: ${parsedData.summary.duration}s (${parsedData.summary.gameLength} loops)`);
+        logger.info(`  Players: ${parsedData.players.length}`);
+        logger.info('');
+      }
+
+      // 승자 정보
+      if (parsedData.summary.winner) {
+        logger.info('🏆 WINNER:');
+        logger.info(`  ${parsedData.summary.winner.name} (${parsedData.summary.winner.race})`);
+        logger.info('');
+      }
+
+      // 플레이어 정보
+      if (parsedData.players.length > 0) {
+        logger.info('👥 PLAYERS:');
+        parsedData.players.forEach((player, index) => {
+          const result = player.result === 1 ? '🏆' : player.result === 2 ? '💀' : '🤝';
+          logger.info(`  ${index + 1}. ${result} ${player.name || 'Unknown'} (${player.race || 'Unknown'}) - Team ${player.teamId}`);
+        });
+        logger.info('');
+      }
+
+      // 채팅 메시지
+      if (parsedData.events.message.length > 0) {
+        logger.info('💬 CHAT MESSAGES:');
+        parsedData.events.message.forEach((msg, index) => {
+          if (index < 10) { // 처음 10개만 표시
+            const playerName = parsedData.players[msg.userId]?.name || `Player ${msg.userId}`;
+            const messageText = typeof msg.messageData === 'string' ? msg.messageData :
+                               typeof msg.messageData === 'object' && msg.messageData?.text ? msg.messageData.text :
+                               `(${msg.messageType})`;
+            logger.info(`  [${Math.floor(msg.loop / 16)}s] ${playerName}: ${messageText}`);
+          }
+        });
+        if (parsedData.events.message.length > 10) {
+          logger.info(`  ... and ${parsedData.events.message.length - 10} more messages`);
+        }
+        logger.info('');
+      }
+
+      // 이벤트 요약
+      logger.info('📊 EVENT SUMMARY:');
+      logger.info(`  Game Events: ${parsedData.summary.totalGameEvents}`);
+      logger.info(`  Chat Messages: ${parsedData.summary.totalMessageEvents}`);
+      logger.info(`  Tracker Events: ${parsedData.summary.totalTrackerEvents}`);
+      logger.info('');
+
+      logger.info('✅ Parsing completed successfully!');
+    }
+
+  } catch (error) {
+    logger.error('Failed to parse replay', { error });
+    throw error;
+  }
+}
 
 executeCommand(config).catch(error => {
   logger.error('Fatal CLI error', { error });

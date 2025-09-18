@@ -121,6 +121,35 @@ sc2ts info replay.SC2Replay --players --events --json --verbose
 - `--events, -e`: Show event counts and statistics
 - `--verbose, -v`: Show additional technical details
 
+#### Parse Replay Data (Human-Readable)
+
+Parse and display SC2 replay data in a human-readable format:
+
+```bash
+# Parse replay with human-readable output
+sc2ts parse replay.SC2Replay
+
+# Parse with verbose information
+sc2ts parse replay.SC2Replay --verbose
+
+# Parse and save as JSON
+sc2ts parse replay.SC2Replay --json --pretty --output parsed_replay.json
+
+# Parse and output JSON to console
+sc2ts parse replay.SC2Replay --json --pretty
+```
+
+**Parse Command Options:**
+- `--output, -o <file>`: Save parsed data to file (JSON format only)
+- `--json, -j`: Output as structured JSON instead of human-readable format
+- `--pretty`: Pretty-print JSON output (only works with --json)
+- `--verbose, -v`: Show verbose parsing information
+
+**Parse vs Extract vs Info:**
+- `extract`: Extracts raw binary files from replay archive (base64 encoded)
+- `info`: Shows basic replay metadata and statistics
+- `parse`: **NEW!** Parses replay data into human-readable format with game details, players, chat messages, and event summaries
+
 ### CLI Examples
 
 #### Complete Workflow Example
