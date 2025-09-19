@@ -1,8 +1,10 @@
 // Protocol System Types
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type z from 'zod';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface ProtocolDecoder {
+  version: SupportProtocolVersion;
   decodeReplayHeader(data: Buffer): any;
   decodeReplayDetails(data: Buffer): any;
   decodeReplayInitdata(data: Buffer): any;
@@ -26,4 +28,12 @@ export interface SC2ReplayHeaderDecoded {
   elapsedGameLoops: number;
   useScaledTime: boolean;
   dataBuildNum: number;
+}export interface ZodTypeInfos {
+  replayHeader: z.ZodTypeAny;
+  replayDetails: z.ZodTypeAny;
+  replayInitdata: z.ZodTypeAny;
+  replayGameEvents: z.ZodTypeAny;
+  replayMessageEvents: z.ZodTypeAny;
+  replayTrackerEvents: z.ZodTypeAny;
+  replayAttributesEvents: z.ZodTypeAny;
 }
