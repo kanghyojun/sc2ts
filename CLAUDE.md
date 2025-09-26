@@ -425,3 +425,157 @@ function parseNewData(buffer: Buffer): NewDataStructure {
   "@typescript-eslint/no-unsafe-member-access": "error"
   ```
 - **Build Verification**: TypeScript strict mode must pass without warnings
+
+## Git Commit Guidelines
+
+### Atomic Commits and Consistency
+
+**CRITICAL**: All commits must follow atomic commit principles with consistent formatting and prefixes to maintain a clean, readable project history.
+
+#### Atomic Commit Requirements:
+
+1. **One Logical Change Per Commit**: Each commit should represent a single, complete change
+2. **Self-Contained**: Each commit should be functional and not break the build
+3. **Focused Scope**: Avoid mixing unrelated changes (e.g., feature + refactoring + fix)
+4. **Complete**: Include all necessary files for the change to work properly
+
+#### ❌ **BAD Examples:**
+```bash
+# Wrong: Multiple unrelated changes
+git commit -m "Add new feature, fix bug, and update docs"
+
+# Wrong: Incomplete change
+git commit -m "Add new function" # (missing tests, types, etc.)
+
+# Wrong: No prefix or unclear description
+git commit -m "update code"
+git commit -m "changes"
+```
+
+#### ✅ **GOOD Examples:**
+```bash
+# Correct: Single, focused changes with clear prefixes
+git commit -m "feat: add MPQ hash table parsing with encryption support"
+git commit -m "fix: correct hash table name1/name2 calculation for SC2 replays"
+git commit -m "refactor: extract binary reading logic into separate utility functions"
+git commit -m "test: add comprehensive hash table parsing regression tests"
+```
+
+### Commit Message Format
+
+All commit messages MUST follow this structure:
+
+```
+<prefix>: <description>
+
+[optional body]
+
+[optional footer]
+```
+
+#### Required Prefixes:
+
+- **feat**: New feature or functionality
+- **fix**: Bug fix or error correction
+- **refactor**: Code restructuring without changing functionality
+- **test**: Adding or modifying tests
+- **docs**: Documentation changes
+- **chore**: Maintenance tasks (build, deps, config)
+- **perf**: Performance improvements
+- **style**: Code formatting changes (no logic changes)
+- **ci**: Continuous integration changes
+- **build**: Build system or external dependency changes
+
+#### Message Guidelines:
+
+1. **Imperative Mood**: Use "add", "fix", "refactor" (not "added", "fixing", "refactors")
+2. **Lowercase**: Start description with lowercase letter
+3. **No Period**: Don't end the subject line with a period
+4. **50 Characters Max**: Keep the subject line concise and under 50 characters
+5. **Clear and Specific**: Describe what the commit does, not what was wrong
+
+#### Examples by Category:
+
+```bash
+# Features
+feat: implement SC2 replay decompression with zlib support
+feat: add MPQ block table parsing with encryption detection
+
+# Bug Fixes
+fix: resolve hash table parsing errors for corrupted replay files
+fix: handle edge case where MPQ header size is zero
+
+# Refactoring
+refactor: extract common binary reading operations into MpqReader class
+refactor: simplify error handling with custom exception hierarchy
+
+# Tests
+test: add unit tests for MPQ archive file listing functionality
+test: create regression tests for hash table name collision edge cases
+
+# Documentation
+docs: update API documentation for MpqArchive class methods
+docs: add usage examples for binary file extraction
+
+# Chores
+chore: update TypeScript to v5.9.2 and adjust tsconfig settings
+chore: configure Vitest for better test coverage reporting
+```
+
+#### Multi-line Commit Messages:
+
+For complex changes, provide additional context in the body:
+
+```bash
+git commit -m "fix: resolve memory leak in large MPQ file processing
+
+The previous implementation kept entire file buffers in memory during
+parsing, causing memory exhaustion with files over 100MB. This change
+implements streaming buffer processing to maintain constant memory usage.
+
+Fixes issue where parsing 'large-replay.SC2Replay' (150MB) would crash
+with out-of-memory errors. Memory usage now remains under 50MB regardless
+of input file size.
+
+Closes #42"
+```
+
+### Commit Workflow:
+
+1. **Stage Related Changes Only**: Use `git add` selectively for atomic commits
+2. **Review Before Committing**: Use `git diff --cached` to verify staged changes
+3. **Write Clear Messages**: Follow the prefix and format guidelines above
+4. **Test Before Commit**: Ensure `pnpm run test` and `pnpm run typecheck` pass
+5. **One Logical Change**: If you have multiple unrelated changes, make separate commits
+
+#### Example Workflow:
+
+```bash
+# Make changes to hash table parsing
+git add src/mpq-reader.ts src/__tests__/mpq-reader.test.ts
+git commit -m "fix: correct endianness handling in hash table parsing"
+
+# Make separate commit for type improvements
+git add src/types.ts
+git commit -m "refactor: improve type definitions for MpqHashTableEntry"
+
+# Make separate commit for documentation
+git add README.md
+git commit -m "docs: add hash table parsing examples to README"
+```
+
+### Commit History Quality:
+
+- **Clean History**: Avoid "fix typo" or "oops" commits - use `git commit --amend` instead
+- **Logical Sequence**: Commits should tell a coherent story of development
+- **Bisectable**: Each commit should leave the codebase in a working state
+- **Searchable**: Use consistent language and prefixes for easy history searching
+
+```bash
+# Good commit sequence that tells a story:
+feat: implement basic MPQ archive reading functionality
+test: add comprehensive tests for MPQ header parsing
+fix: handle corrupted MPQ signatures gracefully
+refactor: optimize memory usage in large file processing
+docs: document MPQ archive API with usage examples
+```

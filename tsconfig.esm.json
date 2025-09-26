@@ -1,9 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "esnext",
+    "module": "ESNext",
     "moduleResolution": "bundler",
-    "outDir": "./dist",
+    "outDir": "./dist-esm",
     "target": "es2022"
-  }
+  },
+  "exclude": ["node_modules", "dist", ".debug", ".reference", "src/__tests__/**/*", "src/cli/**/*"]
 }

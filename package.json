@@ -17,16 +17,16 @@
   },
   "files": [
     "dist",
-    "bin",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "build": "pnpm run clean && pnpm run build:cjs && pnpm run build:esm && pnpm run build:cli",
+    "build": "pnpm run clean && pnpm run build:cjs && pnpm run build:esm && pnpm run build:cli && pnpm run build:postprocess",
     "build:cli": "npx tsc -p tsconfig.cli.json --noEmitOnError false || echo 'CLI build completed with warnings'",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
-    "clean": "rm -rf dist",
+    "build:postprocess": "node scripts/build-postprocess.js",
+    "clean": "rm -rf dist dist-esm",
     "dev": "tsc --watch",
     "dev:cli": "tsx src/cli/index.ts",
     "lint": "eslint . --ext .ts",

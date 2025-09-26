@@ -4,8 +4,10 @@ node_modules/
 
 # Build output
 dist/
+dist-esm/
 lib/
 build/
+bin/
 
 # Coverage reports
 coverage/
