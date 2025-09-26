@@ -11,8 +11,9 @@ A comprehensive TypeScript library for parsing MPQ (MoPaQ) archive files and Sta
 This project uses:
 - **Package Manager**: pnpm (v10.16.1)
 - **Language**: TypeScript (v5.9.2)
-- **Testing**: Vitest with coverage
+- **Testing**: Jest with coverage
 - **Build Configuration**: Dual module output (CommonJS and ESM)
+- **Linting**: ESLint with TypeScript support and import ordering
 
 ## Development Commands
 
@@ -56,16 +57,37 @@ pnpm run clean
 │   ├── index.ts              # Main entry point
 │   ├── mpq-archive.ts        # Main MPQ archive class
 │   ├── mpq-reader.ts         # Binary reader implementation
+│   ├── sc2-replay.ts         # SC2 replay parser
 │   ├── types.ts              # TypeScript type definitions
 │   ├── errors.ts             # Custom error classes
-│   └── __tests__/            # Test files
+│   ├── logger.ts             # Logging utilities
+│   ├── protocol/             # SC2 protocol implementation
+│   │   ├── index.ts          # Protocol versioning and main interface
+│   │   ├── sc2-decoder.ts    # Binary decoder for SC2 data
+│   │   ├── types.ts          # Protocol type definitions
+│   │   ├── versions/         # Protocol version implementations
+│   │   │   └── protocol80949.ts
+│   │   └── zod-typeinfo/     # Zod schemas for validation
+│   │       ├── index.ts
+│   │       └── zod80949.ts
+│   └── cli/                  # Command-line interface
+├── test/                     # Test files (mirrors src structure)
+│   ├── fixtures/             # Test data and fixtures
+│   │   └── test-data-a.json
+│   ├── protocol/             # Protocol tests
+│   │   └── sc2-decoder.test.ts
+│   ├── mpq-archive.test.ts
+│   ├── mpq-reader.test.ts
+│   ├── sc2-replay.test.ts
+│   └── sc2-replay-real.test.ts
 ├── .debug/                   # Debug scripts and analysis tools
 ├── dist/                     # Build output (generated)
 ├── package.json              # Project configuration
 ├── tsconfig.json             # Main TypeScript config
 ├── tsconfig.cjs.json         # CommonJS build config
 ├── tsconfig.esm.json         # ESM build config
-├── vitest.config.ts          # Vitest configuration
+├── jest.config.ts            # Jest testing configuration
+├── eslint.config.ts          # ESLint configuration
 └── docs/
     └── mpq.html              # MPQ format documentation
 ```
@@ -77,6 +99,105 @@ The project uses strict TypeScript settings with:
 - Target: ES2022
 - Strict mode enabled with all strict checks
 - Source maps and declaration files enabled
+- **Path Mapping**: `@/*` alias points to `src/*` for cleaner imports
+- **Module Resolution**: Bundler mode for modern build tools
+
+### Path Mapping
+
+The project uses TypeScript path mapping for cleaner imports:
+
+```typescript
+// tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
+```
+
+This allows for clean imports in test files:
+```typescript
+// Instead of: import { SC2Replay } from '../src/sc2-replay';
+import { SC2Replay } from '@/sc2-replay';
+import { BitPackedBuffer } from '@/protocol/sc2-decoder';
+```
+
+## ESLint Configuration
+
+The project uses ESLint with TypeScript support and automatic import ordering:
+
+### Key Features
+
+- **TypeScript Integration**: Full TypeScript support with `@typescript-eslint`
+- **Import Ordering**: Automatic import organization with `eslint-plugin-import`
+- **Strict Rules**: Enforces code quality and consistency
+- **Different Rules for Tests**: Relaxed rules for test files
+
+### Import Ordering Rules
+
+ESLint automatically organizes imports into groups:
+
+1. **Built-in/External**: Node.js and npm packages
+2. **Internal**: Project modules (using `@/` alias)
+3. **Relative**: Parent, sibling, and index imports
+
+```typescript
+// Automatically organized by ESLint:
+import fs from 'fs';
+import path from 'path';
+
+import { SC2Replay } from '@/sc2-replay';
+import { MpqArchive } from '@/mpq-archive';
+
+import { someUtility } from './utils';
+```
+
+### Configuration Structure
+
+```typescript
+// eslint.config.ts
+export default tseslint.config(
+  // Base configurations
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+
+  // Main source files
+  {
+    files: ['src/**/*.ts'],
+    rules: {
+      'import/order': ['error', {
+        'groups': [['builtin', 'external'], ['internal'], ['parent', 'sibling', 'index']],
+        'newlines-between': 'always',
+        'alphabetize': { 'order': 'asc', 'caseInsensitive': true },
+      }],
+      // ... other rules
+    }
+  },
+
+  // Test files (relaxed rules)
+  {
+    files: ['test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-console': 'off',
+      // ... relaxed test rules
+    }
+  }
+);
+```
+
+### Running ESLint
+
+```bash
+# Check code style
+pnpm run lint
+
+# Auto-fix issues
+pnpm run lint:fix
+```
 
 ## Library Architecture
 
@@ -162,10 +283,36 @@ function parseHashTable(buffer: Buffer): MpqHashTableEntry[] {
 
 #### Test File Organization:
 
-- Place test files in `src/__tests__/` directory
+- Place test files in `test/` directory (mirrors `src/` structure)
+- Use `@/` imports to reference source files cleanly
+- Store test fixtures in `test/fixtures/` directory
 - Use descriptive test names that explain the expected behavior
 - Group related tests using `describe` blocks
 - Use `beforeEach`/`afterEach` for test setup and cleanup
+
+**Test Directory Structure:**
+```
+test/
+├── fixtures/              # Test data and fixtures
+│   └── test-data-a.json   # S2 protocol test data
+├── protocol/              # Mirrors src/protocol/
+│   └── sc2-decoder.test.ts
+├── mpq-archive.test.ts
+├── mpq-reader.test.ts
+├── sc2-replay.test.ts
+└── sc2-replay-real.test.ts
+```
+
+**Import Guidelines for Tests:**
+```typescript
+// Use @ alias for clean imports
+import { SC2Replay } from '@/sc2-replay';
+import { BitPackedBuffer } from '@/protocol/sc2-decoder';
+
+// Fixtures are accessed relatively from test files
+const testDataPath = path.join(__dirname, 'fixtures/test-data-a.json');
+const testDataPath = path.join(__dirname, '../fixtures/test-data-a.json'); // from protocol/
+```
 
 #### Example TDD Process:
 
@@ -280,6 +427,10 @@ node .debug/test-sc2-decryption.js
 // Wrong: Using .js extension in TypeScript files
 import { something } from './module.js';
 import type { Type } from '../types.js';
+
+// Wrong: Relative imports in test files
+import { SC2Replay } from '../src/sc2-replay';
+import { MpqArchive } from '../../src/mpq-archive';
 ```
 
 #### ✅ **ALWAYS do this:**
@@ -287,6 +438,11 @@ import type { Type } from '../types.js';
 // Correct: No extension in TypeScript files
 import { something } from './module';
 import type { Type } from '../types';
+
+// Correct: Use @ alias in test files
+import { SC2Replay } from '@/sc2-replay';
+import { MpqArchive } from '@/mpq-archive';
+import { BitPackedBuffer } from '@/protocol/sc2-decoder';
 ```
 
 #### Why?
@@ -294,6 +450,45 @@ import type { Type } from '../types';
 - `.js` extensions in TypeScript source cause module resolution issues
 - Build tools (webpack, esbuild, etc.) expect TypeScript-style imports
 - Mixing extensions creates inconsistency and potential runtime errors
+- `@/` alias provides cleaner imports and better refactoring support
+
+### When to Use @ Alias vs Relative Imports
+
+#### ✅ **Use @ alias when:**
+```typescript
+// 1. In test files (always use @ for src imports)
+import { SC2Replay } from '@/sc2-replay';
+import { BitPackedBuffer } from '@/protocol/sc2-decoder';
+
+// 2. Deep relative paths (3+ levels)
+// Instead of: import { utils } from '../../../shared/utils';
+import { utils } from '@/shared/utils';
+
+// 3. Cross-module imports in src/
+// Instead of: import { MpqArchive } from '../mpq-archive';
+import { MpqArchive } from '@/mpq-archive';
+```
+
+#### ✅ **Use relative imports when:**
+```typescript
+// 1. Same directory or one level up/down
+import { helper } from './helper';
+import { types } from '../types';
+
+// 2. Sibling modules in same package
+import { validator } from './validator';
+import { parser } from './parser';
+```
+
+#### 📏 **3-Level Rule:**
+When relative imports become 3+ levels deep (`../../../`), always prefer `@/` alias for better maintainability:
+```typescript
+// ❌ Hard to read and maintain
+import { DeepUtil } from '../../../shared/utils/deep-util';
+
+// ✅ Clean and maintainable
+import { DeepUtil } from '@/shared/utils/deep-util';
+```
 
 #### How to Check:
 ```bash
