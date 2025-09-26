@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "module": "Node16",
+    "target": "es2020",
+    "lib": ["es2020"],
+    "moduleResolution": "node16",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "sourceMap": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/cli/**/*", "src/types.ts", "src/logger.ts", "src/mpq-*.ts", "src/sc2-replay.ts", "src/protocol/**/*", "src/errors.ts"],
+  "exclude": ["node_modules", "**/*.test.ts"]
+}
