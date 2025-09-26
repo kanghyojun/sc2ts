@@ -240,7 +240,16 @@ async function executeInfo(config: InferValue<typeof infoCommand>, extractor: Fi
     logger.info(`Getting info from: ${config.replayFile}`);
   }
 
-  const info = extractor.getReplayInfo();
+  const replay = extractor.replayInstance;
+  const info = {
+    header: replay.replayHeader,
+    details: replay.replayDetails,
+    initData: replay.replayInitData,
+    players: replay.players,
+    gameLength: replay.getGameLength(),
+    duration: replay.getDuration(),
+    winner: replay.getWinner(),
+  };
 
   if (config.json) {
     const jsonOutput = JSON.stringify(info, null, 2);
@@ -369,17 +378,17 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
       initData: replay.replayInitData,
       players: replay.players,
       events: {
-        game: replay.events.game.slice(0, 100), // 처음 100개만 (너무 많을 수 있음)
-        message: replay.events.message,
-        tracker: replay.events.tracker.slice(0, 100), // 처음 100개만
+        game: replay.gameEvents.slice(0, 100), // 처음 100개만 (너무 많을 수 있음)
+        message: replay.messageEvents,
+        tracker: replay.trackerEvents.slice(0, 100), // 처음 100개만
       },
       summary: {
         duration: replay.getDuration(),
         gameLength: replay.getGameLength(),
         winner: replay.getWinner(),
-        totalGameEvents: replay.events.game.length,
-        totalMessageEvents: replay.events.message.length,
-        totalTrackerEvents: replay.events.tracker.length,
+        totalGameEvents: replay.gameEvents.length,
+        totalMessageEvents: replay.messageEvents.length,
+        totalTrackerEvents: replay.trackerEvents.length,
       },
     };
 

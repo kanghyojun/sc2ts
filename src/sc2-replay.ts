@@ -4,7 +4,7 @@
 import { MpqArchive } from './mpq-archive';
 import { createLogger } from './logger';
 import { VersionedProtocol } from './protocol';
-import type { ReplayData, ReplayDetails, ReplayInitData, ReplayOptions, GameEvent, MessageEvent, TrackerEvent, ReplayHeader } from './types';
+import type { ReplayData, ReplayDetails, ReplayInitData, ReplayOptions, GameEvent, MessageEvent, TrackerEvent, ReplayHeader, Player } from './types';
 
 const logger = createLogger('sc2-replay');
 
@@ -14,9 +14,9 @@ export class SC2Replay {
   private decoder: VersionedProtocol;
   private details: ReplayDetails | null = null;
   private initData: ReplayInitData | null = null;
-  private gameEvents: GameEvent[] = [];
-  private messageEvents: MessageEvent[] = [];
-  private trackerEvents: TrackerEvent[] = [];
+  private _gameEvents: GameEvent[] = [];
+  private _messageEvents: MessageEvent[] = [];
+  private _trackerEvents: TrackerEvent[] = [];
   private static listFiles: string[] = [
     '(attributes)',
     '(listfile)',
@@ -97,174 +97,31 @@ export class SC2Replay {
   }
 
   private parseDetails(): void {
-    try {
-      const detailsFile = this.mpqArchive.getFile('replay.details');
-      const details = this.decoder.decodeReplayDetails(detailsFile.data);
-
-      // Use the decoded details directly
-      this.details = details;
-    } catch (error) {
-      logger.warn(`Could not parse replay details: ${error}`);
-      this.details = this.getDefaultDetails();
-    }
+    const detailsFile = this.mpqArchive.getFile('replay.details');
+    const details = this.decoder.decodeReplayDetails(detailsFile.data);
+    this.details = details;
   }
 
 
   private parseInitData(): void {
-    try {
-      const initDataFile = this.mpqArchive.getFile('replay.initData');
-      const initData = this.decoder.decodeReplayInitdata(initDataFile.data);
-
-      this.initData = initData;
-    } catch (error) {
-      logger.warn(`Could not parse init data: ${error}`);
-      this.initData = this.getDefaultInitData();
-    }
+    const initDataFile = this.mpqArchive.getFile('replay.initData');
+    const initData = this.decoder.decodeReplayInitdata(initDataFile.data);
+    this.initData = initData;
   }
 
   private parseGameEvents(): void {
-    try {
-      const gameEventsFile = this.mpqArchive.getFile('replay.game.events');
-
-      // Use decoder to parse game events
-      this.gameEvents = this.decoder.decodeReplayGameEvents(gameEventsFile.data);
-    } catch (error) {
-      logger.warn(`Could not parse game events: ${error}`);
-      this.gameEvents = [];
-    }
+    const gameEventsFile = this.mpqArchive.getFile('replay.game.events');
+    this._gameEvents = this.decoder.decodeReplayGameEvents(gameEventsFile.data);
   }
 
   private parseMessageEvents(): void {
-    try {
-      const messageEventsFile = this.mpqArchive.getFile('replay.message.events');
-
-      this.messageEvents = this.decoder.decodeReplayMessageEvents(messageEventsFile.data);
-    } catch (error) {
-      logger.warn(`Could not parse message events: ${error}`);
-      this.messageEvents = [];
-    }
+    const messageEventsFile = this.mpqArchive.getFile('replay.message.events');
+    this._messageEvents = this.decoder.decodeReplayMessageEvents(messageEventsFile.data);
   }
 
   private parseTrackerEvents(): void {
-    try {
-      const trackerEventsFile = this.mpqArchive.getFile('replay.tracker.events');
-
-      this.trackerEvents = this.decoder.decodeReplayTrackerEvents(trackerEventsFile.data);
-    } catch (error) {
-      logger.warn(`Could not parse tracker events: ${error}`);
-      this.trackerEvents = [];
-    }
-  }
-
-
-  private getDefaultDetails(): ReplayDetails {
-    return {
-      playerList: this.getDefaultPlayers(),
-      title: 'Unknown Replay',
-      difficulty: 'Unknown',
-      thumbnail: { file: '' },
-      isBlizzardMap: false,
-      timeUTC: Date.now(),
-      timeLocalOffset: 0,
-      description: '',
-      imageFilePath: '',
-      campaignIndex: 0,
-      mapFileName: '',
-      cacheHandles: [],
-      miniSave: false,
-      gameSpeed: 1,
-      defaultDifficulty: 0,
-      type: 0,
-      realTimeLength: 0,
-      mapSizeX: 0,
-      mapSizeY: 0,
-    };
-  }
-
-  private getDefaultPlayers(): any[] {
-    return [
-      {
-        name: 'Player 1',
-        type: 1,
-        race: 'Unknown',
-        difficulty: 0,
-        aiBuild: 0,
-        handicap: 100,
-        observe: 0,
-        result: 0,
-        workingSetSlotId: 0,
-        color: { a: 255, r: 255, g: 0, b: 0 },
-        control: 1,
-        teamId: 0,
-        userId: 0,
-      },
-      {
-        name: 'Player 2',
-        type: 1,
-        race: 'Unknown',
-        difficulty: 0,
-        aiBuild: 0,
-        handicap: 100,
-        observe: 0,
-        result: 0,
-        workingSetSlotId: 1,
-        color: { a: 255, r: 0, g: 0, b: 255 },
-        control: 1,
-        teamId: 1,
-        userId: 1,
-      },
-    ];
-  }
-
-  private getDefaultInitData(): ReplayInitData {
-    return {
-      syncLobbyState: {
-        userInitialData: [],
-        gameDescription: {
-          gameOptions: { lockTeams: false, teamsTogether: false, advancedSharedControl: false, randomRaces: false, battleNet: false, amm: false, competitive: false, practice: false, cooperative: false, noVictoryOrDefeat: false, heroDuplicatesAllowed: false, fog: 0, observers: 0, userDifficulty: 0, clientDebugFlags: 0n, buildCoachEnabled: false },
-          gameSpeed: 1,
-          gameType: 0,
-          maxUsers: 2,
-          maxObservers: 0,
-          maxPlayers: 2,
-          maxTeams: 0,
-          maxColors: 0,
-          maxRaces: 0,
-          maxControls: 0,
-          mapSizeX: 0,
-          mapSizeY: 0,
-          mapFileSyncChecksum: 0,
-          mapFileName: '',
-          mapAuthorName: '',
-          modFileSyncChecksum: 0,
-          slotDescriptions: [],
-          defaultDifficulty: 0,
-          defaultAIBuild: 0,
-          cacheHandles: [],
-          hasExtensionMod: false,
-          hasNonBlizzardExtensionMod: false,
-          isBlizzardMap: false,
-          isPremadeFFA: false,
-          isCoopMode: false,
-          isRealtimeMode: false,
-          randomValue: 0,
-          gameCacheName: '',
-        },
-        lobbyState: {
-          phase: 0,
-          maxUsers: 2,
-          maxObservers: 0,
-          slots: [],
-          randomSeed: 0,
-          hostUserId: 0,
-          isSinglePlayer: false,
-          pickedMapTag: 0,
-          gameDuration: 0,
-          defaultDifficulty: 0,
-          defaultAIBuild: 0,
-        },
-      },
-    };
+    const trackerEventsFile = this.mpqArchive.getFile('replay.tracker.events');
+    this._trackerEvents = this.decoder.decodeReplayTrackerEvents(trackerEventsFile.data);
   }
 
   // Public API
@@ -280,16 +137,20 @@ export class SC2Replay {
     return this.initData;
   }
 
-  get players(): any[] {
+  get players(): Player[] {
     return this.details?.playerList || [];
   }
 
-  get events(): { game: GameEvent[], message: MessageEvent[], tracker: TrackerEvent[] } {
-    return {
-      game: this.gameEvents,
-      message: this.messageEvents,
-      tracker: this.trackerEvents,
-    };
+  get gameEvents(): GameEvent[] {
+    return this._gameEvents;
+  }
+
+  get messageEvents(): MessageEvent[] {
+    return this._messageEvents;
+  }
+
+  get trackerEvents(): TrackerEvent[] {
+    return this._trackerEvents;
   }
 
   getReplayData(): ReplayData {
@@ -301,20 +162,20 @@ export class SC2Replay {
       header: this.header,
       details: this.details,
       initData: this.initData,
-      gameEvents: this.gameEvents,
-      messageEvents: this.messageEvents,
-      trackerEvents: this.trackerEvents,
+      gameEvents: this._gameEvents,
+      messageEvents: this._messageEvents,
+      trackerEvents: this._trackerEvents,
     };
   }
 
   // Utility methods
   getGameLength(): number {
-    const lastEvent = [...this.gameEvents, ...this.trackerEvents]
+    const lastEvent = [...this._gameEvents, ...this._trackerEvents]
       .sort((a, b) => b.loop - a.loop)[0];
     return lastEvent ? lastEvent.loop : 0;
   }
 
-  getWinner(): any | null {
+  getWinner(): Player | null {
     return this.players.find(p => p.result === 1) || null;
   }
 

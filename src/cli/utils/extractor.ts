@@ -78,20 +78,11 @@ export class FileExtractor {
     return result;
   }
 
-  getReplayInfo(): any {
+  get replayInstance(): SC2Replay {
     if (!this.replay) {
       throw new Error('No replay opened. Call openReplay() first.');
     }
-
-    return {
-      header: this.replay.replayHeader,
-      details: this.replay.replayDetails,
-      initData: this.replay.replayInitData,
-      players: this.replay.players,
-      gameLength: this.replay.getGameLength(),
-      duration: this.replay.getDuration(),
-      winner: this.replay.getWinner(),
-    };
+    return this.replay;
   }
 
   private resolveFilePatterns(patterns: string[], availableFiles: string[]): string[] {
