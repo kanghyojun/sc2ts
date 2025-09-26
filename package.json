@@ -22,11 +22,10 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "pnpm run clean && pnpm run build:cjs && pnpm run build:esm && pnpm run build:cli",
+    "build": "pnpm run clean && pnpm run build:cjs && pnpm run build:esm",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
-    "build:cli": "node scripts/build-cli.js",
-    "clean": "rm -rf dist bin",
+    "clean": "rm -rf dist",
     "dev": "tsc --watch",
     "dev:cli": "tsx src/cli/index.ts",
     "lint": "eslint . --ext .ts",
