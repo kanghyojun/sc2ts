@@ -19,6 +19,7 @@ describe('SC2Replay', () => {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
+        decodeInitData: false,
       });
 
       expect(replay).toBeInstanceOf(SC2Replay);
@@ -31,6 +32,7 @@ describe('SC2Replay', () => {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
+        decodeInitData: false,
       });
       const header = replay.replayHeader;
 
@@ -46,6 +48,7 @@ describe('SC2Replay', () => {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
+        decodeInitData: false,
       });
       const details = replay.replayDetails;
 
@@ -60,6 +63,7 @@ describe('SC2Replay', () => {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
+        decodeInitData: false,
       });
       const players = replay.players;
 

@@ -19,6 +19,7 @@ describe('SC2Replay - Real Files', () => {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
+        decodeInitData: false,
       });
     });
 
@@ -86,15 +87,9 @@ describe('SC2Replay - Real Files', () => {
     });
 
     it('should handle events arrays', () => {
-      const events = replay.events;
-
-      expect(events).toHaveProperty('game');
-      expect(events).toHaveProperty('message');
-      expect(events).toHaveProperty('tracker');
-
-      expect(events.game).toBeInstanceOf(Array);
-      expect(events.message).toBeInstanceOf(Array);
-      expect(events.tracker).toBeInstanceOf(Array);
+      expect(replay.gameEvents).toBeInstanceOf(Array);
+      expect(replay.messageEvents).toBeInstanceOf(Array);
+      expect(replay.trackerEvents).toBeInstanceOf(Array);
     });
 
     it('should match expected file size properties', () => {
