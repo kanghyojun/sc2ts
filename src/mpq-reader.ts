@@ -1,10 +1,11 @@
 // MPQ Archive Reader Implementation
 
-import { readFile } from 'node:fs/promises';
 import { Buffer } from 'node:buffer';
+import { readFile } from 'node:fs/promises';
+
+import { MpqInvalidFormatError } from './errors';
 import { createLogger } from './logger';
 import type { MpqHeader, MpqUserData, MpqHashTableEntry, MpqBlockTableEntry } from './types';
-import { MpqInvalidFormatError } from './errors';
 
 const logger = createLogger('mpq-reader');
 

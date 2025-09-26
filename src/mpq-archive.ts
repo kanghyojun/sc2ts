@@ -1,9 +1,9 @@
 // MPQ Archive Main Class
 
-import { MpqReader } from './mpq-reader';
-import { createLogger } from './logger';
-import type { MpqHeader, MpqHashTableEntry, MpqBlockTableEntry, MpqFile, MpqParseOptions } from './types';
 import { MpqFileNotFoundError } from './errors';
+import { createLogger } from './logger';
+import { MpqReader } from './mpq-reader';
+import type { MpqHeader, MpqHashTableEntry, MpqBlockTableEntry, MpqFile, MpqParseOptions } from './types';
 
 const logger = createLogger('mpq-archive');
 

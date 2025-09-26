@@ -1,8 +1,8 @@
 // SC2 Replay Parser
 // Based on Blizzard's s2protocol implementation
 
-import { MpqArchive } from './mpq-archive';
 import { createLogger } from './logger';
+import { MpqArchive } from './mpq-archive';
 import { VersionedProtocol } from './protocol';
 import type { ReplayDetails, ReplayInitData, ReplayOptions, GameEvent, MessageEvent, TrackerEvent, ReplayHeader, Player } from './types';
 

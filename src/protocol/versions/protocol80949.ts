@@ -4,8 +4,8 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { ProtocolDecoder, TypeInfo } from '../types';
 import { VersionedDecoder, BitPackedBuffer } from '../sc2-decoder';
+import type { ProtocolDecoder, TypeInfo } from '../types';
 
 // Type information from s2protocol protocol80949.py (compatible with 93333)
 const typeinfos: TypeInfo[] = [
