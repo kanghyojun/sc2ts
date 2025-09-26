@@ -409,7 +409,7 @@ export interface ReplayData {
 
 // Type aliases removed - using base types directly
 
-export interface SC2ReplayOptions {
+export interface ReplayOptions {
   decodeGameEvents?: boolean;
   decodeMessageEvents?: boolean;
   decodeTrackerEvents?: boolean;

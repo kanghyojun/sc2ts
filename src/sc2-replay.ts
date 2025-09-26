@@ -4,7 +4,7 @@
 import { MpqArchive } from './mpq-archive';
 import { createLogger } from './logger';
 import { VersionedProtocol } from './protocol';
-import type { ReplayData, ReplayDetails, ReplayInitData, SC2ReplayOptions, GameEvent, MessageEvent, TrackerEvent, ReplayHeader } from './types';
+import type { ReplayData, ReplayDetails, ReplayInitData, ReplayOptions, GameEvent, MessageEvent, TrackerEvent, ReplayHeader } from './types';
 
 const logger = createLogger('sc2-replay');
 
@@ -36,21 +36,21 @@ export class SC2Replay {
     this.decoder = new VersionedProtocol();
   }
 
-  static async fromFile(filepath: string, options?: SC2ReplayOptions): Promise<SC2Replay> {
+  static async fromFile(filepath: string, options?: ReplayOptions): Promise<SC2Replay> {
     const mpqArchive = await MpqArchive.open(filepath, { listFile: this.listFiles.join('\n') });
     const replay = new SC2Replay(mpqArchive);
     await replay.parse(options);
     return replay;
   }
 
-  static fromBuffer(buffer: Buffer, options?: SC2ReplayOptions): SC2Replay {
+  static fromBuffer(buffer: Buffer, options?: ReplayOptions): SC2Replay {
     const mpqArchive = MpqArchive.fromBuffer(buffer, { listFile: this.listFiles.join('\n') });
     const replay = new SC2Replay(mpqArchive);
     replay.parse(options);
     return replay;
   }
 
-  private parse(options?: SC2ReplayOptions): void {
+  private parse(options?: ReplayOptions): void {
     // Parse header from MPQ archive header
     this.parseHeader();
     this.decoder = new VersionedProtocol(this.header?.version?.build);
@@ -90,7 +90,7 @@ export class SC2Replay {
 
     const header = this.decoder.decodeReplayHeader(userDataContent);
 
-    logger.debug('Decoded header info:',header);
+    logger.debug('Decoded header info:', { signature: header.signature, version: header.version, length: header.length });
 
     // Create SC2 replay header using all information from headerInfo
     this.header = header;
@@ -173,6 +173,7 @@ export class SC2Replay {
       cacheHandles: [],
       miniSave: false,
       gameSpeed: 1,
+      defaultDifficulty: 0,
       type: 0,
       realTimeLength: 0,
       mapSizeX: 0,
@@ -217,18 +218,51 @@ export class SC2Replay {
 
   private getDefaultInitData(): ReplayInitData {
     return {
-      gameDescription: {
-        cacheHandles: [],
-        gameOptions: {},
-        gameSpeed: 1,
-        gameCacheName: '',
-        mapAuthorName: '',
-      },
-      lobbyState: {
-        slots: [],
-      },
       syncLobbyState: {
         userInitialData: [],
+        gameDescription: {
+          gameOptions: { lockTeams: false, teamsTogether: false, advancedSharedControl: false, randomRaces: false, battleNet: false, amm: false, competitive: false, practice: false, cooperative: false, noVictoryOrDefeat: false, heroDuplicatesAllowed: false, fog: 0, observers: 0, userDifficulty: 0, clientDebugFlags: 0n, buildCoachEnabled: false },
+          gameSpeed: 1,
+          gameType: 0,
+          maxUsers: 2,
+          maxObservers: 0,
+          maxPlayers: 2,
+          maxTeams: 0,
+          maxColors: 0,
+          maxRaces: 0,
+          maxControls: 0,
+          mapSizeX: 0,
+          mapSizeY: 0,
+          mapFileSyncChecksum: 0,
+          mapFileName: '',
+          mapAuthorName: '',
+          modFileSyncChecksum: 0,
+          slotDescriptions: [],
+          defaultDifficulty: 0,
+          defaultAIBuild: 0,
+          cacheHandles: [],
+          hasExtensionMod: false,
+          hasNonBlizzardExtensionMod: false,
+          isBlizzardMap: false,
+          isPremadeFFA: false,
+          isCoopMode: false,
+          isRealtimeMode: false,
+          randomValue: 0,
+          gameCacheName: '',
+        },
+        lobbyState: {
+          phase: 0,
+          maxUsers: 2,
+          maxObservers: 0,
+          slots: [],
+          randomSeed: 0,
+          hostUserId: 0,
+          isSinglePlayer: false,
+          pickedMapTag: 0,
+          gameDuration: 0,
+          defaultDifficulty: 0,
+          defaultAIBuild: 0,
+        },
       },
     };
   }
