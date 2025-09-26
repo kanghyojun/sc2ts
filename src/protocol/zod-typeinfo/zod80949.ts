@@ -218,7 +218,7 @@ export const PReplayUserId = z.object({
 });
 
 export const PReplayHeader = z.object({
-  m_signature: z.string(),
+  m_signature: z.instanceof(Buffer),
   m_version: z.object({
     m_flags: z.number(),
     m_major: z.number(),
@@ -233,8 +233,10 @@ export const PReplayHeader = z.object({
   m_ngdpRootKey: PDataTypeInfo,
   m_dataBuildNum: z.number(),
   m_replayCompatibilityHash: PDataTypeInfo,
-  m_ngdpRootKeyIsDevData: PDataTypeInfo,
+  m_ngdpRootKeyIsDevData: z.boolean(),
 });
+
+export type ParsedReplayHeader = z.infer<typeof PReplayHeader>;
 
 export const PEvent = z.object({
   _event: z.string(),
