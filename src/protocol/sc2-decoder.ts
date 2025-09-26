@@ -1,7 +1,7 @@
 // S2Protocol TypeScript decoder implementation
 // Simplified version of s2protocol's VersionedDecoder
 
-import type { TypeInfo } from './types';
+import type { BitarrayTypeInfo, IntTypeInfo, StructTypeInfo, TypeInfo } from './types';
 
 export class BitPackedBuffer {
   private data: Buffer;

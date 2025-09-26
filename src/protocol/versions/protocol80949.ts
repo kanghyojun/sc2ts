@@ -4,8 +4,8 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import type { ProtocolDecoder } from '../types';
-import { VersionedDecoder, BitPackedBuffer, type TypeInfo } from '../../sc2-decoder';
+import type { ProtocolDecoder, TypeInfo } from '../types';
+import { VersionedDecoder, BitPackedBuffer } from '../sc2-decoder';
 
 // Type information from s2protocol protocol80949.py (compatible with 93333)
 const typeinfos: TypeInfo[] = [
@@ -417,6 +417,7 @@ function* decodeEventStream(
 }
 
 const protocol80949: ProtocolDecoder = {
+  version: 80949,
   decodeReplayHeader(data: Buffer): any {
     const decoder = new VersionedDecoder(data, typeinfos);
     return decoder.instance(replay_header_typeid);
