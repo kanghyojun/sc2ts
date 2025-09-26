@@ -77,6 +77,13 @@ export function getLatestBuildVersion(): number {
   return buildVersions[0];
 }
 
+/**
+ * Converts Buffer to clean UTF-8 string by removing null bytes and trimming whitespace
+ */
+function bufferToString(buffer: Buffer): string {
+  return buffer.toString('utf8').replace(/\0/g, '').trim();
+}
+
 export class VersionedProtocol {
 
   private protocol: ProtocolDecoder;
@@ -123,19 +130,22 @@ export class VersionedProtocol {
 
   decodeReplayDetails(data: Buffer): ReplayDetails {
     const rawReplayDetails = this.protocol.decodeReplayDetails(data);
-    const parsedReplayDetails = this.zodTypeInfo.replayDetails.parse(rawReplayDetails);
+
+    // Transform raw data to match Zod schema expectations
+    const transformedData = this.transformReplayDetailsForValidation(rawReplayDetails);
+    const parsedReplayDetails = this.zodTypeInfo.replayDetails.parse(transformedData);
 
     return {
-      playerList: parsedReplayDetails.m_playerList?.map((player: any) => ({
-        name: player.m_name,
+      playerList: parsedReplayDetails.m_playerList?.map((player: any, index: number) => ({
+        name: bufferToString(player.m_name),
         toon: {
           region: player.m_toon.m_region,
           programId: player.m_toon.m_programId,
           realm: player.m_toon.m_realm,
-          name: player.m_toon.m_name,
+          name: player.m_toon.m_name ? bufferToString(player.m_toon.m_name) : '',
           id: player.m_toon.m_id,
         },
-        race: player.m_race,
+        race: bufferToString(player.m_race),
         color: {
           a: player.m_color.m_a,
           r: player.m_color.m_r,
@@ -148,27 +158,28 @@ export class VersionedProtocol {
         observe: player.m_observe,
         result: player.m_result,
         workingSetSlotId: player.m_workingSetSlotId,
-        hero: player.m_hero,
+        hero: bufferToString(player.m_hero),
+        userId: index,
       })),
-      title: parsedReplayDetails.m_title,
-      difficulty: parsedReplayDetails.m_difficulty,
+      title: bufferToString(parsedReplayDetails.m_title),
+      difficulty: bufferToString(parsedReplayDetails.m_difficulty),
       thumbnail: {
-        file: parsedReplayDetails.m_thumbnail.m_file,
+        file: bufferToString(parsedReplayDetails.m_thumbnail.m_file),
       },
       isBlizzardMap: parsedReplayDetails.m_isBlizzardMap,
       timeUTC: Number(parsedReplayDetails.m_timeUTC),
       timeLocalOffset: Number(parsedReplayDetails.m_timeLocalOffset),
       restartAsTransitionMap: parsedReplayDetails.m_restartAsTransitionMap,
       disableRecoverGame: parsedReplayDetails.m_disableRecoverGame,
-      description: parsedReplayDetails.m_description,
-      imageFilePath: parsedReplayDetails.m_imageFilePath,
+      description: bufferToString(parsedReplayDetails.m_description),
+      imageFilePath: bufferToString(parsedReplayDetails.m_imageFilePath),
       campaignIndex: parsedReplayDetails.m_campaignIndex,
-      mapFileName: parsedReplayDetails.m_mapFileName,
-      cacheHandles: parsedReplayDetails.m_cacheHandles || [],
+      mapFileName: bufferToString(parsedReplayDetails.m_mapFileName),
+      cacheHandles: parsedReplayDetails.m_cacheHandles?.map(bufferToString) || [],
       miniSave: parsedReplayDetails.m_miniSave,
       gameSpeed: parsedReplayDetails.m_gameSpeed,
       defaultDifficulty: parsedReplayDetails.m_defaultDifficulty,
-      modPaths: parsedReplayDetails.m_modPaths,
+      modPaths: parsedReplayDetails.m_modPaths?.map(bufferToString),
       type: 0, // Default value, not present in zod schema
       realTimeLength: 0, // Default value, not present in zod schema
       mapSizeX: 0, // Default value, not present in zod schema
@@ -368,5 +379,45 @@ export class VersionedProtocol {
       loop: event._gameloop,
       attributeData: event,
     };
+  }
+
+  /**
+   * Transform raw replay details data to match Zod schema expectations
+   * Only converts numbers to bigints where needed - Buffer fields are kept as-is
+   */
+  private transformReplayDetailsForValidation(rawData: any): any {
+    if (!rawData || typeof rawData !== 'object') {
+      return rawData;
+    }
+
+    const transformed = { ...rawData };
+
+    // Transform player list
+    if (transformed.m_playerList && Array.isArray(transformed.m_playerList)) {
+      transformed.m_playerList = transformed.m_playerList.map((player: any) => ({
+        ...player,
+        // Transform toon object
+        m_toon: player.m_toon ? {
+          ...player.m_toon,
+          // Convert number to bigint for m_id
+          m_id: typeof player.m_toon.m_id === 'number' ? BigInt(player.m_toon.m_id) : player.m_toon.m_id,
+        } : player.m_toon,
+      }));
+    }
+
+    // Convert numbers to bigints for time fields
+    if (typeof transformed.m_timeUTC === 'number') {
+      transformed.m_timeUTC = BigInt(transformed.m_timeUTC);
+    }
+    if (typeof transformed.m_timeLocalOffset === 'number') {
+      transformed.m_timeLocalOffset = BigInt(transformed.m_timeLocalOffset);
+    }
+
+    // Handle null modPaths (convert to undefined for optional array)
+    if (transformed.m_modPaths === null) {
+      transformed.m_modPaths = undefined;
+    }
+
+    return transformed;
   }
 }
