@@ -12,12 +12,15 @@ export const PDataTypeInfo = z.object({
   m_data: z.instanceof(Buffer),
 });
 
+// Buffer schema for blob types
+const bufferSchema = z.instanceof(Buffer);
+
 // Player info schemas
 export const PToon = z.object({
   m_region: z.number(),
   m_programId: z.string(), // fourcc type
   m_realm: z.number(),
-  m_name: z.string(),
+  m_name: bufferSchema.optional(), // Can be missing in actual data even though protocol defines it as required
   m_id: z.bigint(),
 });
 
@@ -29,9 +32,9 @@ export const PColor = z.object({
 });
 
 export const PPlayerInfo = z.object({
-  m_name: z.string(),
+  m_name: bufferSchema,
   m_toon: PToon,
-  m_race: z.string(),
+  m_race: bufferSchema,
   m_color: PColor,
   m_control: z.number(),
   m_teamId: z.number(),
@@ -39,31 +42,31 @@ export const PPlayerInfo = z.object({
   m_observe: z.number(),
   m_result: z.number(),
   m_workingSetSlotId: z.number().optional(),
-  m_hero: z.string(),
+  m_hero: bufferSchema,
 });
 
 // Game details schema (typeid 40)
 export const PGameDetails = z.object({
   m_playerList: z.array(PPlayerInfo).optional(),
-  m_title: z.string(),
-  m_difficulty: z.string(),
+  m_title: bufferSchema,
+  m_difficulty: bufferSchema,
   m_thumbnail: z.object({
-    m_file: z.string(),
+    m_file: bufferSchema,
   }),
   m_isBlizzardMap: z.boolean(),
   m_timeUTC: z.bigint(),
   m_timeLocalOffset: z.bigint(),
   m_restartAsTransitionMap: z.boolean().optional(),
   m_disableRecoverGame: z.boolean(),
-  m_description: z.string(),
-  m_imageFilePath: z.string(),
+  m_description: bufferSchema,
+  m_imageFilePath: bufferSchema,
   m_campaignIndex: z.number(),
-  m_mapFileName: z.string(),
-  m_cacheHandles: z.array(z.string()).optional(),
+  m_mapFileName: bufferSchema,
+  m_cacheHandles: z.array(bufferSchema).optional(),
   m_miniSave: z.boolean(),
   m_gameSpeed: z.number(),
   m_defaultDifficulty: z.number(),
-  m_modPaths: z.array(z.string()).optional(),
+  m_modPaths: z.array(bufferSchema).optional(),
 });
 
 // Init data schema (typeid 73)
