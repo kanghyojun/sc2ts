@@ -2,21 +2,21 @@
 // Based on Blizzard's s2protocol implementation
 
 import { MpqArchive } from './mpq-archive';
-import { VersionedDecoder } from './sc2-decoder';
 import { createLogger } from './logger';
-import { decodeReplayDetails, decodeReplayHeader } from './protocol';
-import type { SC2ReplayData, SC2ReplayHeader, SC2ReplayDetails, SC2ReplayInitData, SC2ReplayOptions, SC2GameEvent, SC2MessageEvent, SC2TrackerEvent } from './types';
+import { VersionedProtocol } from './protocol';
+import type { ReplayData, ReplayDetails, ReplayInitData, SC2ReplayOptions, GameEvent, MessageEvent, TrackerEvent, ReplayHeader } from './types';
 
 const logger = createLogger('sc2-replay');
 
 export class SC2Replay {
   private mpqArchive: MpqArchive;
-  private header: SC2ReplayHeader | null = null;
-  private details: SC2ReplayDetails | null = null;
-  private initData: SC2ReplayInitData | null = null;
-  private gameEvents: SC2GameEvent[] = [];
-  private messageEvents: SC2MessageEvent[] = [];
-  private trackerEvents: SC2TrackerEvent[] = [];
+  private header: ReplayHeader | null = null;
+  private decoder: VersionedProtocol;
+  private details: ReplayDetails | null = null;
+  private initData: ReplayInitData | null = null;
+  private gameEvents: GameEvent[] = [];
+  private messageEvents: MessageEvent[] = [];
+  private trackerEvents: TrackerEvent[] = [];
   private static listFiles: string[] = [
     '(attributes)',
     '(listfile)',
@@ -33,6 +33,7 @@ export class SC2Replay {
 
   constructor(mpqArchive: MpqArchive) {
     this.mpqArchive = mpqArchive;
+    this.decoder = new VersionedProtocol();
   }
 
   static async fromFile(filepath: string, options?: SC2ReplayOptions): Promise<SC2Replay> {
@@ -52,6 +53,7 @@ export class SC2Replay {
   private parse(options?: SC2ReplayOptions): void {
     // Parse header from MPQ archive header
     this.parseHeader();
+    this.decoder = new VersionedProtocol(this.header?.version?.build);
 
     // Parse details
     this.parseDetails();
@@ -86,107 +88,34 @@ export class SC2Replay {
       throw new Error('No user data content');
     }
 
-    // Parse the header using protocol decoder to get all version info
-    const headerInfo = decodeReplayHeader(userDataContent);
+    const header = this.decoder.decodeReplayHeader(userDataContent);
 
-    logger.debug('Decoded header info:', headerInfo);
+    logger.debug('Decoded header info:',header);
 
     // Create SC2 replay header using all information from headerInfo
-    this.header = {
-      signature: 'SC2Replay',
-      version: {
-        major: headerInfo.version.major,
-        minor: headerInfo.version.minor,
-        revision: headerInfo.version.revision,
-        build: headerInfo.version.build,
-      },
-      length: mpqHeader.archiveSize,
-      crc32: 0, // Would need to calculate from actual data
-    };
+    this.header = header;
   }
 
   private parseDetails(): void {
     try {
       const detailsFile = this.mpqArchive.getFile('replay.details');
-      const details = decodeReplayDetails(detailsFile.data, this.header?.version?.build);
+      const details = this.decoder.decodeReplayDetails(detailsFile.data);
 
-      // Basic structure for replay.details - simplified
-      this.details = {
-        playerList: this.parsePlayerList(decoder),
-        title: 'Unknown',
-        difficulty: 'Unknown',
-        thumbnail: { file: '' },
-        isBlizzardMap: false,
-        timeUTC: Date.now(),
-        timeLocalOffset: 0,
-        description: '',
-        imageFilePath: '',
-        campaignIndex: 0,
-        mapFileName: '',
-        cacheHandles: [],
-        miniSave: false,
-        gameSpeed: 1,
-        type: 0,
-        realTimeLength: 0,
-        mapSizeX: 0,
-        mapSizeY: 0,
-      };
+      // Use the decoded details directly
+      this.details = details;
     } catch (error) {
       logger.warn(`Could not parse replay details: ${error}`);
       this.details = this.getDefaultDetails();
     }
   }
 
-  private parsePlayerList(decoder: VersionedDecoder): any[] {
-    try {
-      // Simplified player parsing
-      const playerCount = Math.min(decoder.decodeValue({ type: 'int', size: 8 }) || 2, 16);
-      const players = [];
-
-      for (let i = 0; i < playerCount; i++) {
-        players.push({
-          name: `Player ${i + 1}`,
-          type: 1,
-          race: 'Unknown',
-          difficulty: 0,
-          aiBuild: 0,
-          handicap: 100,
-          observe: 0,
-          result: 0,
-          workingSetSlotId: i,
-          color: { a: 255, r: 255, g: 255, b: 255 },
-          control: 1,
-          teamId: i % 2,
-          userId: i,
-        });
-      }
-
-      return players;
-    } catch {
-      return this.getDefaultPlayers();
-    }
-  }
 
   private parseInitData(): void {
     try {
       const initDataFile = this.mpqArchive.getFile('replay.initData');
-      new VersionedDecoder(initDataFile.data);
+      const initData = this.decoder.decodeReplayInitdata(initDataFile.data);
 
-      this.initData = {
-        gameDescription: {
-          cacheHandles: [],
-          gameOptions: {},
-          gameSpeed: 1,
-          gameCacheName: '',
-          mapAuthorName: '',
-        },
-        lobbyState: {
-          slots: [],
-        },
-        syncLobbyState: {
-          userInitialData: [],
-        },
-      };
+      this.initData = initData;
     } catch (error) {
       logger.warn(`Could not parse init data: ${error}`);
       this.initData = this.getDefaultInitData();
@@ -196,10 +125,9 @@ export class SC2Replay {
   private parseGameEvents(): void {
     try {
       const gameEventsFile = this.mpqArchive.getFile('replay.game.events');
-      const decoder = new VersionedDecoder(gameEventsFile.data);
 
-      // Simplified event parsing
-      this.gameEvents = this.parseEvents(decoder, 'game');
+      // Use decoder to parse game events
+      this.gameEvents = this.decoder.decodeReplayGameEvents(gameEventsFile.data);
     } catch (error) {
       logger.warn(`Could not parse game events: ${error}`);
       this.gameEvents = [];
@@ -209,9 +137,8 @@ export class SC2Replay {
   private parseMessageEvents(): void {
     try {
       const messageEventsFile = this.mpqArchive.getFile('replay.message.events');
-      const decoder = new VersionedDecoder(messageEventsFile.data);
 
-      this.messageEvents = this.parseEvents(decoder, 'message') as SC2MessageEvent[];
+      this.messageEvents = this.decoder.decodeReplayMessageEvents(messageEventsFile.data);
     } catch (error) {
       logger.warn(`Could not parse message events: ${error}`);
       this.messageEvents = [];
@@ -221,66 +148,16 @@ export class SC2Replay {
   private parseTrackerEvents(): void {
     try {
       const trackerEventsFile = this.mpqArchive.getFile('replay.tracker.events');
-      const decoder = new VersionedDecoder(trackerEventsFile.data);
 
-      this.trackerEvents = this.parseEvents(decoder, 'tracker') as SC2TrackerEvent[];
+      this.trackerEvents = this.decoder.decodeReplayTrackerEvents(trackerEventsFile.data);
     } catch (error) {
       logger.warn(`Could not parse tracker events: ${error}`);
       this.trackerEvents = [];
     }
   }
 
-  private parseEvents(decoder: VersionedDecoder, eventType: string): any[] {
-    const events = [];
-    let currentLoop = 0;
 
-    try {
-      while (decoder.remainingBytes > 0) {
-        // Basic event structure
-        const deltaLoop = decoder.decodeValue({ type: 'int', size: 8 });
-        currentLoop += deltaLoop;
-
-        const userId = eventType !== 'tracker' ?
-          decoder.decodeValue({ type: 'int', size: 8 }) : undefined;
-
-        const eventId = decoder.decodeValue({ type: 'int', size: 8 });
-
-        // Skip event data for now - would need protocol-specific parsing
-        const eventData = this.parseEventData(decoder, eventId);
-
-        const event: any = {
-          loop: currentLoop,
-          eventType: `${eventType}_event_${eventId}`,
-          eventData,
-        };
-
-        if (userId !== undefined) {
-          event.userId = userId;
-        }
-
-        events.push(event);
-
-        if (events.length > 10000) {
-          break; // Prevent infinite loops
-        }
-      }
-    } catch (error) {
-      logger.warn(`Event parsing stopped due to error: ${error}`);
-    }
-
-    return events;
-  }
-
-  private parseEventData(_decoder: VersionedDecoder, eventId: number): any {
-    try {
-      // Very basic event data parsing - real implementation would be protocol-specific
-      return { eventId, raw: true };
-    } catch (error) {
-      return { error: error instanceof Error ? error.message : 'Unknown error' };
-    }
-  }
-
-  private getDefaultDetails(): SC2ReplayDetails {
+  private getDefaultDetails(): ReplayDetails {
     return {
       playerList: this.getDefaultPlayers(),
       title: 'Unknown Replay',
@@ -338,7 +215,7 @@ export class SC2Replay {
     ];
   }
 
-  private getDefaultInitData(): SC2ReplayInitData {
+  private getDefaultInitData(): ReplayInitData {
     return {
       gameDescription: {
         cacheHandles: [],
@@ -357,15 +234,15 @@ export class SC2Replay {
   }
 
   // Public API
-  get replayHeader(): SC2ReplayHeader | null {
+  get replayHeader(): ReplayHeader | null {
     return this.header;
   }
 
-  get replayDetails(): SC2ReplayDetails | null {
+  get replayDetails(): ReplayDetails | null {
     return this.details;
   }
 
-  get replayInitData(): SC2ReplayInitData | null {
+  get replayInitData(): ReplayInitData | null {
     return this.initData;
   }
 
@@ -373,7 +250,7 @@ export class SC2Replay {
     return this.details?.playerList || [];
   }
 
-  get events(): { game: SC2GameEvent[], message: SC2MessageEvent[], tracker: SC2TrackerEvent[] } {
+  get events(): { game: GameEvent[], message: MessageEvent[], tracker: TrackerEvent[] } {
     return {
       game: this.gameEvents,
       message: this.messageEvents,
@@ -381,7 +258,7 @@ export class SC2Replay {
     };
   }
 
-  getReplayData(): SC2ReplayData {
+  getReplayData(): ReplayData {
     if (!this.header || !this.details || !this.initData) {
       throw new Error('Replay not fully parsed');
     }
