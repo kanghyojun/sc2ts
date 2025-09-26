@@ -1,4 +1,5 @@
-import { BitPackedBuffer, VersionedDecoder, TypeInfo } from '../sc2-decoder';
+import { BitPackedBuffer, VersionedDecoder } from '../protocol/sc2-decoder';
+import { TypeInfo } from '../protocol/types';
 import fs from 'fs';
 import path from 'path';
 

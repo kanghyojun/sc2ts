@@ -1,6 +1,8 @@
 // S2Protocol TypeScript decoder implementation
 // Simplified version of s2protocol's VersionedDecoder
 
+import type { TypeInfo } from './types';
+
 export class BitPackedBuffer {
   private data: Buffer;
   private used = 0;
@@ -66,84 +68,6 @@ export class BitPackedBuffer {
     return result;
   }
 }
-
-interface BaseTypeInfo {
-  type: string;
-}
-
-interface IntTypeInfo extends BaseTypeInfo {
-  type: '_int';
-  args: [number | bigint, number][];
-}
-
-interface StructTypeInfo extends BaseTypeInfo {
-  type: '_struct';
-  args: [string, number, number][][];
-}
-
-interface BlobTypeInfo extends BaseTypeInfo {
-  type: '_blob';
-  args: [number, number][];
-}
-
-interface BoolTypeInfo extends BaseTypeInfo {
-  type: '_bool';
-  args: [];
-}
-
-interface OptionalTypeInfo extends BaseTypeInfo {
-  type: '_optional';
-  args: [number];
-}
-
-interface ArrayTypeInfo extends BaseTypeInfo {
-  type: '_array';
-  args: [[number, number], number];
-}
-
-interface ChoiceTypeInfo extends BaseTypeInfo {
-  type: '_choice';
-  args: [[number, number], Record<number, [string, number]>];
-}
-
-interface FourccTypeInfo extends BaseTypeInfo {
-  type: '_fourcc';
-  args: [];
-}
-
-interface NullTypeInfo extends BaseTypeInfo {
-  type: '_null';
-  args: [];
-}
-
-interface BitarrayTypeInfo extends BaseTypeInfo {
-  type: '_bitarray';
-  args: [number, number][];
-}
-
-interface Real32TypeInfo extends BaseTypeInfo {
-  type: '_real32';
-  args: [];
-}
-
-interface Real64TypeInfo extends BaseTypeInfo {
-  type: '_real64';
-  args: [];
-}
-
-export type TypeInfo =
-  | IntTypeInfo
-  | StructTypeInfo
-  | BlobTypeInfo
-  | BoolTypeInfo
-  | OptionalTypeInfo
-  | ArrayTypeInfo
-  | ChoiceTypeInfo
-  | FourccTypeInfo
-  | NullTypeInfo
-  | BitarrayTypeInfo
-  | Real32TypeInfo
-  | Real64TypeInfo;
 
 export class VersionedDecoder {
   private buffer: BitPackedBuffer;
