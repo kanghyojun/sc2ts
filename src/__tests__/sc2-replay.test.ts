@@ -79,9 +79,9 @@ describe('SC2Replay', () => {
         decodeTrackerEvents: false,
       });
 
-      expect(replay.events.game).toBeInstanceOf(Array);
-      expect(replay.events.message).toBeInstanceOf(Array);
-      expect(replay.events.tracker).toBeInstanceOf(Array);
+      expect(replay.gameEvents).toBeInstanceOf(Array);
+      expect(replay.messageEvents).toBeInstanceOf(Array);
+      expect(replay.trackerEvents).toBeInstanceOf(Array);
     });
   });
 
@@ -97,13 +97,13 @@ describe('SC2Replay', () => {
     });
 
     it('should calculate game duration', () => {
-      const duration = replay.getDuration();
+      const duration = replay.duration;
       expect(typeof duration).toBe('number');
       expect(duration).toBeGreaterThanOrEqual(0);
     });
 
     it('should get game length in loops', () => {
-      const gameLength = replay.getGameLength();
+      const gameLength = replay.gameLength;
       expect(typeof gameLength).toBe('number');
       expect(gameLength).toBeGreaterThanOrEqual(0);
     });
@@ -120,7 +120,7 @@ describe('SC2Replay', () => {
     });
 
     it('should handle missing winner gracefully', () => {
-      const winner = replay.getWinner();
+      const winner = replay.winner;
       // Winner might be null since we're using default data
       expect(winner === null || typeof winner === 'object').toBe(true);
     });

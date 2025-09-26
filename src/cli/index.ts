@@ -246,9 +246,9 @@ async function executeInfo(config: InferValue<typeof infoCommand>, extractor: Fi
     details: replay.replayDetails,
     initData: replay.replayInitData,
     players: replay.players,
-    gameLength: replay.getGameLength(),
-    duration: replay.getDuration(),
-    winner: replay.getWinner(),
+    gameLength: replay.gameLength,
+    duration: replay.duration,
+    winner: replay.winner,
   };
 
   if (config.json) {
@@ -383,9 +383,9 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
         tracker: replay.trackerEvents.slice(0, 100), // 처음 100개만
       },
       summary: {
-        duration: replay.getDuration(),
-        gameLength: replay.getGameLength(),
-        winner: replay.getWinner(),
+        duration: replay.duration,
+        gameLength: replay.gameLength,
+        winner: replay.winner,
         totalGameEvents: replay.gameEvents.length,
         totalMessageEvents: replay.messageEvents.length,
         totalTrackerEvents: replay.trackerEvents.length,

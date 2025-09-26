@@ -61,8 +61,8 @@ describe('SC2Replay - Real Files', () => {
     });
 
     it('should return valid utility values', () => {
-      const duration = replay.getDuration();
-      const gameLength = replay.getGameLength();
+      const duration = replay.duration;
+      const gameLength = replay.gameLength;
 
       expect(typeof duration).toBe('number');
       expect(duration).toBeGreaterThanOrEqual(0);
@@ -71,7 +71,7 @@ describe('SC2Replay - Real Files', () => {
       expect(gameLength).toBeGreaterThanOrEqual(0);
 
       // Winner might be null since we're using default data
-      const winner = replay.getWinner();
+      const winner = replay.winner;
       expect(winner === null || typeof winner === 'object').toBe(true);
     });
 
@@ -217,7 +217,7 @@ describe('SC2Replay - Real Files', () => {
       return {
         filename,
         playerCount: replay.players.length,
-        duration: replay.getDuration(),
+        duration: replay.duration,
         headerLength: replay.replayHeader?.length || 0,
       };
     });

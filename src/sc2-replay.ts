@@ -168,19 +168,19 @@ export class SC2Replay {
     };
   }
 
-  // Utility methods
-  getGameLength(): number {
+  // Utility getters
+  get gameLength(): number {
     const lastEvent = [...this._gameEvents, ...this._trackerEvents]
       .sort((a, b) => b.loop - a.loop)[0];
     return lastEvent ? lastEvent.loop : 0;
   }
 
-  getWinner(): Player | null {
+  get winner(): Player | null {
     return this.players.find(p => p.result === 1) || null;
   }
 
-  getDuration(): number {
+  get duration(): number {
     // Convert game loops to seconds (approximately 16 loops per second)
-    return Math.round(this.getGameLength() / 16);
+    return Math.round(this.gameLength / 16);
   }
 }

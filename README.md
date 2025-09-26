@@ -260,7 +260,7 @@ const replay = SC2Replay.fromBuffer(replayBuffer);
 
 // Get basic replay information
 console.log('Map name:', replay.replayDetails?.title);
-console.log('Game duration:', replay.getDuration(), 'seconds');
+console.log('Game duration:', replay.duration, 'seconds');
 console.log('Players:', replay.players.length);
 
 // Access player information
@@ -275,7 +275,7 @@ replay.players.forEach((player, index) => {
 });
 
 // Get the winner
-const winner = replay.getWinner();
+const winner = replay.winner;
 if (winner) {
   console.log('Winner:', winner.name);
 }
