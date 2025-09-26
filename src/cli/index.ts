@@ -18,6 +18,20 @@ import { configureLogger, createLogger } from '../logger';
 import { FileExtractor } from './utils/extractor';
 import { OutputFormatter } from './utils/formatter';
 import { SC2Replay } from '../sc2-replay';
+import { Player } from '../types';
+
+// Type for chat message data structure
+interface ChatMessageData {
+  m_recipient: number;
+  m_string: string;
+}
+
+// Type guard for chat message data
+function isChatMessageData(data: unknown): data is ChatMessageData {
+  return typeof data === 'object' && data !== null &&
+         'm_string' in data && typeof (data as Record<string, unknown>)['m_string'] === 'string' &&
+         'm_recipient' in data && typeof (data as Record<string, unknown>)['m_recipient'] === 'number';
+}
 
 // Initialize logger
 configureLogger().catch(console.error);
@@ -270,7 +284,7 @@ async function executeInfo(config: InferValue<typeof infoCommand>, extractor: Fi
   // Player information
   if (config.players && info.players && info.players.length > 0) {
     logger.info('Players:');
-    info.players.forEach((player: any, index: number) => {
+    info.players.forEach((player: Player, index: number) => {
       logger.info(`  ${index + 1}. ${player.name || 'Unknown'}`);
       logger.info(`     Race: ${player.race || 'Unknown'}`);
       logger.info(`     Team: ${player.teamId !== undefined ? player.teamId : 'Unknown'}`);
@@ -426,9 +440,11 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
         parsedData.events.message.forEach((msg, index) => {
           if (index < 10) { // 처음 10개만 표시
             const playerName = msg.userId !== undefined ? parsedData.players[msg.userId]?.name || `Player ${msg.userId}` : 'Unknown Player';
-            const messageText = typeof msg.messageData === 'string' ? msg.messageData :
-                               typeof msg.messageData === 'object' && msg.messageData && 'text' in msg.messageData ? (msg.messageData as any).text :
-                               `(${msg.messageType})`;
+            const messageText = typeof msg.messageData === 'string'
+              ? msg.messageData
+              : isChatMessageData(msg.messageData)
+                ? msg.messageData.m_string
+                : `(${msg.messageType})`;
             logger.info(`  [${Math.floor(msg.loop / 16)}s] ${playerName}: ${messageText}`);
           }
         });
