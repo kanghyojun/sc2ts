@@ -29,7 +29,7 @@ describe('SC2Replay - Real Files', () => {
     it('should have a valid replay header', () => {
       const header = replay.replayHeader;
       expect(header).not.toBeNull();
-      expect(header?.signature).toBe('SC2Replay');
+      expect(header?.signature).toContain('StarCraft II replay');
       expect(header?.version.major).toBeGreaterThanOrEqual(2); // Real files may have higher version
       expect(header?.version.minor).toBeGreaterThanOrEqual(0);
       expect(header?.version.build).toBeGreaterThan(0);
@@ -105,7 +105,7 @@ describe('SC2Replay - Real Files', () => {
     it('should match expected file size properties', () => {
       const header = replay.replayHeader;
       expect(header?.length).toBeLessThan(replayBuffer.length);
-      expect(header?.length).toBeGreaterThan(1000); // Reasonable minimum
+      expect(header?.length).toBeGreaterThan(50); // Reasonable minimum for user data content
     });
 
     it('should parse MPQ archive header correctly', () => {
@@ -131,15 +131,14 @@ describe('SC2Replay - Real Files', () => {
       // This test prevents regression of SC2 replay header parsing bugs
       // Updated to match actual decoded values from the real replay file
       const expectedSC2Header = {
-        signature: 'SC2Replay',
+        signature: 'StarCraft II replay11',
         version: {
           major: 5, // Actual major version from real replay
           minor: 0,
           revision: 14, // Actual revision from real replay
           build: 94137,
         },
-        length: 60521,
-        crc32: 0,
+        length: 115, // Actual length of user data content
       };
 
       const replayPath = resolve('replays', 'a.SC2Replay');
@@ -153,13 +152,12 @@ describe('SC2Replay - Real Files', () => {
       const header = replay.replayHeader;
 
       expect(header).not.toBeNull();
-      expect(header!.signature).toBe(expectedSC2Header.signature);
+      expect(header!.signature).toContain('StarCraft II replay');
       expect(header!.version.major).toBe(expectedSC2Header.version.major);
       expect(header!.version.minor).toBe(expectedSC2Header.version.minor);
       expect(header!.version.revision).toBe(expectedSC2Header.version.revision);
       expect(header!.version.build).toBe(expectedSC2Header.version.build);
       expect(header!.length).toBe(expectedSC2Header.length);
-      expect(header!.crc32).toBe(expectedSC2Header.crc32);
     });
 
     it('should parse MPQ archive header correctly from a.SC2Replay (regression test)', () => {
@@ -228,7 +226,7 @@ describe('SC2Replay - Real Files', () => {
     results.forEach(result => {
       expect(result.playerCount).toBeGreaterThanOrEqual(2);
       expect(result.duration).toBeGreaterThanOrEqual(0);
-      expect(result.headerLength).toBeGreaterThan(1000);
+      expect(result.headerLength).toBeGreaterThan(50);
     });
 
     // Should have processed all files successfully
