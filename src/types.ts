@@ -208,6 +208,7 @@ export interface Player {
   result: number;
   workingSetSlotId?: number;
   hero: string;
+  userId: number;
 }
 
 export interface BaseEvent {
@@ -413,4 +414,5 @@ export interface ReplayOptions {
   decodeGameEvents?: boolean;
   decodeMessageEvents?: boolean;
   decodeTrackerEvents?: boolean;
+  decodeInitData?: boolean;
 }

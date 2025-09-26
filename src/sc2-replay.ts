@@ -58,8 +58,10 @@ export class SC2Replay {
     // Parse details
     this.parseDetails();
 
-    // Parse init data
-    this.parseInitData();
+    // Parse init data if requested
+    if (options?.decodeInitData === true) {
+      this.parseInitData();
+    }
 
     // Parse events if requested
     if (options?.decodeGameEvents !== false) {
