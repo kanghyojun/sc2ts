@@ -8,16 +8,26 @@ describe('SC2Replay', () => {
     // Create a mock MPQ archive buffer with SC2 replay structure
     mockBuffer = Buffer.alloc(2048);
 
-    // Write MPQ header
-    mockBuffer.writeUInt32LE(0x1A51504D, 0);  // Magic
-    mockBuffer.writeUInt32LE(0x20, 4);        // Header size
-    mockBuffer.writeUInt32LE(0x800, 8);       // Archive size
-    mockBuffer.writeUInt16LE(0x0000, 12);     // Format version
-    mockBuffer.writeUInt16LE(0x0200, 14);     // Block size
-    mockBuffer.writeUInt32LE(0x0100, 16);     // Hash table pos
-    mockBuffer.writeUInt32LE(0x0200, 20);     // Block table pos
-    mockBuffer.writeUInt32LE(0x0003, 24);     // Hash table size (3 files)
-    mockBuffer.writeUInt32LE(0x0003, 28);     // Block table size (3 files)
+    // Write user data header first (SC2 replays have user data)
+    mockBuffer.writeUInt32LE(0x1B51504D, 0);  // User data magic
+    mockBuffer.writeUInt32LE(0x200, 4);       // User data size
+    mockBuffer.writeUInt32LE(0x20, 8);        // MPQ header offset
+    mockBuffer.writeUInt32LE(0x100, 12);      // User data header size
+
+    // Write some mock user data content (replay header)
+    const userDataContent = Buffer.from('StarCraft II replay11\x00');
+    userDataContent.copy(mockBuffer, 16);
+
+    // Write MPQ header at offset 0x20 (32)
+    mockBuffer.writeUInt32LE(0x1A51504D, 32);  // Magic
+    mockBuffer.writeUInt32LE(0x20, 36);        // Header size
+    mockBuffer.writeUInt32LE(0x800, 40);       // Archive size
+    mockBuffer.writeUInt16LE(0x0000, 44);      // Format version
+    mockBuffer.writeUInt16LE(0x0200, 46);      // Block size
+    mockBuffer.writeUInt32LE(0x0130, 48);      // Hash table pos (adjusted)
+    mockBuffer.writeUInt32LE(0x0230, 52);      // Block table pos (adjusted)
+    mockBuffer.writeUInt32LE(0x0003, 56);      // Hash table size (3 files)
+    mockBuffer.writeUInt32LE(0x0003, 60);      // Block table size (3 files)
 
     // Create hash entries for SC2 replay files
     const files = ['replay.details', 'replay.initData', 'replay.game.events'];
@@ -32,7 +42,7 @@ describe('SC2Replay', () => {
         hash2 = ((hash2 << 7) + hash2 + filename.charCodeAt(j)) >>> 0;
       }
 
-      const hashOffset = 0x100 + (i * 16);
+      const hashOffset = 0x130 + (i * 16);  // Adjusted for user data header
       mockBuffer.writeUInt32LE(hash1, hashOffset);
       mockBuffer.writeUInt32LE(hash2, hashOffset + 4);
       mockBuffer.writeUInt16LE(0x0000, hashOffset + 8);  // locale
@@ -40,8 +50,8 @@ describe('SC2Replay', () => {
       mockBuffer.writeUInt32LE(i, hashOffset + 12);      // blockIndex
 
       // Write block table entry
-      const blockOffset = 0x200 + (i * 16);
-      mockBuffer.writeUInt32LE(0x300 + (i * 0x100), blockOffset);  // filePos
+      const blockOffset = 0x230 + (i * 16);  // Adjusted for user data header
+      mockBuffer.writeUInt32LE(0x330 + (i * 0x100), blockOffset);  // filePos (adjusted)
       mockBuffer.writeUInt32LE(0x50, blockOffset + 4);             // compressedSize
       mockBuffer.writeUInt32LE(0x50, blockOffset + 8);             // fileSize
       mockBuffer.writeUInt32LE(0x80000000, blockOffset + 12);      // flags (EXISTS)
@@ -49,7 +59,7 @@ describe('SC2Replay', () => {
 
     // Write some mock file data
     for (let i = 0; i < 3; i++) {
-      const fileOffset = 0x300 + (i * 0x100);
+      const fileOffset = 0x330 + (i * 0x100);  // Adjusted for user data header
       // Write some dummy data that looks like SC2 replay data
       mockBuffer.writeUInt8(0x01, fileOffset); // Version
       mockBuffer.writeUInt8(0x02, fileOffset + 1); // Player count
@@ -82,7 +92,7 @@ describe('SC2Replay', () => {
       const replay = SC2Replay.fromBuffer(mockBuffer);
       const header = replay.replayHeader;
 
-      expect(header?.signature).toBe('SC2Replay');
+      expect(header?.signature).toBe('StarCraft II replay11');
       expect(header?.version.major).toBe(2);
       expect(header?.version.minor).toBe(0);
       expect(header?.version.build).toBeGreaterThan(0);
