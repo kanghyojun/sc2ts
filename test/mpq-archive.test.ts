@@ -1,5 +1,5 @@
-import { MpqArchive } from '../src/mpq-archive';
-import { MpqFileNotFoundError } from '../src/errors';
+import { MpqArchive } from '@/mpq-archive';
+import { MpqFileNotFoundError } from '@/errors';
 
 describe('MpqArchive', () => {
   let mockBuffer: Buffer;
