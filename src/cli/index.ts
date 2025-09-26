@@ -425,9 +425,9 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
         logger.info('💬 CHAT MESSAGES:');
         parsedData.events.message.forEach((msg, index) => {
           if (index < 10) { // 처음 10개만 표시
-            const playerName = parsedData.players[msg.userId]?.name || `Player ${msg.userId}`;
+            const playerName = msg.userId !== undefined ? parsedData.players[msg.userId]?.name || `Player ${msg.userId}` : 'Unknown Player';
             const messageText = typeof msg.messageData === 'string' ? msg.messageData :
-                               typeof msg.messageData === 'object' && msg.messageData?.text ? msg.messageData.text :
+                               typeof msg.messageData === 'object' && msg.messageData && 'text' in msg.messageData ? (msg.messageData as any).text :
                                `(${msg.messageType})`;
             logger.info(`  [${Math.floor(msg.loop / 16)}s] ${playerName}: ${messageText}`);
           }

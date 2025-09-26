@@ -10,7 +10,7 @@ configureLogger().catch(console.error);
 export { MpqArchive } from './mpq-archive';
 export { MpqReader } from './mpq-reader';
 export { SC2Replay } from './sc2-replay';
-export { VersionedDecoder, BitPackedBuffer } from './sc2-decoder';
+export { VersionedDecoder, BitPackedBuffer } from './protocol/sc2-decoder';
 export { configureLogger } from './logger';
 
 export type {
@@ -27,7 +27,7 @@ export type {
   TrackerEvent,
   ReplayInitData,
   ReplayData,
-  SC2ReplayOptions,
+  ReplayOptions as SC2ReplayOptions,
 } from './types';
 
 export { MpqError } from './errors';
