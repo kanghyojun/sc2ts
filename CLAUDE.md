@@ -542,10 +542,17 @@ Closes #42"
 
 ### Commit Workflow:
 
+**CRITICAL**: Always run quality checks before committing to ensure code integrity and prevent regressions.
+
 1. **Stage Related Changes Only**: Use `git add` selectively for atomic commits
 2. **Review Before Committing**: Use `git diff --cached` to verify staged changes
 3. **Write Clear Messages**: Follow the prefix and format guidelines above
-4. **Test Before Commit**: Ensure `pnpm run test` and `pnpm run typecheck` pass
+4. **MANDATORY Quality Checks**: Before every commit, you MUST run:
+   ```bash
+   pnpm run test      # All tests must pass
+   pnpm run typecheck # TypeScript compilation must succeed
+   pnpm run lint      # Linting must pass (warnings acceptable, errors not)
+   ```
 5. **One Logical Change**: If you have multiple unrelated changes, make separate commits
 
 #### Example Workflow:
@@ -553,14 +560,29 @@ Closes #42"
 ```bash
 # Make changes to hash table parsing
 git add src/mpq-reader.ts src/__tests__/mpq-reader.test.ts
+
+# MANDATORY: Run quality checks before committing
+pnpm run test && pnpm run typecheck && pnpm run lint
+
+# Commit only if all checks pass
 git commit -m "fix: correct endianness handling in hash table parsing"
 
 # Make separate commit for type improvements
 git add src/types.ts
+
+# MANDATORY: Run quality checks again
+pnpm run test && pnpm run typecheck && pnpm run lint
+
+# Commit only if all checks pass
 git commit -m "refactor: improve type definitions for MpqHashTableEntry"
 
 # Make separate commit for documentation
 git add README.md
+
+# MANDATORY: Run quality checks (even for docs - may affect examples)
+pnpm run test && pnpm run typecheck && pnpm run lint
+
+# Commit only if all checks pass
 git commit -m "docs: add hash table parsing examples to README"
 ```
 
