@@ -2,13 +2,22 @@
 // Based on Blizzard's s2protocol implementation
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import type { ProtocolDecoder, SC2ReplayHeaderDecoded } from './types';
+import type {
+  ReplayHeader,
+  ReplayDetails,
+  ReplayInitData,
+  GameEvent,
+  MessageEvent,
+  TrackerEvent,
+  AttributeEvent,
+} from '../types';
+import type { ProtocolDecoder, SupportProtocolVersion, ZodTypeInfos } from './types';
 import protocol80949 from './versions/protocol80949';
+import buildZodTypeinfo from './zod-typeinfo/index';
 
 // Direct mapping from build versions to protocol decoders
 // Protocol 80949 is compatible with builds 80949-94137
-const BUILD_TO_PROTOCOL: Record<number, ProtocolDecoder> = {
+const BUILD_TO_PROTOCOL: Record<SupportProtocolVersion, ProtocolDecoder> = {
   80949: protocol80949,
   81009: protocol80949,
   81102: protocol80949,
@@ -24,47 +33,23 @@ const BUILD_TO_PROTOCOL: Record<number, ProtocolDecoder> = {
   94137: protocol80949,
 };
 
+function numberIsBuildVersion(build: number): build is SupportProtocolVersion {
+  return build in BUILD_TO_PROTOCOL;
+}
+
 /**
  * Get protocol decoder for a specific build version
  */
 export function getProtocol(buildVersion: number): ProtocolDecoder {
-  const protocol = BUILD_TO_PROTOCOL[buildVersion] || getClosestProtocol(buildVersion);
-
-  if (!protocol) {
+  if (!numberIsBuildVersion(buildVersion)) {
     throw new Error(`Unsupported build version: ${buildVersion}`);
   }
 
-  return protocol;
+  return BUILD_TO_PROTOCOL[buildVersion];
 }
 
-/**
- * Find the closest available protocol for unsupported build versions
- */
-function getClosestProtocol(buildVersion: number): ProtocolDecoder | null {
-  const availableVersions = Object.keys(BUILD_TO_PROTOCOL).map(Number).sort((a, b) => a - b);
-
-  // Find the highest version that's still lower than or equal to the target
-  for (let i = availableVersions.length - 1; i >= 0; i--) {
-    const version = availableVersions[i];
-    if (version && version <= buildVersion) {
-      const protocol = BUILD_TO_PROTOCOL[version];
-      if (protocol !== undefined) {
-        return protocol;
-      }
-    }
-  }
-
-  // If no lower version found, use the lowest available
-  const firstVersion = availableVersions[0];
-  if (firstVersion !== undefined) {
-    const protocol = BUILD_TO_PROTOCOL[firstVersion];
-    if (protocol !== undefined) {
-      return protocol;
-    }
-  }
-
-  // Ultimate fallback
-  return protocol80949;
+function getZodTypeInfo(build: SupportProtocolVersion): ZodTypeInfos {
+  return buildZodTypeinfo[build];
 }
 
 /**
@@ -78,71 +63,310 @@ export function getSupportedBuilds(): number[] {
  * Check if a build version is supported
  */
 export function isBuildSupported(buildVersion: number): boolean {
-  return buildVersion in BUILD_TO_PROTOCOL || getClosestProtocol(buildVersion) !== null;
+  return numberIsBuildVersion(buildVersion);
 }
 
 /**
  * Get the latest/highest build version from BUILD_TO_PROTOCOL
  */
-function getLatestBuildVersion(): number {
+export function getLatestBuildVersion(): number {
   const buildVersions = Object.keys(BUILD_TO_PROTOCOL).map(Number).sort((a, b) => b - a);
-  return buildVersions[0] || 80949; // fallback to 80949 if no versions found
-}
-
-export function decodeReplayHeader(
-  headerData: Buffer,
-  buildVersion?: number,
-): { baseBuild: number; version: SC2ReplayHeaderDecoded['version'] } {
-  const protocol = getProtocol(buildVersion || getLatestBuildVersion());
-  const targetBuildVersion = buildVersion || getLatestBuildVersion();
-  const decodedHeader = protocol.decodeReplayHeader(headerData);
-  if (decodedHeader.m_version === undefined) {
-    throw new Error('Failed to decode replay header: version info missing');
+  if (buildVersions[0] == null) {
+    throw new Error('No supported build versions available');
   }
-  const version = decodedHeader?.m_version || {};
-
-  return {
-    baseBuild: version.m_baseBuild || targetBuildVersion,
-    version: {
-      major: version.m_major || 2,
-      minor: version.m_minor || 0,
-      revision: version.m_revision || 0,
-      build: version.m_build || targetBuildVersion,
-      baseBuild: version.m_baseBuild || targetBuildVersion,
-    },
-  };
+  return buildVersions[0];
 }
 
-export function decodeReplayHeaderAsync(
-  headerData: Buffer,
-  buildVersion?: number,
-): { baseBuild: number; version: SC2ReplayHeaderDecoded['version'] } {
-  return decodeReplayHeader(headerData, buildVersion);
-}
+export class VersionedProtocol {
 
-// Expose all ProtocolDecoder functions with build version support
+  private protocol: ProtocolDecoder;
+  private zodTypeInfo: ZodTypeInfos;
 
-export function decodeReplayDetails(data: Buffer, buildVersion?: number): any {
-  return getProtocol(buildVersion || getLatestBuildVersion()).decodeReplayDetails(data);
-}
+  constructor(buildVersion?: number) {
+    const actualBuildVersion = buildVersion || getLatestBuildVersion();
+    this.protocol = getProtocol(actualBuildVersion);
+    this.zodTypeInfo = getZodTypeInfo(actualBuildVersion as SupportProtocolVersion);
+  }
+  decodeReplayHeader(data: Buffer): ReplayHeader {
+    const rawReplayHeader = this.protocol.decodeReplayHeader(data);
+    const parsedReplayHeader = this.zodTypeInfo.replayHeader.parse(rawReplayHeader);
 
-export function decodeReplayInitdata(data: Buffer, buildVersion?: number): any {
-  return getProtocol(buildVersion || getLatestBuildVersion()).decodeReplayInitdata(data);
-}
+    return {
+      signature: parsedReplayHeader.m_signature.toString('utf8').replace(/\0/g, '').trim(),
+      version: {
+        flags: parsedReplayHeader.m_version.m_flags,
+        major: parsedReplayHeader.m_version.m_major,
+        minor: parsedReplayHeader.m_version.m_minor,
+        revision: parsedReplayHeader.m_version.m_revision,
+        build: parsedReplayHeader.m_version.m_build,
+        baseBuild: parsedReplayHeader.m_version.m_baseBuild,
+      },
+      type: parsedReplayHeader.m_type,
+      elapsedGameLoops: parsedReplayHeader.m_elapsedGameLoops,
+      useScaledTime: parsedReplayHeader.m_useScaledTime,
+      ngdpRootKey: {
+        dataDeprecated: parsedReplayHeader.m_ngdpRootKey.m_dataDeprecated,
+        data: parsedReplayHeader.m_ngdpRootKey.m_data,
+      },
+      dataBuildNum: parsedReplayHeader.m_dataBuildNum,
+      replayCompatibilityHash: {
+        dataDeprecated: parsedReplayHeader.m_replayCompatibilityHash.m_dataDeprecated,
+        data: parsedReplayHeader.m_replayCompatibilityHash.m_data,
+      },
+      ngdpRootKeyIsDevData: {
+        dataDeprecated: undefined,
+        data: parsedReplayHeader.m_ngdpRootKeyIsDevData,
+      },
+      length: data.length,
+    };
+  }
 
-export function decodeReplayGameEvents(data: Buffer, buildVersion?: number): any[] {
-  return getProtocol(buildVersion || getLatestBuildVersion()).decodeReplayGameEvents(data);
-}
+  decodeReplayDetails(data: Buffer): ReplayDetails {
+    const rawReplayDetails = this.protocol.decodeReplayDetails(data);
+    const parsedReplayDetails = this.zodTypeInfo.replayDetails.parse(rawReplayDetails);
 
-export function decodeReplayMessageEvents(data: Buffer, buildVersion?: number): any[] {
-  return getProtocol(buildVersion || getLatestBuildVersion()).decodeReplayMessageEvents(data);
-}
+    return {
+      playerList: parsedReplayDetails.m_playerList?.map((player: any) => ({
+        name: player.m_name,
+        toon: {
+          region: player.m_toon.m_region,
+          programId: player.m_toon.m_programId,
+          realm: player.m_toon.m_realm,
+          name: player.m_toon.m_name,
+          id: player.m_toon.m_id,
+        },
+        race: player.m_race,
+        color: {
+          a: player.m_color.m_a,
+          r: player.m_color.m_r,
+          g: player.m_color.m_g,
+          b: player.m_color.m_b,
+        },
+        control: player.m_control,
+        teamId: player.m_teamId,
+        handicap: player.m_handicap,
+        observe: player.m_observe,
+        result: player.m_result,
+        workingSetSlotId: player.m_workingSetSlotId,
+        hero: player.m_hero,
+      })),
+      title: parsedReplayDetails.m_title,
+      difficulty: parsedReplayDetails.m_difficulty,
+      thumbnail: {
+        file: parsedReplayDetails.m_thumbnail.m_file,
+      },
+      isBlizzardMap: parsedReplayDetails.m_isBlizzardMap,
+      timeUTC: Number(parsedReplayDetails.m_timeUTC),
+      timeLocalOffset: Number(parsedReplayDetails.m_timeLocalOffset),
+      restartAsTransitionMap: parsedReplayDetails.m_restartAsTransitionMap,
+      disableRecoverGame: parsedReplayDetails.m_disableRecoverGame,
+      description: parsedReplayDetails.m_description,
+      imageFilePath: parsedReplayDetails.m_imageFilePath,
+      campaignIndex: parsedReplayDetails.m_campaignIndex,
+      mapFileName: parsedReplayDetails.m_mapFileName,
+      cacheHandles: parsedReplayDetails.m_cacheHandles || [],
+      miniSave: parsedReplayDetails.m_miniSave,
+      gameSpeed: parsedReplayDetails.m_gameSpeed,
+      defaultDifficulty: parsedReplayDetails.m_defaultDifficulty,
+      modPaths: parsedReplayDetails.m_modPaths,
+      type: 0, // Default value, not present in zod schema
+      realTimeLength: 0, // Default value, not present in zod schema
+      mapSizeX: 0, // Default value, not present in zod schema
+      mapSizeY: 0, // Default value, not present in zod schema
+    };
+  }
 
-export function decodeReplayTrackerEvents(data: Buffer, buildVersion?: number): any[] {
-  const protocol = getProtocol(buildVersion || getLatestBuildVersion());
-  return protocol.decodeReplayTrackerEvents?.(data) || [];
-}
+  decodeReplayInitdata(data: Buffer): ReplayInitData {
+    const rawReplayInitdata = this.protocol.decodeReplayInitdata(data);
+    const parsedReplayInitdata = this.zodTypeInfo.replayInitdata.parse(rawReplayInitdata);
 
-export function decodeReplayAttributesEvents(data: Buffer, buildVersion?: number): any {
-  return getProtocol(buildVersion || getLatestBuildVersion()).decodeReplayAttributesEvents(data);
+    return {
+      syncLobbyState: {
+        userInitialData: parsedReplayInitdata.m_syncLobbyState.m_userInitialData.map((user: any) => ({
+          name: user.m_name,
+          clanTag: user.m_clanTag,
+          clanLogo: user.m_clanLogo,
+          highestLeague: user.m_highestLeague,
+          combinedRaceLevels: user.m_combinedRaceLevels,
+          randomSeed: user.m_randomSeed,
+          racePreference: {
+            race: user.m_racePreference.m_race,
+          },
+          teamPreference: {
+            team: user.m_teamPreference.m_team,
+          },
+          testMap: user.m_testMap,
+          testAuto: user.m_testAuto,
+          examine: user.m_examine,
+          customInterface: user.m_customInterface,
+          testType: user.m_testType,
+          observe: user.m_observe,
+          hero: user.m_hero,
+          skin: user.m_skin,
+          mount: user.m_mount,
+          toonHandle: user.m_toonHandle,
+          scaledRating: user.m_scaledRating,
+        })),
+        gameDescription: {
+          randomValue: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_randomValue,
+          gameCacheName: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameCacheName,
+          gameOptions: {
+            lockTeams: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_lockTeams,
+            teamsTogether: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_teamsTogether,
+            advancedSharedControl: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_advancedSharedControl,
+            randomRaces: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_randomRaces,
+            battleNet: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_battleNet,
+            amm: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_amm,
+            competitive: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_competitive,
+            practice: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_practice,
+            cooperative: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_cooperative,
+            noVictoryOrDefeat: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_noVictoryOrDefeat,
+            heroDuplicatesAllowed: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_heroDuplicatesAllowed,
+            fog: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_fog,
+            observers: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_observers,
+            userDifficulty: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_userDifficulty,
+            clientDebugFlags: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_clientDebugFlags,
+            buildCoachEnabled: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_buildCoachEnabled,
+          },
+          gameSpeed: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameSpeed,
+          gameType: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameType,
+          maxUsers: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_maxUsers,
+          maxObservers: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_maxObservers,
+          maxPlayers: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_maxPlayers,
+          maxTeams: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_maxTeams,
+          maxColors: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_maxColors,
+          maxRaces: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_maxRaces,
+          maxControls: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_maxControls,
+          mapSizeX: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_mapSizeX,
+          mapSizeY: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_mapSizeY,
+          mapFileSyncChecksum: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_mapFileSyncChecksum,
+          mapFileName: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_mapFileName,
+          mapAuthorName: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_mapAuthorName,
+          modFileSyncChecksum: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_modFileSyncChecksum,
+          slotDescriptions: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_slotDescriptions.map((slot: any) => ({
+            allowedColors: slot.m_allowedColors,
+            allowedRaces: slot.m_allowedRaces,
+            allowedDifficulty: slot.m_allowedDifficulty,
+            allowedControls: slot.m_allowedControls,
+            allowedObserveTypes: slot.m_allowedObserveTypes,
+            allowedAIBuilds: slot.m_allowedAIBuilds,
+          })),
+          defaultDifficulty: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_defaultDifficulty,
+          defaultAIBuild: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_defaultAIBuild,
+          cacheHandles: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_cacheHandles,
+          hasExtensionMod: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_hasExtensionMod,
+          hasNonBlizzardExtensionMod: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_hasNonBlizzardExtensionMod,
+          isBlizzardMap: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_isBlizzardMap,
+          isPremadeFFA: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_isPremadeFFA,
+          isCoopMode: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_isCoopMode,
+          isRealtimeMode: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_isRealtimeMode,
+        },
+        lobbyState: {
+          phase: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_phase,
+          maxUsers: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_maxUsers,
+          maxObservers: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_maxObservers,
+          slots: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_slots.map((slot: any) => ({
+            control: slot.m_control,
+            userId: slot.m_userId,
+            teamId: slot.m_teamId,
+            colorPref: {
+              color: slot.m_colorPref.m_color,
+            },
+            racePref: {
+              race: slot.m_racePref.m_race,
+            },
+            difficulty: slot.m_difficulty,
+            aiBuild: slot.m_aiBuild,
+            handicap: slot.m_handicap,
+            observe: slot.m_observe,
+            logoIndex: slot.m_logoIndex,
+            hero: slot.m_hero,
+            skin: slot.m_skin,
+            mount: slot.m_mount,
+            artifacts: slot.m_artifacts,
+            workingSetSlotId: slot.m_workingSetSlotId,
+            rewards: slot.m_rewards,
+            toonHandle: slot.m_toonHandle,
+            licenses: slot.m_licenses,
+            tandemLeaderId: slot.m_tandemLeaderId,
+            commander: slot.m_commander,
+            commanderLevel: slot.m_commanderLevel,
+            hasSilencePenalty: slot.m_hasSilencePenalty,
+            tandemId: slot.m_tandemId,
+            commanderMasteryLevel: slot.m_commanderMasteryLevel,
+            commanderMasteryTalents: slot.m_commanderMasteryTalents,
+            trophyId: slot.m_trophyId,
+            rewardOverrides: slot.m_rewardOverrides.map((override: any) => ({
+              key: override.m_key,
+              rewards: override.m_rewards,
+            })),
+            brutalPlusDifficulty: slot.m_brutalPlusDifficulty,
+            retryMutationIndexes: slot.m_retryMutationIndexes,
+            aCEnemyRace: slot.m_aCEnemyRace,
+            aCEnemyWaveType: slot.m_aCEnemyWaveType,
+            selectedCommanderPrestige: slot.m_selectedCommanderPrestige,
+          })),
+          randomSeed: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_randomSeed,
+          hostUserId: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_hostUserId,
+          isSinglePlayer: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_isSinglePlayer,
+          pickedMapTag: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_pickedMapTag,
+          gameDuration: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_gameDuration,
+          defaultDifficulty: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_defaultDifficulty,
+          defaultAIBuild: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_defaultAIBuild,
+        },
+      },
+    };
+  }
+
+  decodeReplayGameEvents(data: Buffer): GameEvent[] {
+    const rawGameEvents = this.protocol.decodeReplayGameEvents(data);
+    const parsedGameEvents = this.zodTypeInfo.replayGameEvents.parse(rawGameEvents);
+
+    return parsedGameEvents.map((event: any) => ({
+      ...event,
+      loop: event._gameloop,
+      userId: event._userid,
+      eventType: event._event,
+      eventData: event,
+    }));
+  }
+
+  decodeReplayMessageEvents(data: Buffer): MessageEvent[] {
+    const rawMessageEvents = this.protocol.decodeReplayMessageEvents(data);
+    const parsedMessageEvents = this.zodTypeInfo.replayMessageEvents.parse(rawMessageEvents);
+
+    return parsedMessageEvents.map((event: any) => ({
+      ...event,
+      loop: event._gameloop,
+      userId: event._userid,
+      messageType: event._event,
+      messageData: event,
+    }));
+  }
+
+  decodeReplayTrackerEvents(data: Buffer): TrackerEvent[] {
+    const rawTrackerEvents = this.protocol.decodeReplayTrackerEvents?.(data) || [];
+    const parsedTrackerEvents = this.zodTypeInfo.replayTrackerEvents.parse(rawTrackerEvents);
+
+    return parsedTrackerEvents.map((event: any) => ({
+      ...event,
+      loop: event._gameloop,
+      eventType: event._event,
+      eventData: event,
+    }));
+  }
+
+  decodeReplayAttributesEvents(data: Buffer): AttributeEvent {
+    const rawAttributesEvents = this.protocol.decodeReplayAttributesEvents(data);
+    const parsedAttributesEvents = this.zodTypeInfo.replayAttributesEvents.parse(rawAttributesEvents);
+
+    // AttributesEvents is typically a single event or an array with one element
+    const event = Array.isArray(parsedAttributesEvents) ? parsedAttributesEvents[0] : parsedAttributesEvents;
+
+    return {
+      ...event,
+      loop: event._gameloop,
+      attributeData: event,
+    };
+  }
 }
