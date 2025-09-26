@@ -108,15 +108,13 @@ describe('SC2Replay', () => {
       expect(gameLength).toBeGreaterThanOrEqual(0);
     });
 
-    it('should return replay data structure', () => {
-      const replayData = replay.getReplayData();
-
-      expect(replayData.header).toBeDefined();
-      expect(replayData.details).toBeDefined();
-      expect(replayData.initData).toBeDefined();
-      expect(replayData.gameEvents).toBeInstanceOf(Array);
-      expect(replayData.messageEvents).toBeInstanceOf(Array);
-      expect(replayData.trackerEvents).toBeInstanceOf(Array);
+    it('should provide direct access to replay data components', () => {
+      expect(replay.replayHeader).toBeDefined();
+      expect(replay.replayDetails).toBeDefined();
+      expect(replay.replayInitData).toBeDefined();
+      expect(replay.gameEvents).toBeInstanceOf(Array);
+      expect(replay.messageEvents).toBeInstanceOf(Array);
+      expect(replay.trackerEvents).toBeInstanceOf(Array);
     });
 
     it('should handle missing winner gracefully', () => {

@@ -4,7 +4,7 @@
 import { MpqArchive } from './mpq-archive';
 import { createLogger } from './logger';
 import { VersionedProtocol } from './protocol';
-import type { ReplayData, ReplayDetails, ReplayInitData, ReplayOptions, GameEvent, MessageEvent, TrackerEvent, ReplayHeader, Player } from './types';
+import type { ReplayDetails, ReplayInitData, ReplayOptions, GameEvent, MessageEvent, TrackerEvent, ReplayHeader, Player } from './types';
 
 const logger = createLogger('sc2-replay');
 
@@ -153,20 +153,6 @@ export class SC2Replay {
     return this._trackerEvents;
   }
 
-  getReplayData(): ReplayData {
-    if (!this.header || !this.details || !this.initData) {
-      throw new Error('Replay not fully parsed');
-    }
-
-    return {
-      header: this.header,
-      details: this.details,
-      initData: this.initData,
-      gameEvents: this._gameEvents,
-      messageEvents: this._messageEvents,
-      trackerEvents: this._trackerEvents,
-    };
-  }
 
   // Utility getters
   get gameLength(): number {

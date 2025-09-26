@@ -280,10 +280,9 @@ if (winner) {
   console.log('Winner:', winner.name);
 }
 
-// Get complete replay data structure
-const replayData = replay.getReplayData();
-console.log('Game events:', replayData.gameEvents.length);
-console.log('Chat messages:', replayData.messageEvents.length);
+// Access replay data directly
+console.log('Game events:', replay.gameEvents.length);
+console.log('Chat messages:', replay.messageEvents.length);
 ```
 
 ### Advanced Replay Parsing with Options

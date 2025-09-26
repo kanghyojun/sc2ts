@@ -75,19 +75,14 @@ describe('SC2Replay - Real Files', () => {
       expect(winner === null || typeof winner === 'object').toBe(true);
     });
 
-    it('should return a complete replay data structure', () => {
-      const replayData = replay.getReplayData();
+    it('should provide direct access to all replay data components', () => {
+      expect(replay.replayHeader).toBeDefined();
+      expect(replay.replayDetails).toBeDefined();
+      expect(replay.replayInitData).toBeDefined();
 
-      expect(replayData).toHaveProperty('header');
-      expect(replayData).toHaveProperty('details');
-      expect(replayData).toHaveProperty('initData');
-      expect(replayData).toHaveProperty('gameEvents');
-      expect(replayData).toHaveProperty('messageEvents');
-      expect(replayData).toHaveProperty('trackerEvents');
-
-      expect(replayData.gameEvents).toBeInstanceOf(Array);
-      expect(replayData.messageEvents).toBeInstanceOf(Array);
-      expect(replayData.trackerEvents).toBeInstanceOf(Array);
+      expect(replay.gameEvents).toBeInstanceOf(Array);
+      expect(replay.messageEvents).toBeInstanceOf(Array);
+      expect(replay.trackerEvents).toBeInstanceOf(Array);
     });
 
     it('should handle events arrays', () => {
