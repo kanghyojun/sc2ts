@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import { MpqArchive } from '../mpq-archive';
+import { MpqArchive } from '../src/mpq-archive';
 import { readFileSync } from 'fs';
 
 describe('MpqReader', () => {

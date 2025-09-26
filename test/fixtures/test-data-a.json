@@ -1,0 +1,4127 @@
+{
+  "replay_file": "a.SC2Replay",
+  "header": {
+    "m_signature": {
+      "__bytes__": "U3RhckNyYWZ0IElJIHJlcGxheRsxMQ=="
+    },
+    "m_version": {
+      "m_flags": 1,
+      "m_major": 5,
+      "m_minor": 0,
+      "m_revision": 14,
+      "m_build": 94137,
+      "m_baseBuild": 94137
+    },
+    "m_type": 2,
+    "m_elapsedGameLoops": 9246,
+    "m_useScaledTime": true,
+    "m_ngdpRootKey": {
+      "m_data": {
+        "__bytes__": "UZ7o0G44RGnGUt1Y/GAWrA=="
+      }
+    },
+    "m_dataBuildNum": 94137,
+    "m_replayCompatibilityHash": {
+      "m_data": {
+        "__bytes__": "AAAAAAAAAAAAAAAAAAAAAA=="
+      }
+    },
+    "m_ngdpRootKeyIsDevData": false
+  },
+  "details": {
+    "m_playerList": [
+      {
+        "m_name": {
+          "__bytes__": "bmFsbGFsYWxh"
+        },
+        "m_toon": {
+          "m_region": 3,
+          "m_programId": {
+            "__bytes__": "AABTMg=="
+          },
+          "m_realm": 1,
+          "m_id": 7307685
+        },
+        "m_race": {
+          "__bytes__": "7ZSE66Gc7Yag7Iqk"
+        },
+        "m_color": {
+          "m_a": 255,
+          "m_r": 180,
+          "m_g": 20,
+          "m_b": 30
+        },
+        "m_control": 2,
+        "m_teamId": 0,
+        "m_handicap": 100,
+        "m_observe": 0,
+        "m_result": 2,
+        "m_workingSetSlotId": 0,
+        "m_hero": {
+          "__bytes__": ""
+        }
+      },
+      {
+        "m_name": {
+          "__bytes__": "SUlJSUlJSUlJSUlJ"
+        },
+        "m_toon": {
+          "m_region": 3,
+          "m_programId": {
+            "__bytes__": "AABTMg=="
+          },
+          "m_realm": 1,
+          "m_id": 5297864
+        },
+        "m_race": {
+          "__bytes__": "7ZSE66Gc7Yag7Iqk"
+        },
+        "m_color": {
+          "m_a": 255,
+          "m_r": 0,
+          "m_g": 66,
+          "m_b": 255
+        },
+        "m_control": 2,
+        "m_teamId": 1,
+        "m_handicap": 100,
+        "m_observe": 0,
+        "m_result": 1,
+        "m_workingSetSlotId": 1,
+        "m_hero": {
+          "__bytes__": ""
+        }
+      }
+    ],
+    "m_title": {
+      "__bytes__": "TGV5IExpbmVz"
+    },
+    "m_difficulty": {
+      "__bytes__": ""
+    },
+    "m_thumbnail": {
+      "m_file": {
+        "__bytes__": "TWluaW1hcC50Z2E="
+      }
+    },
+    "m_isBlizzardMap": true,
+    "m_timeUTC": 134025042941501079,
+    "m_timeLocalOffset": 324000000000,
+    "m_description": {
+      "__bytes__": ""
+    },
+    "m_imageFilePath": {
+      "__bytes__": ""
+    },
+    "m_mapFileName": {
+      "__bytes__": ""
+    },
+    "m_cacheHandles": [
+      {
+        "__bytes__": "czJtYQAAS1Jt5BUDuszQVlY2C28CfbiBafoZibtjV7GyFaJUeTn1+w=="
+      },
+      {
+        "__bytes__": "czJtYQAAS1JCHIqg82GbZS0jonNd/ugSq2RCKCNeenl+3s/otn2jDg=="
+      },
+      {
+        "__bytes__": "czJtYQAAS1JmCTgyEoRT7/+7eHyAt9Puwa2BveVcg8kw3qecTlBaBA=="
+      },
+      {
+        "__bytes__": "czJtYQAAS1LZLfxIxITFkVQnC5JK19V0hPKrmkdiHHqxZDG/ZsU7QA=="
+      },
+      {
+        "__bytes__": "czJtYQAAS1L+QZeJwaz6fM21u+KFX+9axjz/XquKwpqCL2gP5ZPZTg=="
+      },
+      {
+        "__bytes__": "czJtYQAAS1J/QUEapZf0tGRA1CpWM0i/U4ItKmgRLwEE+biR9vBa4Q=="
+      },
+      {
+        "__bytes__": "czJtYQAAS1JrP6aqTz0xEVNkt89oQ717D5PI7Acp6A7LXhG0a4ubcw=="
+      }
+    ],
+    "m_miniSave": false,
+    "m_gameSpeed": 4,
+    "m_defaultDifficulty": 3,
+    "m_modPaths": null,
+    "m_campaignIndex": 0,
+    "m_restartAsTransitionMap": false,
+    "m_disableRecoverGame": false
+  },
+  "initdata": {
+    "m_syncLobbyState": {
+      "m_userInitialData": [
+        {
+          "m_name": {
+            "__bytes__": "bmFsbGFsYWxh"
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 5,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": 3946
+        },
+        {
+          "m_name": {
+            "__bytes__": "SUlJSUlJSUlJSUlJ"
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 6,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": 4062
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        },
+        {
+          "m_name": {
+            "__bytes__": ""
+          },
+          "m_clanTag": {
+            "__bytes__": ""
+          },
+          "m_clanLogo": null,
+          "m_highestLeague": 0,
+          "m_combinedRaceLevels": 4294967295,
+          "m_randomSeed": 0,
+          "m_racePreference": {
+            "m_race": null
+          },
+          "m_teamPreference": {
+            "m_team": null
+          },
+          "m_testMap": false,
+          "m_testAuto": false,
+          "m_examine": false,
+          "m_customInterface": false,
+          "m_testType": 0,
+          "m_observe": 0,
+          "m_hero": {
+            "__bytes__": ""
+          },
+          "m_skin": {
+            "__bytes__": ""
+          },
+          "m_mount": {
+            "__bytes__": ""
+          },
+          "m_toonHandle": {
+            "__bytes__": ""
+          },
+          "m_scaledRating": null
+        }
+      ],
+      "m_gameDescription": {
+        "m_randomValue": 1774625791,
+        "m_gameCacheName": {
+          "__bytes__": "RGZsdA=="
+        },
+        "m_gameOptions": {
+          "m_lockTeams": true,
+          "m_teamsTogether": false,
+          "m_advancedSharedControl": false,
+          "m_randomRaces": false,
+          "m_battleNet": true,
+          "m_amm": true,
+          "m_competitive": true,
+          "m_practice": false,
+          "m_cooperative": false,
+          "m_noVictoryOrDefeat": false,
+          "m_heroDuplicatesAllowed": true,
+          "m_fog": 0,
+          "m_observers": 0,
+          "m_userDifficulty": 0,
+          "m_clientDebugFlags": 265,
+          "m_buildCoachEnabled": false
+        },
+        "m_gameSpeed": 4,
+        "m_gameType": 0,
+        "m_maxUsers": 2,
+        "m_maxObservers": 14,
+        "m_maxPlayers": 2,
+        "m_maxTeams": 2,
+        "m_maxColors": 16,
+        "m_maxRaces": 3,
+        "m_maxControls": 1,
+        "m_mapSizeX": 200,
+        "m_mapSizeY": 184,
+        "m_mapFileSyncChecksum": 1225440366,
+        "m_mapFileName": {
+          "__bytes__": ""
+        },
+        "m_mapAuthorName": {
+          "__bytes__": "My1TMi0yLTI5NTI2"
+        },
+        "m_modFileSyncChecksum": 4231960516,
+        "m_slotDescriptions": [
+          {
+            "m_allowedColors": [
+              16,
+              65279
+            ],
+            "m_allowedRaces": [
+              3,
+              7
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              57896044618658097711785492504343953926634992332820282019728792003956564819967
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856060971323450825202512501348405487551861301792560366701510656
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              65279
+            ],
+            "m_allowedRaces": [
+              3,
+              7
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              57896044618658097711785492504343953926634992332820282019728792003956564819967
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856068033062903135218371369990900012444846121263263134544560128
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856096280020704154335096858231963216289601370054088641296203776
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856209267851933989768362191610372174070560437238418047919718400
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856060971323450825202512501348405487551861301792560366701510656
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856068033062903135218371369990900012444846121263263134544560128
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856096280020704154335096858231963216289601370054088641296203776
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856209267851933989768362191610372174070560437238418047919718400
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856060971323450825202512501348405487551861301792560366701510656
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856068033062903135218371369990900012444846121263263134544560128
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856096280020704154335096858231963216289601370054088641296203776
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856209267851933989768362191610372174070560437238418047919718400
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856060971323450825202512501348405487551861301792560366701510656
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856068033062903135218371369990900012444846121263263134544560128
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856096280020704154335096858231963216289601370054088641296203776
+            ]
+          },
+          {
+            "m_allowedColors": [
+              16,
+              256
+            ],
+            "m_allowedRaces": [
+              3,
+              0
+            ],
+            "m_allowedDifficulty": [
+              32,
+              4261871616
+            ],
+            "m_allowedControls": [
+              255,
+              1583094970041432359306634560665654990181425571600554586476959156358187319296
+            ],
+            "m_allowedObserveTypes": [
+              3,
+              7
+            ],
+            "m_allowedAIBuilds": [
+              255,
+              28269555624687856209267851933989768362191610372174070560437238418047919718400
+            ]
+          }
+        ],
+        "m_defaultDifficulty": 3,
+        "m_defaultAIBuild": 0,
+        "m_cacheHandles": [
+          {
+            "__bytes__": "czJtYQAAS1Jt5BUDuszQVlY2C28CfbiBafoZibtjV7GyFaJUeTn1+w=="
+          },
+          {
+            "__bytes__": "czJtYQAAS1JCHIqg82GbZS0jonNd/ugSq2RCKCNeenl+3s/otn2jDg=="
+          },
+          {
+            "__bytes__": "czJtYQAAS1JmCTgyEoRT7/+7eHyAt9Puwa2BveVcg8kw3qecTlBaBA=="
+          },
+          {
+            "__bytes__": "czJtYQAAS1LZLfxIxITFkVQnC5JK19V0hPKrmkdiHHqxZDG/ZsU7QA=="
+          },
+          {
+            "__bytes__": "czJtYQAAS1L+QZeJwaz6fM21u+KFX+9axjz/XquKwpqCL2gP5ZPZTg=="
+          },
+          {
+            "__bytes__": "czJtYQAAS1J/QUEapZf0tGRA1CpWM0i/U4ItKmgRLwEE+biR9vBa4Q=="
+          },
+          {
+            "__bytes__": "czJtYQAAS1JrP6aqTz0xEVNkt89oQ717D5PI7Acp6A7LXhG0a4ubcw=="
+          }
+        ],
+        "m_hasExtensionMod": false,
+        "m_hasNonBlizzardExtensionMod": false,
+        "m_isBlizzardMap": true,
+        "m_isPremadeFFA": false,
+        "m_isCoopMode": false,
+        "m_isRealtimeMode": false
+      },
+      "m_lobbyState": {
+        "m_phase": 0,
+        "m_maxUsers": 2,
+        "m_maxObservers": 14,
+        "m_slots": [
+          {
+            "m_control": 2,
+            "m_userId": 0,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 1
+            },
+            "m_racePref": {
+              "m_race": 2
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 0,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 0,
+            "m_rewards": [
+              957728898,
+              1932524020,
+              569055983,
+              3659500125,
+              800865563,
+              1500394717,
+              522060623,
+              207557107,
+              2265163032,
+              2065745403,
+              1697980591,
+              4144653506,
+              918219367,
+              2908506816,
+              1873318506,
+              1555175204,
+              3774144990,
+              18730036,
+              1211360877,
+              923590681,
+              2777065642,
+              4166020264,
+              2440135473,
+              3881125246,
+              2009110693,
+              135098568,
+              1185292261,
+              3710533283,
+              3979921667,
+              574205234,
+              3199996399,
+              3673336716,
+              1856740790,
+              861201319,
+              1465828875,
+              656055948,
+              1970675092,
+              3573408684,
+              1664806146,
+              415049813,
+              2104220742,
+              3717180683,
+              1751841167,
+              2575161619,
+              4067220888,
+              2798322801,
+              3281192906,
+              2418337610,
+              58624234,
+              3776162522,
+              2200440608,
+              0,
+              3733267237,
+              879683935,
+              3356965872,
+              4037382619,
+              1896734762,
+              877192560,
+              3535385893,
+              170345607,
+              268555963,
+              0,
+              1819379161,
+              2211791455,
+              2429550722,
+              0,
+              2820704051,
+              2261818887,
+              2636101654,
+              306523769,
+              2269615009,
+              3844201106,
+              2856181813,
+              3335041079,
+              1440277345,
+              1333792768,
+              0,
+              2112492252,
+              3297901810,
+              2376829090,
+              2816041570,
+              3558592749,
+              597272904,
+              648212375,
+              2011421739,
+              2428064812,
+              15768155,
+              3334748015,
+              2442224836,
+              535063834,
+              570858554,
+              1804753350,
+              535257061,
+              92851551,
+              3927507442,
+              2359737029,
+              4008355342,
+              2743830879,
+              3065782512,
+              3961822947,
+              2926081466,
+              3862455791,
+              1434315354,
+              835964495,
+              2546882099,
+              1701027258,
+              3663192486,
+              2615206337,
+              2484810407,
+              3297635990,
+              3381814647,
+              3312681754,
+              3200889017,
+              695505991,
+              3662634844,
+              334383271,
+              2326149197,
+              1236408901,
+              2588696470,
+              1625603542,
+              2569643939,
+              3423502293,
+              2419802213,
+              3404898509,
+              2976815359,
+              4241103608,
+              1127476957,
+              928246938
+            ],
+            "m_toonHandle": {
+              "__bytes__": "My1TMi0xLTczMDc2ODU="
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": 0,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 1,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 2,
+            "m_userId": 1,
+            "m_teamId": 1,
+            "m_colorPref": {
+              "m_color": 2
+            },
+            "m_racePref": {
+              "m_race": 2
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 0,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 1,
+            "m_rewards": [
+              1880708505,
+              1932524020,
+              569055983,
+              3739999408,
+              878938974,
+              2222924803,
+              956170815,
+              2192271793,
+              209804987,
+              3985484933,
+              687536709,
+              663878640,
+              918219367,
+              3146610593,
+              1873318506,
+              44476881,
+              3774144990,
+              693439517,
+              3308215957,
+              3608992184,
+              3522318034,
+              73233165,
+              3443933416,
+              3235199323,
+              3317453239,
+              135098568,
+              1185292261,
+              3739745818,
+              838396347,
+              3572779666,
+              3199996399,
+              1016097207,
+              3561450865,
+              1033420171,
+              1465828875,
+              629186069,
+              1970675092,
+              1310863139,
+              3730857920,
+              2666647849,
+              3965735234,
+              1763256851,
+              3212085739,
+              821737024,
+              3710536355,
+              2281419859,
+              3281192906,
+              3687704647,
+              1885296541,
+              69563435,
+              2467967408,
+              0,
+              965710582,
+              194551559,
+              3356965872,
+              3070498183,
+              3130451755,
+              3988068035,
+              807325171,
+              2493350712,
+              4045489825,
+              0,
+              3949366033,
+              4286393703,
+              3672771102,
+              0,
+              612833218,
+              3870308955,
+              2875940343,
+              3545722180,
+              3589018595,
+              4109790466,
+              1636158712,
+              3335041079,
+              1440277345,
+              1333792768,
+              0,
+              3340673780,
+              2423614369,
+              2376829090,
+              4177517703,
+              3009450333,
+              2951153716,
+              4207826648,
+              2011421739,
+              2145557391,
+              701422512,
+              3541431553,
+              3484295921,
+              2541795168,
+              3358888808,
+              2691764989,
+              2773673735,
+              3260782025,
+              1443378168,
+              2359737029,
+              4008355342,
+              2865176050,
+              3065782512,
+              3961822947,
+              1710678584,
+              1137427643,
+              36334920,
+              835964495,
+              809499872,
+              3760760183,
+              3663192486,
+              2861212221,
+              1702535490,
+              4126391879,
+              3381814647,
+              2664728293,
+              434807092,
+              1424600664,
+              3752853823,
+              2813897333,
+              3008846121,
+              2620730358,
+              1345605245,
+              1625603542,
+              344062787,
+              3760386849,
+              2276535543,
+              2419802213,
+              3404898509,
+              2976815359,
+              3834465703,
+              4241103608,
+              1127476957,
+              928246938,
+              2063317397
+            ],
+            "m_toonHandle": {
+              "__bytes__": "My1TMi0xLTUyOTc4NjQ="
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": 1,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 1,
+            "m_rewardOverrides": [
+              {
+                "m_key": 1516597863,
+                "m_rewards": [
+                  1514958439,
+                  1515348840,
+                  1514303084,
+                  1514502260
+                ]
+              },
+              {
+                "m_key": 1349676916,
+                "m_rewards": [
+                  1348103284,
+                  1347646571,
+                  1346595955,
+                  1346917485
+                ]
+              }
+            ],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 15,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 14,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 13,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 12,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 11,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 10,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 9,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 8,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 7,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 6,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 5,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 4,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 3,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          },
+          {
+            "m_control": 1,
+            "m_userId": null,
+            "m_teamId": 0,
+            "m_colorPref": {
+              "m_color": 0
+            },
+            "m_racePref": {
+              "m_race": 0
+            },
+            "m_difficulty": 3,
+            "m_aiBuild": 0,
+            "m_handicap": 100,
+            "m_observe": 1,
+            "m_logoIndex": 0,
+            "m_hero": {
+              "__bytes__": ""
+            },
+            "m_skin": {
+              "__bytes__": ""
+            },
+            "m_mount": {
+              "__bytes__": ""
+            },
+            "m_artifacts": [
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              },
+              {
+                "__bytes__": ""
+              }
+            ],
+            "m_workingSetSlotId": 2,
+            "m_rewards": [],
+            "m_toonHandle": {
+              "__bytes__": ""
+            },
+            "m_licenses": [],
+            "m_tandemLeaderId": null,
+            "m_commander": {
+              "__bytes__": ""
+            },
+            "m_commanderLevel": 1,
+            "m_hasSilencePenalty": false,
+            "m_tandemId": null,
+            "m_commanderMasteryLevel": 0,
+            "m_commanderMasteryTalents": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_trophyId": 0,
+            "m_rewardOverrides": [],
+            "m_brutalPlusDifficulty": 0,
+            "m_retryMutationIndexes": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "m_aCEnemyRace": 0,
+            "m_aCEnemyWaveType": 0,
+            "m_selectedCommanderPrestige": 0
+          }
+        ],
+        "m_randomSeed": 1774625791,
+        "m_hostUserId": null,
+        "m_isSinglePlayer": false,
+        "m_pickedMapTag": 0,
+        "m_gameDuration": 0,
+        "m_defaultDifficulty": 3,
+        "m_defaultAIBuild": 0
+      }
+    }
+  },
+  "gameevents": [],
+  "messageevents": [],
+  "trackerevents": [],
+  "attributeevents": {
+    "source": 0,
+    "mapNamespace": 0,
+    "scopes": {
+      "1": {
+        "3007": [
+          {
+            "namespace": 999,
+            "attrid": 3007,
+            "value": {
+              "__bytes__": "UGFydA=="
+            }
+          }
+        ],
+        "500": [
+          {
+            "namespace": 999,
+            "attrid": 500,
+            "value": {
+              "__bytes__": "SHVtbg=="
+            }
+          }
+        ],
+        "3001": [
+          {
+            "namespace": 999,
+            "attrid": 3001,
+            "value": {
+              "__bytes__": "UHJvdA=="
+            }
+          }
+        ],
+        "3103": [
+          {
+            "namespace": 999,
+            "attrid": 3103,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3011": [
+          {
+            "namespace": 999,
+            "attrid": 3011,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3108": [
+          {
+            "namespace": 999,
+            "attrid": 3108,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3168": [
+          {
+            "namespace": 999,
+            "attrid": 3168,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2024": [
+          {
+            "namespace": 999,
+            "attrid": 2024,
+            "value": {
+              "__bytes__": "VDE="
+            }
+          }
+        ],
+        "3012": [
+          {
+            "namespace": 999,
+            "attrid": 3012,
+            "value": {
+              "__bytes__": "ICAyMg=="
+            }
+          }
+        ],
+        "5005": [
+          {
+            "namespace": 999,
+            "attrid": 5005,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3110": [
+          {
+            "namespace": 999,
+            "attrid": 3110,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3109": [
+          {
+            "namespace": 999,
+            "attrid": 3109,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3202": [
+          {
+            "namespace": 999,
+            "attrid": 3202,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3002": [
+          {
+            "namespace": 999,
+            "attrid": 3002,
+            "value": {
+              "__bytes__": "dGMwMQ=="
+            }
+          }
+        ],
+        "2008": [
+          {
+            "namespace": 999,
+            "attrid": 2008,
+            "value": {
+              "__bytes__": "VDE="
+            }
+          }
+        ],
+        "3198": [
+          {
+            "namespace": 999,
+            "attrid": 3198,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3169": [
+          {
+            "namespace": 999,
+            "attrid": 3169,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3175": [
+          {
+            "namespace": 999,
+            "attrid": 3175,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2004": [
+          {
+            "namespace": 999,
+            "attrid": 2004,
+            "value": {
+              "__bytes__": "VDE="
+            }
+          }
+        ],
+        "3020": [
+          {
+            "namespace": 999,
+            "attrid": 3020,
+            "value": {
+              "__bytes__": "bm8="
+            }
+          }
+        ],
+        "3139": [
+          {
+            "namespace": 999,
+            "attrid": 3139,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "5200": [
+          {
+            "namespace": 999,
+            "attrid": 5200,
+            "value": {
+              "__bytes__": "bm8="
+            }
+          }
+        ],
+        "2003": [
+          {
+            "namespace": 999,
+            "attrid": 2003,
+            "value": {
+              "__bytes__": "VDE="
+            }
+          }
+        ],
+        "3199": [
+          {
+            "namespace": 999,
+            "attrid": 3199,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3204": [
+          {
+            "namespace": 999,
+            "attrid": 3204,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3016": [
+          {
+            "namespace": 999,
+            "attrid": 3016,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3136": [
+          {
+            "namespace": 999,
+            "attrid": 3136,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3004": [
+          {
+            "namespace": 999,
+            "attrid": 3004,
+            "value": {
+              "__bytes__": "TWVkaQ=="
+            }
+          }
+        ],
+        "2011": [
+          {
+            "namespace": 999,
+            "attrid": 2011,
+            "value": {
+              "__bytes__": "VDE="
+            }
+          }
+        ],
+        "5300": [
+          {
+            "namespace": 999,
+            "attrid": 5300,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "5002": [
+          {
+            "namespace": 999,
+            "attrid": 5002,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3206": [
+          {
+            "namespace": 999,
+            "attrid": 3206,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "4005": [
+          {
+            "namespace": 999,
+            "attrid": 4005,
+            "value": {
+              "__bytes__": "bm8="
+            }
+          }
+        ],
+        "3205": [
+          {
+            "namespace": 999,
+            "attrid": 3205,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3170": [
+          {
+            "namespace": 999,
+            "attrid": 3170,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3137": [
+          {
+            "namespace": 999,
+            "attrid": 3137,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3166": [
+          {
+            "namespace": 999,
+            "attrid": 3166,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3143": [
+          {
+            "namespace": 999,
+            "attrid": 3143,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3107": [
+          {
+            "namespace": 999,
+            "attrid": 3107,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3019": [
+          {
+            "namespace": 999,
+            "attrid": 3019,
+            "value": {
+              "__bytes__": "bm8="
+            }
+          }
+        ],
+        "3167": [
+          {
+            "namespace": 999,
+            "attrid": 3167,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3172": [
+          {
+            "namespace": 999,
+            "attrid": 3172,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2018": [
+          {
+            "namespace": 999,
+            "attrid": 2018,
+            "value": {
+              "__bytes__": "VDE="
+            }
+          }
+        ],
+        "3104": [
+          {
+            "namespace": 999,
+            "attrid": 3104,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2007": [
+          {
+            "namespace": 999,
+            "attrid": 2007,
+            "value": {
+              "__bytes__": "VDE="
+            }
+          }
+        ],
+        "3003": [
+          {
+            "namespace": 999,
+            "attrid": 3003,
+            "value": {
+              "__bytes__": "IDEwMA=="
+            }
+          }
+        ],
+        "3013": [
+          {
+            "namespace": 999,
+            "attrid": 3013,
+            "value": {
+              "__bytes__": ""
+            }
+          }
+        ],
+        "2006": [
+          {
+            "namespace": 999,
+            "attrid": 2006,
+            "value": {
+              "__bytes__": "VDE="
+            }
+          }
+        ],
+        "3174": [
+          {
+            "namespace": 999,
+            "attrid": 3174,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2002": [
+          {
+            "namespace": 999,
+            "attrid": 2002,
+            "value": {
+              "__bytes__": "VDE="
+            }
+          }
+        ],
+        "3014": [
+          {
+            "namespace": 999,
+            "attrid": 3014,
+            "value": {
+              "__bytes__": "ICAgMQ=="
+            }
+          }
+        ],
+        "3173": [
+          {
+            "namespace": 999,
+            "attrid": 3173,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3138": [
+          {
+            "namespace": 999,
+            "attrid": 3138,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3105": [
+          {
+            "namespace": 999,
+            "attrid": 3105,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3134": [
+          {
+            "namespace": 999,
+            "attrid": 3134,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3111": [
+          {
+            "namespace": 999,
+            "attrid": 3111,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3203": [
+          {
+            "namespace": 999,
+            "attrid": 3203,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "5004": [
+          {
+            "namespace": 999,
+            "attrid": 5004,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3135": [
+          {
+            "namespace": 999,
+            "attrid": 3135,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3140": [
+          {
+            "namespace": 999,
+            "attrid": 3140,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "5003": [
+          {
+            "namespace": 999,
+            "attrid": 5003,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3200": [
+          {
+            "namespace": 999,
+            "attrid": 3200,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2005": [
+          {
+            "namespace": 999,
+            "attrid": 2005,
+            "value": {
+              "__bytes__": "VDE="
+            }
+          }
+        ],
+        "3008": [
+          {
+            "namespace": 999,
+            "attrid": 3008,
+            "value": {
+              "__bytes__": "T2Jz"
+            }
+          }
+        ],
+        "5001": [
+          {
+            "namespace": 999,
+            "attrid": 5001,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3142": [
+          {
+            "namespace": 999,
+            "attrid": 3142,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3017": [
+          {
+            "namespace": 999,
+            "attrid": 3017,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3141": [
+          {
+            "namespace": 999,
+            "attrid": 3141,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3106": [
+          {
+            "namespace": 999,
+            "attrid": 3106,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "4001": [
+          {
+            "namespace": 999,
+            "attrid": 4001,
+            "value": {
+              "__bytes__": "bm8="
+            }
+          }
+        ],
+        "3201": [
+          {
+            "namespace": 999,
+            "attrid": 3201,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3102": [
+          {
+            "namespace": 999,
+            "attrid": 3102,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3207": [
+          {
+            "namespace": 999,
+            "attrid": 3207,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "5000": [
+          {
+            "namespace": 999,
+            "attrid": 5000,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3171": [
+          {
+            "namespace": 999,
+            "attrid": 3171,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "5100": [
+          {
+            "namespace": 999,
+            "attrid": 5100,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ]
+      },
+      "2": {
+        "3007": [
+          {
+            "namespace": 999,
+            "attrid": 3007,
+            "value": {
+              "__bytes__": "UGFydA=="
+            }
+          }
+        ],
+        "500": [
+          {
+            "namespace": 999,
+            "attrid": 500,
+            "value": {
+              "__bytes__": "SHVtbg=="
+            }
+          }
+        ],
+        "3001": [
+          {
+            "namespace": 999,
+            "attrid": 3001,
+            "value": {
+              "__bytes__": "UHJvdA=="
+            }
+          }
+        ],
+        "3103": [
+          {
+            "namespace": 999,
+            "attrid": 3103,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3011": [
+          {
+            "namespace": 999,
+            "attrid": 3011,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3108": [
+          {
+            "namespace": 999,
+            "attrid": 3108,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3168": [
+          {
+            "namespace": 999,
+            "attrid": 3168,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2024": [
+          {
+            "namespace": 999,
+            "attrid": 2024,
+            "value": {
+              "__bytes__": "VDI="
+            }
+          }
+        ],
+        "3012": [
+          {
+            "namespace": 999,
+            "attrid": 3012,
+            "value": {
+              "__bytes__": "ICAyMg=="
+            }
+          }
+        ],
+        "5005": [
+          {
+            "namespace": 999,
+            "attrid": 5005,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3110": [
+          {
+            "namespace": 999,
+            "attrid": 3110,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3109": [
+          {
+            "namespace": 999,
+            "attrid": 3109,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3202": [
+          {
+            "namespace": 999,
+            "attrid": 3202,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3002": [
+          {
+            "namespace": 999,
+            "attrid": 3002,
+            "value": {
+              "__bytes__": "dGMwMg=="
+            }
+          }
+        ],
+        "2008": [
+          {
+            "namespace": 999,
+            "attrid": 2008,
+            "value": {
+              "__bytes__": "VDI="
+            }
+          }
+        ],
+        "3198": [
+          {
+            "namespace": 999,
+            "attrid": 3198,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3169": [
+          {
+            "namespace": 999,
+            "attrid": 3169,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3175": [
+          {
+            "namespace": 999,
+            "attrid": 3175,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2004": [
+          {
+            "namespace": 999,
+            "attrid": 2004,
+            "value": {
+              "__bytes__": "VDI="
+            }
+          }
+        ],
+        "3020": [
+          {
+            "namespace": 999,
+            "attrid": 3020,
+            "value": {
+              "__bytes__": "bm8="
+            }
+          }
+        ],
+        "3139": [
+          {
+            "namespace": 999,
+            "attrid": 3139,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "5200": [
+          {
+            "namespace": 999,
+            "attrid": 5200,
+            "value": {
+              "__bytes__": "bm8="
+            }
+          }
+        ],
+        "2003": [
+          {
+            "namespace": 999,
+            "attrid": 2003,
+            "value": {
+              "__bytes__": "VDI="
+            }
+          }
+        ],
+        "3199": [
+          {
+            "namespace": 999,
+            "attrid": 3199,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3204": [
+          {
+            "namespace": 999,
+            "attrid": 3204,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3016": [
+          {
+            "namespace": 999,
+            "attrid": 3016,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3136": [
+          {
+            "namespace": 999,
+            "attrid": 3136,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3004": [
+          {
+            "namespace": 999,
+            "attrid": 3004,
+            "value": {
+              "__bytes__": "TWVkaQ=="
+            }
+          }
+        ],
+        "2011": [
+          {
+            "namespace": 999,
+            "attrid": 2011,
+            "value": {
+              "__bytes__": "VDI="
+            }
+          }
+        ],
+        "5300": [
+          {
+            "namespace": 999,
+            "attrid": 5300,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "5002": [
+          {
+            "namespace": 999,
+            "attrid": 5002,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3206": [
+          {
+            "namespace": 999,
+            "attrid": 3206,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "4005": [
+          {
+            "namespace": 999,
+            "attrid": 4005,
+            "value": {
+              "__bytes__": "bm8="
+            }
+          }
+        ],
+        "3205": [
+          {
+            "namespace": 999,
+            "attrid": 3205,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3170": [
+          {
+            "namespace": 999,
+            "attrid": 3170,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3137": [
+          {
+            "namespace": 999,
+            "attrid": 3137,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3166": [
+          {
+            "namespace": 999,
+            "attrid": 3166,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3143": [
+          {
+            "namespace": 999,
+            "attrid": 3143,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3107": [
+          {
+            "namespace": 999,
+            "attrid": 3107,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3019": [
+          {
+            "namespace": 999,
+            "attrid": 3019,
+            "value": {
+              "__bytes__": "bm8="
+            }
+          }
+        ],
+        "3167": [
+          {
+            "namespace": 999,
+            "attrid": 3167,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3172": [
+          {
+            "namespace": 999,
+            "attrid": 3172,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2018": [
+          {
+            "namespace": 999,
+            "attrid": 2018,
+            "value": {
+              "__bytes__": "VDI="
+            }
+          }
+        ],
+        "3104": [
+          {
+            "namespace": 999,
+            "attrid": 3104,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2007": [
+          {
+            "namespace": 999,
+            "attrid": 2007,
+            "value": {
+              "__bytes__": "VDI="
+            }
+          }
+        ],
+        "3003": [
+          {
+            "namespace": 999,
+            "attrid": 3003,
+            "value": {
+              "__bytes__": "IDEwMA=="
+            }
+          }
+        ],
+        "3013": [
+          {
+            "namespace": 999,
+            "attrid": 3013,
+            "value": {
+              "__bytes__": ""
+            }
+          }
+        ],
+        "2006": [
+          {
+            "namespace": 999,
+            "attrid": 2006,
+            "value": {
+              "__bytes__": "VDI="
+            }
+          }
+        ],
+        "3174": [
+          {
+            "namespace": 999,
+            "attrid": 3174,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2002": [
+          {
+            "namespace": 999,
+            "attrid": 2002,
+            "value": {
+              "__bytes__": "VDI="
+            }
+          }
+        ],
+        "3014": [
+          {
+            "namespace": 999,
+            "attrid": 3014,
+            "value": {
+              "__bytes__": "ICAgMQ=="
+            }
+          }
+        ],
+        "3173": [
+          {
+            "namespace": 999,
+            "attrid": 3173,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3138": [
+          {
+            "namespace": 999,
+            "attrid": 3138,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3105": [
+          {
+            "namespace": 999,
+            "attrid": 3105,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3134": [
+          {
+            "namespace": 999,
+            "attrid": 3134,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3111": [
+          {
+            "namespace": 999,
+            "attrid": 3111,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3203": [
+          {
+            "namespace": 999,
+            "attrid": 3203,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "5004": [
+          {
+            "namespace": 999,
+            "attrid": 5004,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3135": [
+          {
+            "namespace": 999,
+            "attrid": 3135,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3140": [
+          {
+            "namespace": 999,
+            "attrid": 3140,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "5003": [
+          {
+            "namespace": 999,
+            "attrid": 5003,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3200": [
+          {
+            "namespace": 999,
+            "attrid": 3200,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "2005": [
+          {
+            "namespace": 999,
+            "attrid": 2005,
+            "value": {
+              "__bytes__": "VDI="
+            }
+          }
+        ],
+        "3008": [
+          {
+            "namespace": 999,
+            "attrid": 3008,
+            "value": {
+              "__bytes__": "T2Jz"
+            }
+          }
+        ],
+        "5001": [
+          {
+            "namespace": 999,
+            "attrid": 5001,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3142": [
+          {
+            "namespace": 999,
+            "attrid": 3142,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3017": [
+          {
+            "namespace": 999,
+            "attrid": 3017,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3141": [
+          {
+            "namespace": 999,
+            "attrid": 3141,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3106": [
+          {
+            "namespace": 999,
+            "attrid": 3106,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "4001": [
+          {
+            "namespace": 999,
+            "attrid": 4001,
+            "value": {
+              "__bytes__": "bm8="
+            }
+          }
+        ],
+        "3201": [
+          {
+            "namespace": 999,
+            "attrid": 3201,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3102": [
+          {
+            "namespace": 999,
+            "attrid": 3102,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "3207": [
+          {
+            "namespace": 999,
+            "attrid": 3207,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "5000": [
+          {
+            "namespace": 999,
+            "attrid": 5000,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ],
+        "3171": [
+          {
+            "namespace": 999,
+            "attrid": 3171,
+            "value": {
+              "__bytes__": "QUIwMA=="
+            }
+          }
+        ],
+        "5100": [
+          {
+            "namespace": 999,
+            "attrid": 5100,
+            "value": {
+              "__bytes__": "ICAgMA=="
+            }
+          }
+        ]
+      },
+      "16": {
+        "4000": [
+          {
+            "namespace": 999,
+            "attrid": 4000,
+            "value": {
+              "__bytes__": "Tm9ybQ=="
+            }
+          }
+        ],
+        "2000": [
+          {
+            "namespace": 999,
+            "attrid": 2000,
+            "value": {
+              "__bytes__": "dDI="
+            }
+          }
+        ],
+        "3000": [
+          {
+            "namespace": 999,
+            "attrid": 3000,
+            "value": {
+              "__bytes__": "RmFzcg=="
+            }
+          }
+        ],
+        "3006": [
+          {
+            "namespace": 999,
+            "attrid": 3006,
+            "value": {
+              "__bytes__": "MTA="
+            }
+          }
+        ],
+        "1001": [
+          {
+            "namespace": 999,
+            "attrid": 1001,
+            "value": {
+              "__bytes__": "eWVz"
+            }
+          }
+        ],
+        "3009": [
+          {
+            "namespace": 999,
+            "attrid": 3009,
+            "value": {
+              "__bytes__": "QW1t"
+            }
+          }
+        ],
+        "3015": [
+          {
+            "namespace": 999,
+            "attrid": 3015,
+            "value": {
+              "__bytes__": "MA=="
+            }
+          }
+        ],
+        "1000": [
+          {
+            "namespace": 999,
+            "attrid": 1000,
+            "value": {
+              "__bytes__": "RGZsdA=="
+            }
+          }
+        ],
+        "3010": [
+          {
+            "namespace": 999,
+            "attrid": 3010,
+            "value": {
+              "__bytes__": "eWVz"
+            }
+          }
+        ],
+        "2001": [
+          {
+            "namespace": 999,
+            "attrid": 2001,
+            "value": {
+              "__bytes__": "MXYx"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

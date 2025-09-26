@@ -44,10 +44,10 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.test.ts', '**/*.spec.ts', 'jest.config.ts'],
+    files: ['test/**/*.ts', '**/*.test.ts', '**/*.spec.ts', 'jest.config.ts'],
     languageOptions: {
       parser: tseslint.parser,
-      parserOptions: { ecmaVersion: 'latest', sourceType: 'module', project: './tsconfig.test.json' },
+      parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
     },
     rules: {
       '@typescript-eslint/no-explicit-any': 'off', 'no-console': 'off',

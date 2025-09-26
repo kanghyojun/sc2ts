@@ -1,5 +1,5 @@
 // import { hash } from 'crypto';
-import { SC2Replay } from '../sc2-replay';
+import { SC2Replay } from '../src/sc2-replay';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 

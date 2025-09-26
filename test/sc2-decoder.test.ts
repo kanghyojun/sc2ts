@@ -1,7 +1,8 @@
-import { BitPackedBuffer, VersionedDecoder } from '../protocol/sc2-decoder';
-import { TypeInfo } from '../protocol/types';
 import fs from 'fs';
 import path from 'path';
+
+import { BitPackedBuffer, VersionedDecoder } from '../src/protocol/sc2-decoder';
+import { TypeInfo } from '../src/protocol/types';
 
 // Helper to convert s2protocol test data (which has bytes as base64) back to buffers
 function convertBytesFromTestData(obj: any): any {
@@ -338,7 +339,7 @@ describe('VersionedDecoder integration with s2protocol', () => {
 
   beforeAll(() => {
     try {
-      const testDataPath = path.join(__dirname, '../../.debug/test-data-a.json');
+      const testDataPath = path.join(__dirname, 'fixtures/test-data-a.json');
       if (fs.existsSync(testDataPath)) {
         const rawData = fs.readFileSync(testDataPath, 'utf8');
         testData = convertBytesFromTestData(JSON.parse(rawData));
