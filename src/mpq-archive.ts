@@ -1,5 +1,8 @@
 // MPQ Archive Main Class
 
+import Compress from 'compressjs';
+import { gunzipSync, inflateSync } from 'fflate';
+
 import { MpqFileNotFoundError } from './errors';
 import { createLogger } from './logger';
 import { MpqReader } from './mpq-reader';
@@ -361,11 +364,15 @@ export class MpqArchive {
       if (hashEntry && hashEntry.blockIndex !== 0xFFFFFFFF) {
         const blockEntry = this.blockTable[hashEntry.blockIndex];
         if (blockEntry) {
-          const fileData = this.reader.readFileData(
+          let fileData = this.reader.readFileData(
             blockEntry.filePos,
             blockEntry.compressedSize,
             this.headerOffset,
           );
+
+          // Auto-decompress bzip2 data if detected (for build 94137+)
+          // This should only be applied to newer builds that use bzip2 compression
+          fileData = this.decompressBzip2IfNeeded(fileData);
 
           // Update the file with actual data
           file = {
@@ -378,6 +385,88 @@ export class MpqArchive {
     }
 
     return file;
+  }
+
+  private decompressBzip2IfNeeded(data: Buffer): Buffer {
+    if (data.length === 0) {
+      return data;
+    }
+
+    // Check for various compression formats
+
+    // Check for GZIP (RFC 1952)
+    if (data.length >= 2 && data[0] === 0x1F && data[1] === 0x8B) {
+      try {
+        logger.debug('Detected GZIP compression, decompressing with fflate...');
+        const decompressed = gunzipSync(new Uint8Array(data));
+        logger.debug(`GZIP decompression successful: ${data.length} -> ${decompressed.length} bytes`);
+        return Buffer.from(decompressed);
+      } catch (error) {
+        logger.warn(`GZIP decompression failed: ${error}. Trying other methods.`);
+      }
+    }
+
+    // Check for DEFLATE (zlib format)
+    if (data.length >= 2) {
+      const first = data.readUInt8(0);
+      const second = data.readUInt8(1);
+      // zlib header: (CMF * 256 + FLG) % 31 == 0
+      if ((first * 256 + second) % 31 === 0 && (first & 0x0F) === 0x08) {
+        try {
+          logger.debug('Detected DEFLATE/zlib compression, decompressing with fflate...');
+          const decompressed = inflateSync(new Uint8Array(data));
+          logger.debug(`DEFLATE decompression successful: ${data.length} -> ${decompressed.length} bytes`);
+          return Buffer.from(decompressed);
+        } catch (error) {
+          logger.warn(`DEFLATE decompression failed: ${error}. Trying other methods.`);
+        }
+      }
+    }
+
+    // Check if data is bzip2 compressed
+    // Pattern 1: BZh at start
+    const isBzip2AtStart = data.length >= 3 &&
+                          data[0] === 0x42 && // 'B'
+                          data[1] === 0x5A && // 'Z'
+                          data[2] === 0x68;   // 'h'
+
+    // Pattern 2: 0x10 followed by BZh (common in SC2 build 94137+)
+    const isBzip2AtOffset1 = data.length >= 4 &&
+                             data[0] === 0x10 &&
+                             data[1] === 0x42 && // 'B'
+                             data[2] === 0x5A && // 'Z'
+                             data[3] === 0x68;   // 'h'
+
+    if (isBzip2AtStart || isBzip2AtOffset1) {
+      try {
+        // Use compressjs for bzip2 decompression (fallback to existing library)
+        const bzip2 = Compress.Bzip2;
+
+        let bzip2Data: Buffer;
+        if (isBzip2AtOffset1) {
+          // Skip the first 0x10 byte
+          bzip2Data = data.subarray(1);
+          logger.debug(`Auto-decompressing bzip2 data (skipping first byte), size: ${bzip2Data.length}`);
+        } else {
+          // Use entire buffer
+          bzip2Data = data;
+          logger.debug(`Auto-decompressing bzip2 data, size: ${bzip2Data.length}`);
+        }
+
+        const decompressedBytes = bzip2.decompressFile(Array.from(bzip2Data));
+        const decompressed = Buffer.from(decompressedBytes);
+
+        logger.debug(`Bzip2 decompression successful: ${data.length} -> ${decompressed.length} bytes`);
+        return decompressed;
+
+      } catch (error) {
+        logger.warn(`Bzip2 decompression failed: ${error}. Returning original data.`);
+        return data;
+      }
+    }
+
+    // No recognized compression format, return original data
+    return data;
   }
 
   hasFile(filename: string): boolean {

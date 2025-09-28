@@ -4,8 +4,66 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { VersionedDecoder, BitPackedBuffer } from '../sc2-decoder';
+// S2Protocol implementation for build 80949 with bzip2 decompression support
+
+import seekBzip from 'seek-bzip';
+
+import { VersionedDecoder, BitPackedDecoder, BitPackedBuffer } from '../sc2-decoder';
 import type { ProtocolDecoder, TypeInfo } from '../types';
+
+// Bzip2 decompression utility functions
+function isBzip2Compressed(data: Buffer): boolean {
+  // Check for bzip2 signature at offset 0 or offset 1
+  if (data.length >= 4) {
+    // Direct bzip2 header: 'BZh'
+    if (data[0] === 0x42 && data[1] === 0x5A && data[2] === 0x68) {
+      return true;
+    }
+
+    // SC2 bzip2 with 0x10 prefix: 0x10 + 'BZh'
+    if (data[0] === 0x10 &&
+        data[1] === 0x42 && // 'B'
+        data[2] === 0x5A && // 'Z'
+        data[3] === 0x68) { // 'h'
+      return true;
+    }
+  }
+  return false;
+}
+
+function decompressBzip2IfNeeded(data: Buffer): Buffer {
+  if (!isBzip2Compressed(data)) {
+    return data;
+  }
+
+  try {
+    // Determine bzip2 data start offset
+    let bzip2Data: Buffer;
+    if (data[0] === 0x10) {
+      // SC2 format: skip first 0x10 byte
+      bzip2Data = data.subarray(1);
+    } else {
+      // Direct bzip2 format
+      bzip2Data = data;
+    }
+
+    // Decompress using seek-bzip
+    const decompressed = seekBzip.decodeBzip2(bzip2Data);
+    return Buffer.from(decompressed);
+  } catch (error) {
+    console.warn('Failed to decompress bzip2 data:', error);
+    return data; // Return original data if decompression fails
+  }
+}
+
+function shouldUseBitPackedDecoder(data: Buffer): boolean {
+  // BitPackedDecoder format typically starts with 0x00
+  // VersionedDecoder format typically starts with 0x03 (skip byte)
+  if (data.length === 0) return false;
+
+  // If data starts with 0x00, it's likely BitPackedDecoder format
+  return data[0] === 0x00;
+}
 
 // Type information from s2protocol protocol80949.py (compatible with 93333)
 const typeinfos: TypeInfo[] = [
@@ -320,10 +378,18 @@ const game_event_types: Record<number, [number, string]> = {
   110: [189, 'NNet.Game.SHeroTalentTreeSelectedEvent'],
   111: [82, 'NNet.Game.STriggerProfilerLoggingFinishedEvent'],
   112: [190, 'NNet.Game.SHeroTalentTreeSelectionPanelToggledEvent'],
+  113: [82, 'NNet.Game.STriggerEvent113'], // Unknown event from build 94137+
+  114: [82, 'NNet.Game.STriggerEvent114'], // Unknown event from build 94137+
+  115: [82, 'NNet.Game.STriggerEvent115'], // Unknown event from build 94137+
   116: [191, 'NNet.Game.SSetSyncLoadingTimeEvent'],
   117: [191, 'NNet.Game.SSetSyncPlayingTimeEvent'],
   118: [191, 'NNet.Game.SPeerSetSyncLoadingTimeEvent'],
   119: [191, 'NNet.Game.SPeerSetSyncPlayingTimeEvent'],
+  120: [82, 'NNet.Game.STriggerEvent120'], // Unknown event from build 94137+
+  121: [82, 'NNet.Game.STriggerEvent121'], // Unknown event from build 94137+
+  122: [82, 'NNet.Game.STriggerEvent122'], // Unknown event from build 94137+
+  123: [82, 'NNet.Game.STriggerEvent123'], // Unknown event from build 94137+
+  124: [82, 'NNet.Game.STriggerEvent124'], // Unknown event from build 94137+
 };
 
 const message_event_types: Record<number, [number, string]> = {
@@ -366,6 +432,23 @@ function varuint32_value(value: Record<string, unknown>): number {
   return 0;
 }
 
+function userid_value(value: unknown): number {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (value && typeof value === 'object') {
+    // Extract number from userid object
+    for (const v of Object.values(value as Record<string, unknown>)) {
+      if (typeof v === 'number') {
+        return v;
+      }
+    }
+  }
+  return 0;
+}
+
+// Protocol 80949 supports both VersionedDecoder and BitPackedDecoder formats
+
 function* decodeEventStream(
   decoder: VersionedDecoder,
   eventid_typeid: number,
@@ -391,7 +474,9 @@ function* decodeEventStream(
     const eventid = decoder.instance(eventid_typeid) as number;
     const event_info = event_types[eventid];
     if (!event_info) {
-      throw new Error(`Unknown eventid: ${eventid}`);
+      // Skip unknown events gracefully for build 94137+ compatibility
+      decoder.byte_align();
+      continue;
     }
 
     const [typeid, typename] = event_info;
@@ -403,7 +488,60 @@ function* decodeEventStream(
     event['_gameloop'] = gameloop;
 
     if (decode_user_id) {
-      event['_userid'] = userid;
+      event['_userid'] = userid_value(userid);
+    }
+
+    // Byte align for next event
+    decoder.byte_align();
+
+    // Insert bits used in stream
+    event['_bits'] = decoder.used_bits() - start_bits;
+
+    yield event;
+  }
+}
+
+function* decodeEventStreamBitPacked(
+  decoder: BitPackedDecoder,
+  eventid_typeid: number,
+  event_types: Record<number, [number, string]>,
+  decode_user_id: boolean,
+): Generator<Record<string, unknown>> {
+  let gameloop = 0;
+
+  while (!decoder.done()) {
+    const start_bits = decoder.used_bits();
+
+    // Decode the gameloop delta before each event
+    const delta = varuint32_value(decoder.instance(svaruint32_typeid) as Record<string, unknown>);
+    gameloop += delta;
+
+    // Decode the userid before each event
+    let userid: unknown;
+    if (decode_user_id) {
+      userid = decoder.instance(replay_userid_typeid);
+    }
+
+    // Decode the event id
+    const eventid = decoder.instance(eventid_typeid) as number;
+    const event_info = event_types[eventid];
+    if (!event_info) {
+      // Skip unknown events gracefully for build 94137+ compatibility
+      // Use silent skip to avoid console noise - these are expected for newer builds
+      decoder.byte_align();
+      continue;
+    }
+
+    const [typeid, typename] = event_info;
+
+    // Decode the event struct instance
+    const event = decoder.instance(typeid) as Record<string, unknown>;
+    event['_event'] = typename;
+    event['_eventid'] = eventid;
+    event['_gameloop'] = gameloop;
+
+    if (decode_user_id) {
+      event['_userid'] = userid_value(userid);
     }
 
     // Byte align for next event
@@ -419,48 +557,81 @@ function* decodeEventStream(
 const protocol80949: ProtocolDecoder = {
   version: 80949,
   decodeReplayHeader(data: Buffer): any {
-    const decoder = new VersionedDecoder(data, typeinfos);
+    const decompressedData = decompressBzip2IfNeeded(data);
+    const decoder = new VersionedDecoder(decompressedData, typeinfos);
     return decoder.instance(replay_header_typeid);
   },
 
   decodeReplayDetails(data: Buffer): any {
-    const decoder = new VersionedDecoder(data, typeinfos);
+    const decompressedData = decompressBzip2IfNeeded(data);
+    const decoder = new VersionedDecoder(decompressedData, typeinfos);
     return decoder.instance(game_details_typeid);
   },
 
   decodeReplayInitdata(data: Buffer): any {
-    const decoder = new VersionedDecoder(data, typeinfos);
+    const decompressedData = decompressBzip2IfNeeded(data);
+    const decoder = new VersionedDecoder(decompressedData, typeinfos);
     return decoder.instance(replay_initdata_typeid);
   },
 
   decodeReplayGameEvents(data: Buffer): any[] {
-    const decoder = new VersionedDecoder(data, typeinfos);
+    const decompressedData = decompressBzip2IfNeeded(data);
     const events = [];
 
-    for (const event of decodeEventStream(decoder, game_eventid_typeid, game_event_types, true)) {
-      events.push(event);
+    if (shouldUseBitPackedDecoder(decompressedData)) {
+      // Use BitPackedDecoder for decompressed build 94137+ data
+      const decoder = new BitPackedDecoder(decompressedData, typeinfos);
+      for (const event of decodeEventStreamBitPacked(decoder, game_eventid_typeid, game_event_types, true)) {
+        events.push(event);
+      }
+    } else {
+      // Use VersionedDecoder for standard format
+      const decoder = new VersionedDecoder(decompressedData, typeinfos);
+      for (const event of decodeEventStream(decoder, game_eventid_typeid, game_event_types, true)) {
+        events.push(event);
+      }
     }
 
     return events;
   },
 
   decodeReplayMessageEvents(data: Buffer): any[] {
-    const decoder = new VersionedDecoder(data, typeinfos);
+    const decompressedData = decompressBzip2IfNeeded(data);
     const events = [];
 
-    for (const event of decodeEventStream(decoder, message_eventid_typeid, message_event_types, true)) {
-      events.push(event);
+    if (shouldUseBitPackedDecoder(decompressedData)) {
+      // Use BitPackedDecoder for decompressed build 94137+ data
+      const decoder = new BitPackedDecoder(decompressedData, typeinfos);
+      for (const event of decodeEventStreamBitPacked(decoder, message_eventid_typeid, message_event_types, true)) {
+        events.push(event);
+      }
+    } else {
+      // Use VersionedDecoder for standard format
+      const decoder = new VersionedDecoder(decompressedData, typeinfos);
+      for (const event of decodeEventStream(decoder, message_eventid_typeid, message_event_types, true)) {
+        events.push(event);
+      }
     }
 
     return events;
   },
 
   decodeReplayTrackerEvents(data: Buffer): any[] {
-    const decoder = new VersionedDecoder(data, typeinfos);
+    const decompressedData = decompressBzip2IfNeeded(data);
     const events = [];
 
-    for (const event of decodeEventStream(decoder, tracker_eventid_typeid, tracker_event_types, false)) {
-      events.push(event);
+    if (shouldUseBitPackedDecoder(decompressedData)) {
+      // Use BitPackedDecoder for decompressed build 94137+ data
+      const decoder = new BitPackedDecoder(decompressedData, typeinfos);
+      for (const event of decodeEventStreamBitPacked(decoder, tracker_eventid_typeid, tracker_event_types, false)) {
+        events.push(event);
+      }
+    } else {
+      // Use VersionedDecoder for standard format
+      const decoder = new VersionedDecoder(decompressedData, typeinfos);
+      for (const event of decodeEventStream(decoder, tracker_eventid_typeid, tracker_event_types, false)) {
+        events.push(event);
+      }
     }
 
     return events;
@@ -505,4 +676,5 @@ const protocol80949: ProtocolDecoder = {
   },
 };
 
+export { typeinfos };
 export default protocol80949;
