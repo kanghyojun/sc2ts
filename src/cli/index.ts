@@ -92,17 +92,48 @@ const parseCommand = command('parse', merge(
   }),
 ));
 
+// Events command parser - 상세한 게임 이벤트 분석
+const eventsCommand = command('events', merge(
+  object({ action: constant('events') }),
+  commonOptions,
+  object('Events Options', {
+    replayFile: argument(path({ mustExist: true })),
+    output: optional(option('-o', '--output', path())),
+    json: optional(option('-j', '--json')),
+    pretty: optional(option('--pretty')),
+    type: withDefault(option('-t', '--type', choice(['game', 'tracker', 'message', 'all'])), 'all'),
+    filter: optional(option('-f', '--filter', string())),
+    limit: optional(option('-l', '--limit', string())),
+    gameplayOnly: optional(option('-g', '--gameplay-only')),
+  }),
+));
+
 // Main CLI parser
-const cli = or(extractCommand, listCommand, infoCommand, parseCommand);
+const cli = or(extractCommand, listCommand, infoCommand, parseCommand, eventsCommand);
 
 type Config = InferValue<typeof cli>;
 
 // Execute the command
 async function executeCommand(config: Config) {
-  // Parse command doesn't need FileExtractor, handle it separately
+  // Parse and Events commands don't need FileExtractor, handle them separately
   if (config.action === 'parse') {
     try {
       await executeParse(config);
+    } catch (error) {
+      logger.error('CLI execution error', { error });
+      console.error('\nCLI Error Details:');
+      console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
+      if (error instanceof Error && error.stack) {
+        console.error(`Stack: ${error.stack}`);
+      }
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (config.action === 'events') {
+    try {
+      await executeEvents(config);
     } catch (error) {
       logger.error('CLI execution error', { error });
       console.error('\nCLI Error Details:');
@@ -368,6 +399,17 @@ function formatResult(result: number): string {
   }
 }
 
+function getLoopsPerSecond(gameSpeed: number): number {
+  switch (gameSpeed) {
+  case 1: return 8;      // Slower
+  case 2: return 11.2;   // Slow
+  case 3: return 16;     // Normal
+  case 4: return 22.4;   // Fast (기존 값, 실제 측정 필요)
+  case 5: return 32;     // Faster (추정)
+  default: return 22.4;  // 기본값 (게임 속도 4)
+  }
+}
+
 
 // Run the CLI
 const config = run(cli, {
@@ -432,8 +474,8 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
         await writeFile(config.output, jsonOutput, 'utf8');
         logger.info(`Parsed data saved to: ${config.output}`);
       } else {
-        // 콘솔 출력
-        jsonOutput.split('\n').forEach(line => logger.info(line));
+        // stdout으로 직접 출력 (valid JSON을 위해)
+        console.log(jsonOutput);
       }
     } else {
       // 사람이 읽기 쉬운 형태로 출력
@@ -502,6 +544,171 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
   } catch (error) {
     logger.error('Failed to parse replay', { error });
     console.error('\nParse Error Details:');
+    console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
+    if (error instanceof Error && error.stack) {
+      console.error(`Stack: ${error.stack}`);
+    }
+    throw error;
+  }
+}
+
+async function executeEvents(config: InferValue<typeof eventsCommand>) {
+  if (config.verbose) {
+    logger.info('Analyzing game events', { replayFile: config.replayFile });
+    logger.info(`Analyzing events from: ${config.replayFile}`);
+    if (config.output) {
+      logger.info(`Output file: ${config.output}`);
+    } else {
+      logger.info('Output: Console');
+    }
+  }
+
+  try {
+    // SC2Replay 클래스를 사용해서 리플레이 파싱
+    const replay = await SC2Replay.fromFile(config.replayFile, {
+      decodeGameEvents: true,
+      decodeMessageEvents: true,
+      decodeTrackerEvents: true,
+    });
+
+    const limit = config.limit ? parseInt(config.limit, 10) : undefined;
+
+    // 게임 속도에 따른 초당 게임루프 수 계산
+    const gameSpeed = replay.replayDetails?.gameSpeed || 4;
+    const loopsPerSecond = getLoopsPerSecond(gameSpeed);
+
+    // 이벤트 타입별로 데이터 수집
+    let eventsData: any = {};
+
+    if (config.type === 'all' || config.type === 'game') {
+      let gameEvents = limit ? replay.gameEvents.slice(0, limit) : replay.gameEvents;
+
+      // 게임플레이 전용 필터링 (맵 초기화 제외)
+      if (config.gameplayOnly) {
+        gameEvents = gameEvents.filter(event => {
+          return event._gameloop !== 0 && event.loop !== 0;
+        });
+      }
+
+      eventsData.gameEvents = gameEvents;
+    }
+
+    if (config.type === 'all' || config.type === 'tracker') {
+      let trackerEvents = limit ? replay.trackerEvents.slice(0, limit) : replay.trackerEvents;
+
+      // 게임플레이 전용 필터링 (맵 초기화 제외)
+      if (config.gameplayOnly) {
+        trackerEvents = trackerEvents.filter(event => {
+          // gameloop 0은 맵 초기화, > 0은 실제 게임플레이
+          return event._gameloop !== 0 && event.loop !== 0;
+        });
+      }
+
+      // 필터링 적용 (유닛 관련 이벤트)
+      if (config.filter) {
+        const filterLower = config.filter.toLowerCase();
+        trackerEvents = trackerEvents.filter(event => {
+          const eventStr = JSON.stringify(event).toLowerCase();
+          return eventStr.includes(filterLower);
+        });
+      }
+
+      eventsData.trackerEvents = trackerEvents;
+
+      // 유닛 생성/사망 이벤트 분석
+      const unitEvents = trackerEvents.filter(event =>
+        event.eventType?.includes('Unit') ||
+        event._event?.includes('Unit') ||
+        event.eventType?.includes('Birth') ||
+        event.eventType?.includes('Death') ||
+        event._event?.includes('Birth') ||
+        event._event?.includes('Death')
+      );
+
+      eventsData.unitEvents = unitEvents;
+    }
+
+    if (config.type === 'all' || config.type === 'message') {
+      eventsData.messageEvents = limit ? replay.messageEvents.slice(0, limit) : replay.messageEvents;
+    }
+
+    // 요약 정보 추가
+    eventsData.summary = {
+      totalGameEvents: replay.gameEvents.length,
+      totalTrackerEvents: replay.trackerEvents.length,
+      totalMessageEvents: replay.messageEvents.length,
+      unitEventsFound: eventsData.unitEvents?.length || 0,
+      gameLength: replay.gameLength,
+      duration: replay.duration,
+    };
+
+    if (config.json) {
+      // JSON 출력 (BigInt 처리)
+      const jsonOutput = config.pretty
+        ? JSON.stringify(eventsData, (_, value) =>
+            typeof value === 'bigint' ? value.toString() : value, 2)
+        : JSON.stringify(eventsData, (_, value) =>
+            typeof value === 'bigint' ? value.toString() : value);
+
+      if (config.output) {
+        // 파일로 저장
+        const { writeFile, mkdir } = await import('node:fs/promises');
+        const { dirname } = await import('node:path');
+        await mkdir(dirname(config.output), { recursive: true });
+        await writeFile(config.output, jsonOutput, 'utf8');
+        logger.info(`Events data saved to: ${config.output}`);
+      } else {
+        // stdout으로 직접 출력 (valid JSON을 위해)
+        console.log(jsonOutput);
+      }
+    } else {
+      // 사람이 읽기 쉬운 형태로 출력
+      logger.info('='.repeat(60));
+      logger.info('SC2 REPLAY EVENTS ANALYSIS');
+      logger.info('='.repeat(60));
+      logger.info('');
+
+      logger.info('📊 EVENT SUMMARY:');
+      logger.info(`  Total Game Events: ${eventsData.summary.totalGameEvents}`);
+      logger.info(`  Total Tracker Events: ${eventsData.summary.totalTrackerEvents}`);
+      logger.info(`  Total Message Events: ${eventsData.summary.totalMessageEvents}`);
+      if (eventsData.unitEvents) {
+        logger.info(`  Unit-related Events: ${eventsData.summary.unitEventsFound}`);
+      }
+      logger.info(`  Game Duration: ${eventsData.summary.duration}s (${eventsData.summary.gameLength} loops)`);
+      logger.info('');
+
+      // 유닛 이벤트 샘플 표시
+      if (eventsData.unitEvents && eventsData.unitEvents.length > 0) {
+        logger.info('🎮 UNIT EVENTS (Sample):');
+        logger.info(`  Game Speed: ${gameSpeed} (${loopsPerSecond} loops/sec)`);
+        eventsData.unitEvents.slice(0, 10).forEach((event: any, index: number) => {
+          const timeInSeconds = Math.floor(event.loop / loopsPerSecond);
+          const minutes = Math.floor(timeInSeconds / 60);
+          const seconds = timeInSeconds % 60;
+          const timeStr = minutes > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}` : `${seconds}s`;
+          logger.info(`  [${timeStr}] ${event.eventType || event._event || 'Unknown'}`);
+          if (event.m_unitTypeName || event.unitTypeName) {
+            logger.info(`    Unit: ${event.m_unitTypeName || event.unitTypeName}`);
+          }
+          if (event.m_controlPlayerId !== undefined) {
+            logger.info(`    Player: ${event.m_controlPlayerId}`);
+          }
+        });
+
+        if (eventsData.unitEvents.length > 10) {
+          logger.info(`  ... and ${eventsData.unitEvents.length - 10} more unit events`);
+        }
+        logger.info('');
+      }
+
+      logger.info('✅ Events analysis completed!');
+      logger.info('💡 Use --json option to get full event data');
+    }
+
+  } catch (error) {
+    logger.error('Failed to analyze events', { error });
+    console.error('\nEvents Analysis Error Details:');
     console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
     if (error instanceof Error && error.stack) {
       console.error(`Stack: ${error.stack}`);
