@@ -95,7 +95,7 @@ export type TypeInfo =
 
 export type SupportProtocolVersion =
   | 80949
-  | 81009 
+  | 81009
   | 81102
   | 81433
   | 82457

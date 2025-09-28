@@ -91,8 +91,10 @@ export class VersionedDecoder {
   }
 
   private _expect_skip(expected: number): void {
-    if (this.buffer.readBits(8) !== expected) {
-      throw new Error('CorruptedError: unexpected skip byte');
+    const actual = this.buffer.readBits(8);
+    if (actual !== expected) {
+      const position = this.buffer.usedBits() - 8;
+      throw new Error(`CorruptedError: unexpected skip byte at bit ${position} (byte ${Math.floor(position/8)}): expected 0x${expected.toString(16).padStart(2, '0')}, got 0x${actual.toString(16).padStart(2, '0')}`);
     }
   }
 
@@ -299,6 +301,171 @@ export class VersionedDecoder {
 
   private _real64(): number {
     this._expect_skip(8);
+    const bytes = this.buffer.readAlignedBytes(8);
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    return view.getFloat64(0, false); // big-endian
+  }
+}
+
+export class BitPackedDecoder {
+  private buffer: BitPackedBuffer;
+  private typeinfos: TypeInfo[];
+
+  constructor(contents: Buffer, typeinfos: TypeInfo[]) {
+    this.buffer = new BitPackedBuffer(contents);
+    this.typeinfos = typeinfos;
+  }
+
+  done(): boolean {
+    return this.buffer.done();
+  }
+
+  used_bits(): number {
+    return this.buffer.usedBits();
+  }
+
+  byte_align(): void {
+    this.buffer.byteAlign();
+  }
+
+  instance(typeid: number): unknown {
+    if (typeid >= this.typeinfos.length) {
+      throw new Error(`CorruptedError: invalid typeid ${typeid}`);
+    }
+
+    const typeinfo = this.typeinfos[typeid];
+    if (!typeinfo) {
+      throw new Error(`Invalid typeinfo for typeid ${typeid}`);
+    }
+    switch (typeinfo.type) {
+    case '_int': {
+      if (!typeinfo.args[0]) {
+        throw new Error(`Invalid _int args for typeid ${typeid}`);
+      }
+      const bounds = typeinfo.args[0];
+      const normalizedBounds: [number, number] = [
+        typeof bounds[0] === 'bigint' ? Number(bounds[0]) : bounds[0],
+        bounds[1],
+      ];
+      return this._int(normalizedBounds);
+    }
+    case '_struct': {
+      if (typeinfo.args[0] == null || typeinfo.args.length !== 1) {
+        throw new Error(`Invalid struct args for typeid ${typeid}`);
+      }
+      return this._struct(typeinfo.args[0]);
+    }
+    case '_blob':
+      if (typeinfo.args[0] == null) {
+        throw new Error(`Invalid _blob args for typeid ${typeid}`);
+      } else {
+        return this._blob(typeinfo.args[0]);
+      }
+    case '_bool':
+      return this._bool();
+    case '_optional':
+      return this._optional(typeinfo.args[0]);
+    case '_array':
+      return this._array(typeinfo.args[0], typeinfo.args[1]);
+    case '_choice':
+      return this._choice(typeinfo.args[0], typeinfo.args[1]);
+    case '_fourcc':
+      return this._fourcc();
+    case '_null':
+      return null;
+    case '_bitarray':
+      if (!typeinfo.args[0]) {
+        throw new Error(`Invalid _bitarray args for typeid ${typeid}`);
+      }
+      return this._bitarray(typeinfo.args[0]);
+    case '_real32':
+      return this._real32();
+    case '_real64':
+      return this._real64();
+    default: {
+      const t: never = typeinfo;
+      throw new Error(`Unsupported type: ${t}`);
+    }
+    }
+  }
+
+  private _int(bounds: [number, number]): number {
+    return bounds[0] + this.buffer.readBits(bounds[1]);
+  }
+
+  private _struct(fields: StructTypeInfo['args'][number]): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+
+    for (const field of fields) {
+      const [name, typeid] = field as [string, number, number];
+
+      if (name === '__parent') {
+        const parent = this.instance(typeid);
+        if (typeof parent === 'object' && parent !== null) {
+          Object.assign(result, parent);
+        } else if (fields.length === 1) {
+          return parent as Record<string, unknown>;
+        } else {
+          result[name] = parent;
+        }
+      } else {
+        result[name] = this.instance(typeid);
+      }
+    }
+
+    return result;
+  }
+
+  private _blob(bounds: [number, number]): Buffer {
+    const length = this._int(bounds);
+    return this.buffer.readAlignedBytes(length);
+  }
+
+  private _bool(): boolean {
+    return this._int([0, 1]) !== 0;
+  }
+
+  private _optional(typeid: number): unknown {
+    const exists = this._bool();
+    return exists ? this.instance(typeid) : null;
+  }
+
+  private _array(bounds: [number, number], typeid: number): unknown[] {
+    const length = this._int(bounds);
+    const result: unknown[] = [];
+    for (let i = 0; i < length; i++) {
+      result.push(this.instance(typeid));
+    }
+    return result;
+  }
+
+  private _choice(bounds: [number, number], fields: Record<number, [string, number]>): unknown {
+    const tag = this._int(bounds);
+    const field = fields[tag];
+    if (!field) {
+      throw new Error(`CorruptedError: invalid choice tag ${tag}`);
+    }
+    const [name, typeid] = field;
+    return { [name]: this.instance(typeid) };
+  }
+
+  private _fourcc(): string {
+    const bytes = this.buffer.readAlignedBytes(4);
+    return bytes.toString('ascii');
+  }
+
+  private _bitarray(bounds: [number, number]): [number, Buffer] {
+    const length = this._int(bounds);
+    return [length, this.buffer.readAlignedBytes(Math.floor((length + 7) / 8))];
+  }
+
+  private _real32(): number {
+    const bytes = this.buffer.readAlignedBytes(4);
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    return view.getFloat32(0, false); // big-endian
+  }
+
+  private _real64(): number {
     const bytes = this.buffer.readAlignedBytes(8);
     const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     return view.getFloat64(0, false); // big-endian

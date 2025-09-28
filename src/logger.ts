@@ -19,7 +19,7 @@ export async function configureLogger(): Promise<void> {
       },
       {
         category: ['sc2ts', 'cli'],
-        lowestLevel: 'info', // CLI 메시지는 항상 info 레벨 이상 출력
+        lowestLevel: 'debug',
         sinks: ['console'],
       },
     ],

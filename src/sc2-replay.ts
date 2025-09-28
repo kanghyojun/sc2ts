@@ -39,7 +39,7 @@ export class SC2Replay {
   static async fromFile(filepath: string, options?: ReplayOptions): Promise<SC2Replay> {
     const mpqArchive = await MpqArchive.open(filepath, { listFile: this.listFiles.join('\n') });
     const replay = new SC2Replay(mpqArchive);
-    await replay.parse(options);
+    replay.parse(options);
     return replay;
   }
 
