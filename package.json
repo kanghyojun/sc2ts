@@ -68,6 +68,9 @@
     "@logtape/logtape": "^1.1.0",
     "@optique/core": "^0.4.4",
     "@optique/run": "^0.4.4",
+    "compressjs": "^1.0.3",
+    "fflate": "^0.8.2",
+    "seek-bzip": "^2.0.0",
     "zod": "^4.1.9"
   }
 }

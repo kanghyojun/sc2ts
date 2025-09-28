@@ -2,6 +2,7 @@
 // Based on Blizzard's s2protocol implementation
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { createLogger } from '../logger';
 import type {
   ReplayHeader,
   ReplayDetails,
@@ -16,7 +17,7 @@ import protocol80949 from './versions/protocol80949';
 import buildZodTypeinfo from './zod-typeinfo/index';
 
 // Direct mapping from build versions to protocol decoders
-// Protocol 80949 is compatible with builds 80949-94137
+// Protocol 80949 now supports bzip2 decompression and is compatible with builds 80949-94137
 const BUILD_TO_PROTOCOL: Record<SupportProtocolVersion, ProtocolDecoder> = {
   80949: protocol80949,
   81009: protocol80949,
@@ -88,9 +89,11 @@ export class VersionedProtocol {
 
   private protocol: ProtocolDecoder;
   private zodTypeInfo: ZodTypeInfos;
+  private logger = createLogger('protocol');
 
   constructor(buildVersion?: number) {
     const actualBuildVersion = buildVersion || getLatestBuildVersion();
+    this.logger.info(`Using protocol for build version: ${actualBuildVersion}`);
     this.protocol = getProtocol(actualBuildVersion);
     this.zodTypeInfo = getZodTypeInfo(actualBuildVersion as SupportProtocolVersion);
   }
