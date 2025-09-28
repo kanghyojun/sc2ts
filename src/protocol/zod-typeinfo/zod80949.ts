@@ -248,7 +248,7 @@ export const PEvent = z.object({
   _gameloop: z.number(),
   _userid: z.number().optional(),
   _bits: z.number(),
-});
+}).passthrough(); // Allow additional properties to pass through
 
 
 export default {

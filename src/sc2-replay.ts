@@ -113,7 +113,10 @@ export class SC2Replay {
 
   private parseGameEvents(): void {
     const gameEventsFile = this.mpqArchive.getFile('replay.game.events');
-    this._gameEvents = this.decoder.decodeReplayGameEvents(gameEventsFile.data);
+    const rawGameEvents = this.decoder.decodeReplayGameEvents(gameEventsFile.data);
+
+    // Buffer 필드를 문자열로 변환
+    this._gameEvents = this.convertBufferFieldsToStringsGame(rawGameEvents);
   }
 
   private parseMessageEvents(): void {
@@ -123,7 +126,50 @@ export class SC2Replay {
 
   private parseTrackerEvents(): void {
     const trackerEventsFile = this.mpqArchive.getFile('replay.tracker.events');
-    this._trackerEvents = this.decoder.decodeReplayTrackerEvents(trackerEventsFile.data);
+    const rawTrackerEvents = this.decoder.decodeReplayTrackerEvents(trackerEventsFile.data);
+
+    // Buffer 필드를 문자열로 변환
+    this._trackerEvents = this.convertBufferFieldsToStrings(rawTrackerEvents);
+  }
+
+  private convertBufferFieldsToStrings(events: TrackerEvent[]): TrackerEvent[] {
+    // Buffer를 문자열로 변환해야 하는 필드들
+    const stringFields = [
+      'm_unitTypeName',
+      'm_upgradeTypeName',
+      'm_creatorAbilityName',
+    ];
+
+    return events.map(event => {
+      const convertedEvent = { ...event };
+
+      for (const field of stringFields) {
+        if (field in convertedEvent && Buffer.isBuffer((convertedEvent as any)[field])) {
+          (convertedEvent as any)[field] = ((convertedEvent as any)[field] as Buffer).toString('utf8');
+        }
+      }
+
+      return convertedEvent;
+    });
+  }
+
+  private convertBufferFieldsToStringsGame(events: GameEvent[]): GameEvent[] {
+    // Buffer를 문자열로 변환해야 하는 필드들
+    const stringFields = [
+      'm_hotkeyProfile',
+    ];
+
+    return events.map(event => {
+      const convertedEvent = { ...event };
+
+      for (const field of stringFields) {
+        if (field in convertedEvent && Buffer.isBuffer((convertedEvent as any)[field])) {
+          (convertedEvent as any)[field] = ((convertedEvent as any)[field] as Buffer).toString('utf8');
+        }
+      }
+
+      return convertedEvent;
+    });
   }
 
   // Public API

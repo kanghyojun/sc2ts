@@ -417,7 +417,7 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
     };
 
     if (config.json) {
-      // JSON 출력 (BigInt 처리 포함)
+      // JSON 출력 (BigInt 처리)
       const jsonOutput = config.pretty
         ? JSON.stringify(parsedData, (_, value) =>
             typeof value === 'bigint' ? value.toString() : value, 2)

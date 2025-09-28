@@ -366,7 +366,6 @@ export class VersionedProtocol {
       ...event,
       loop: event._gameloop,
       eventType: event._event,
-      eventData: event,
     }));
   }
 

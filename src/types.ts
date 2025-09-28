@@ -236,7 +236,35 @@ export interface MessageEvent extends BaseEvent {
 export interface TrackerEvent extends BaseEvent {
   loop: number;
   eventType: string;
-  eventData: unknown;
+  // Allow any additional fields from the decoded event structure
+  [key: string]: unknown;
+}
+
+// Specific tracker event types for better typing
+export interface SUnitBornEvent extends TrackerEvent {
+  m_unitTagIndex?: number;
+  m_unitTagRecycle?: number;
+  m_unitTypeName?: string;
+  m_controlPlayerId?: number;
+  m_upkeepPlayerId?: number;
+  m_x?: number;
+  m_y?: number;
+  m_creatorUnitTagIndex?: number;
+  m_creatorUnitTagRecycle?: number;
+  m_creatorAbilityName?: string;
+}
+
+export interface SUpgradeEvent extends TrackerEvent {
+  m_playerId?: number;
+  m_upgradeTypeName?: string;
+  m_count?: number;
+}
+
+export interface SPlayerSetupEvent extends TrackerEvent {
+  m_playerId?: number;
+  m_type?: number;
+  m_userId?: number;
+  m_slotId?: number;
 }
 
 export interface AttributeEvent extends BaseEvent {
