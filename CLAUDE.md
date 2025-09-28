@@ -47,6 +47,9 @@ pnpm run typecheck
 
 # Clean build output
 pnpm run clean
+
+# CLI Development and Testing
+pnpm run dev:cli         # Run CLI in development mode with tsx
 ```
 
 ## Project Structure
@@ -221,6 +224,127 @@ The library is structured around these main components:
    - MpqError (base class)
    - MpqInvalidFormatError, MpqDecryptionError, MpqDecompressionError
    - MpqFileNotFoundError
+
+## Command Line Interface (CLI)
+
+The project includes a comprehensive CLI tool for working with SC2 replay files. The CLI provides four main commands for different operations.
+
+### CLI Development and Testing
+
+**Development Command**: Use `pnpm run dev:cli` to run the CLI in development mode with tsx (TypeScript execution):
+
+```bash
+# Run CLI in development mode
+pnpm run dev:cli [command] [options]
+
+# Examples:
+pnpm run dev:cli parse "replays/a.SC2Replay" --json --pretty
+pnpm run dev:cli info "replays/a.SC2Replay" --players
+pnpm run dev:cli list "replays/a.SC2Replay" --details
+pnpm run dev:cli extract "replays/a.SC2Replay" --format json
+```
+
+### Available CLI Commands
+
+#### 1. Parse Command
+Parses SC2 replay files and extracts comprehensive game data including events, players, and metadata.
+
+```bash
+# Human-readable output
+pnpm run dev:cli parse "replay.SC2Replay"
+
+# JSON output to console
+pnpm run dev:cli parse "replay.SC2Replay" --json --pretty
+
+# JSON output to file
+pnpm run dev:cli parse "replay.SC2Replay" --json --pretty -o "output.json"
+
+# Verbose logging
+pnpm run dev:cli parse "replay.SC2Replay" --verbose
+```
+
+**Parse Command Features:**
+- Decodes game events, message events, and tracker events
+- Shows player information with races, teams, and results
+- Displays chat messages with timestamps
+- Provides event count summaries
+- Handles BigInt values properly in JSON output
+- Uses emoji indicators for player results (🏆 victory, 💀 defeat, 🤝 tie)
+
+#### 2. Info Command
+Displays detailed information about SC2 replay files including game details, players, and archive metadata.
+
+```bash
+# Basic info
+pnpm run dev:cli info "replay.SC2Replay"
+
+# Include player details
+pnpm run dev:cli info "replay.SC2Replay" --players
+
+# Include event information
+pnpm run dev:cli info "replay.SC2Replay" --events
+
+# JSON output
+pnpm run dev:cli info "replay.SC2Replay" --json
+```
+
+#### 3. List Command
+Lists all files contained within the MPQ archive of a replay file.
+
+```bash
+# Simple file list
+pnpm run dev:cli list "replay.SC2Replay"
+
+# Detailed file information
+pnpm run dev:cli list "replay.SC2Replay" --details
+
+# Filter files by name
+pnpm run dev:cli list "replay.SC2Replay" --filter "replay.game"
+```
+
+#### 4. Extract Command
+Extracts files from the MPQ archive to disk in various formats.
+
+```bash
+# Extract all files as JSON
+pnpm run dev:cli extract "replay.SC2Replay" --format json -o "./extracted"
+
+# Extract specific files
+pnpm run dev:cli extract "replay.SC2Replay" --files "replay.details,replay.initData"
+
+# Extract as raw binary
+pnpm run dev:cli extract "replay.SC2Replay" --format raw
+
+# Pretty-print JSON output
+pnpm run dev:cli extract "replay.SC2Replay" --format json --pretty
+```
+
+### CLI Error Handling
+
+The CLI provides detailed error reporting with:
+- Clear error messages showing the actual problem
+- Full stack traces for debugging
+- Context about which operation failed
+- BigInt serialization support for JSON output
+
+### CLI Implementation Notes
+
+- **Parse Command**: Uses `SC2Replay.fromFile()` directly, bypasses FileExtractor
+- **Other Commands**: Use FileExtractor for MPQ archive operations
+- **JSON Output**: Automatically converts BigInt values to strings for JSON compatibility
+- **Error Logging**: Enhanced with console output showing error details beyond logger output
+- **File Paths**: All commands accept relative or absolute paths to SC2 replay files
+
+### Testing CLI Commands
+
+When testing CLI functionality, use the replay files in the `replays/` directory:
+
+```bash
+# Test with sample replay
+pnpm run dev:cli parse "replays/a.SC2Replay" --json --verbose
+```
+
+**IMPORTANT**: Always use `pnpm run dev:cli` for development and testing, not the built CLI executable.
 
 ## Testing and Quality Assurance
 
