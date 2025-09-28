@@ -86,7 +86,7 @@ const parseCommand = command('parse', merge(
   commonOptions,
   object('Parse Options', {
     replayFile: argument(path({ mustExist: true })),
-    output: withDefault(option('-o', '--output', path()), './parsed'),
+    output: optional(option('-o', '--output', path())),
     json: optional(option('-j', '--json')),
     pretty: optional(option('--pretty')),
   }),
@@ -99,6 +99,23 @@ type Config = InferValue<typeof cli>;
 
 // Execute the command
 async function executeCommand(config: Config) {
+  // Parse command doesn't need FileExtractor, handle it separately
+  if (config.action === 'parse') {
+    try {
+      await executeParse(config);
+    } catch (error) {
+      logger.error('CLI execution error', { error });
+      console.error('\nCLI Error Details:');
+      console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
+      if (error instanceof Error && error.stack) {
+        console.error(`Stack: ${error.stack}`);
+      }
+      process.exit(1);
+    }
+    return;
+  }
+
+  // Other commands use FileExtractor
   const extractor = new FileExtractor();
 
   try {
@@ -114,12 +131,14 @@ async function executeCommand(config: Config) {
     case 'info':
       await executeInfo(config, extractor);
       break;
-    case 'parse':
-      await executeParse(config);
-      break;
     }
   } catch (error) {
     logger.error('CLI execution error', { error });
+    console.error('\nCLI Error Details:');
+    console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
+    if (error instanceof Error && error.stack) {
+      console.error(`Stack: ${error.stack}`);
+    }
     process.exit(1);
   } finally {
     extractor.close();
@@ -252,7 +271,8 @@ async function executeInfo(config: InferValue<typeof infoCommand>, extractor: Fi
   };
 
   if (config.json) {
-    const jsonOutput = JSON.stringify(info, null, 2);
+    const jsonOutput = JSON.stringify(info, (_, value) =>
+      typeof value === 'bigint' ? value.toString() : value, 2);
     jsonOutput.split('\n').forEach(line => logger.info(line));
     return;
   }
@@ -360,7 +380,11 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
   if (config.verbose) {
     logger.info('Parsing replay', { replayFile: config.replayFile });
     logger.info(`Parsing replay: ${config.replayFile}`);
-    logger.info(`Output directory: ${config.output}`);
+    if (config.output) {
+      logger.info(`Output file: ${config.output}`);
+    } else {
+      logger.info('Output: Console');
+    }
   }
 
   try {
@@ -393,10 +417,12 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
     };
 
     if (config.json) {
-      // JSON 출력
+      // JSON 출력 (BigInt 처리 포함)
       const jsonOutput = config.pretty
-        ? JSON.stringify(parsedData, null, 2)
-        : JSON.stringify(parsedData);
+        ? JSON.stringify(parsedData, (_, value) =>
+            typeof value === 'bigint' ? value.toString() : value, 2)
+        : JSON.stringify(parsedData, (_, value) =>
+            typeof value === 'bigint' ? value.toString() : value);
 
       if (config.output) {
         // 파일로 저장
@@ -475,11 +501,21 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
 
   } catch (error) {
     logger.error('Failed to parse replay', { error });
+    console.error('\nParse Error Details:');
+    console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
+    if (error instanceof Error && error.stack) {
+      console.error(`Stack: ${error.stack}`);
+    }
     throw error;
   }
 }
 
 executeCommand(config).catch(error => {
   logger.error('Fatal CLI error', { error });
+  console.error('\nFatal CLI Error Details:');
+  console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
+  if (error instanceof Error && error.stack) {
+    console.error(`Stack: ${error.stack}`);
+  }
   process.exit(1);
 });
