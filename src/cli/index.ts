@@ -5,7 +5,6 @@ import {
   argument,
   command,
   constant,
-  merge,
   object,
   option,
   optional,
@@ -39,74 +38,59 @@ configureLogger().catch(console.error);
 // Create CLI logger
 const logger = createLogger('cli');
 
-// Common options for all commands
-const commonOptions = object('Common', {
-  verbose: optional(option('-v', '--verbose')),
-});
-
 // Extract command parser
-const extractCommand = command('extract', merge(
-  object({ action: constant('extract') }),
-  commonOptions,
-  object('Extract Options', {
-    replayFile: argument(path({ mustExist: true })),
-    output: withDefault(option('-o', '--output', path()), './extracted'),
-    format: withDefault(option('-f', '--format', choice(['json', 'raw'])), 'json'),
-    files: withDefault(option('--files', string()), 'all'),
-    pretty: optional(option('--pretty')),
-  }),
-));
+const extractCommand = command('extract', object({
+  action: constant('extract'),
+  replayFile: argument(path({ mustExist: true })),
+  output: withDefault(option('-o', '--output', path()), './extracted'),
+  format: withDefault(option('-f', '--format', choice(['json', 'raw'])), 'json'),
+  files: withDefault(option('--files', string()), 'all'),
+  pretty: optional(option('--pretty')),
+  verbose: optional(option('-v', '--verbose')),
+}));
 
 // List command parser
-const listCommand = command('list', merge(
-  object({ action: constant('list') }),
-  commonOptions,
-  object('List Options', {
-    replayFile: argument(path({ mustExist: true })),
-    details: optional(option('-d', '--details')),
-    filter: optional(option('-f', '--filter', string())),
-  }),
-));
+const listCommand = command('list', object({
+  action: constant('list'),
+  replayFile: argument(path({ mustExist: true })),
+  details: optional(option('-d', '--details')),
+  filter: optional(option('-f', '--filter', string())),
+  verbose: optional(option('-v', '--verbose')),
+}));
 
 // Info command parser
-const infoCommand = command('info', merge(
-  object({ action: constant('info') }),
-  commonOptions,
-  object('Info Options', {
-    replayFile: argument(path({ mustExist: true })),
-    json: optional(option('-j', '--json')),
-    players: optional(option('-p', '--players')),
-    events: optional(option('-e', '--events')),
-  }),
-));
+const infoCommand = command('info', object({
+  action: constant('info'),
+  replayFile: argument(path({ mustExist: true })),
+  json: optional(option('-j', '--json')),
+  players: optional(option('-p', '--players')),
+  events: optional(option('-e', '--events')),
+  verbose: optional(option('-v', '--verbose')),
+}));
 
-// Parse command parser - 새로운 파싱 명령어
-const parseCommand = command('parse', merge(
-  object({ action: constant('parse') }),
-  commonOptions,
-  object('Parse Options', {
-    replayFile: argument(path({ mustExist: true })),
-    output: optional(option('-o', '--output', path())),
-    json: optional(option('-j', '--json')),
-    pretty: optional(option('--pretty')),
-  }),
-));
+// Parse command parser
+const parseCommand = command('parse', object({
+  action: constant('parse'),
+  replayFile: argument(path({ mustExist: true })),
+  output: optional(option('-o', '--output', path())),
+  json: optional(option('-j', '--json')),
+  pretty: optional(option('--pretty')),
+  verbose: optional(option('-v', '--verbose')),
+}));
 
-// Events command parser - 상세한 게임 이벤트 분석
-const eventsCommand = command('events', merge(
-  object({ action: constant('events') }),
-  commonOptions,
-  object('Events Options', {
-    replayFile: argument(path({ mustExist: true })),
-    output: optional(option('-o', '--output', path())),
-    json: optional(option('-j', '--json')),
-    pretty: optional(option('--pretty')),
-    type: withDefault(option('-t', '--type', choice(['game', 'tracker', 'message', 'all'])), 'all'),
-    filter: optional(option('-f', '--filter', string())),
-    limit: optional(option('-l', '--limit', string())),
-    gameplayOnly: optional(option('-g', '--gameplay-only')),
-  }),
-));
+// Events command parser
+const eventsCommand = command('events', object({
+  action: constant('events'),
+  replayFile: argument(path({ mustExist: true })),
+  output: optional(option('-o', '--output', path())),
+  json: optional(option('-j', '--json')),
+  pretty: optional(option('--pretty')),
+  type: withDefault(option('-t', '--type', choice(['game', 'tracker', 'message', 'all'])), 'all'),
+  filter: optional(option('-f', '--filter', string())),
+  limit: optional(option('-l', '--limit', string())),
+  gameplayOnly: optional(option('-g', '--gameplay-only')),
+  verbose: optional(option('-v', '--verbose')),
+}));
 
 // Main CLI parser
 const cli = or(extractCommand, listCommand, infoCommand, parseCommand, eventsCommand);
@@ -189,9 +173,9 @@ async function executeExtract(config: InferValue<typeof extractCommand>, extract
       outputDir: config.output,
       format: config.format
     });
-    logger.info(`Extracting files from: ${config.replayFile}`);
-    logger.info(`Output directory: ${config.output}`);
-    logger.info(`Format: ${config.format}`);
+    console.log(`Extracting files from: ${config.replayFile}`);
+    console.log(`Output directory: ${config.output}`);
+    console.log(`Format: ${config.format}`);
   }
 
   const filePatterns = config.files.split(',').map((f: string) => f.trim());
@@ -200,8 +184,8 @@ async function executeExtract(config: InferValue<typeof extractCommand>, extract
   if (result.errors.length > 0) {
     logger.warn('Errors occurred during extraction', { errors: result.errors });
     if (config.verbose) {
-      logger.warn('Errors occurred during extraction:');
-      result.errors.forEach(error => logger.warn(`  ${error}`));
+      console.log('Errors occurred during extraction:');
+      result.errors.forEach(error => console.log(`  ${error}`));
     }
   }
 
@@ -211,34 +195,34 @@ async function executeExtract(config: InferValue<typeof extractCommand>, extract
       const outputPath = await formatter.saveFile(filename, file);
       savedFiles.push(outputPath);
       if (config.verbose) {
-        logger.info(`Saved: ${outputPath}`);
+        console.log(`Saved: ${outputPath}`);
       }
     } catch (error) {
       logger.error('Failed to save file', { filename, error });
-      logger.warn(`Failed to save ${filename}: ${error}`);
+      console.log(`Failed to save ${filename}: ${error}`);
     }
   }
 
-  logger.info('');
-  logger.info('Extraction Summary:');
-  logger.info(`  Files found: ${result.total}`);
-  logger.info(`  Files extracted: ${result.extracted}`);
-  logger.info(`  Files saved: ${savedFiles.length}`);
-  logger.info(`  Files skipped: ${result.skipped}`);
-  logger.info(`  Output directory: ${config.output}`);
-  logger.info(`  Format: ${config.format}`);
+  console.log('');
+  console.log('Extraction Summary:');
+  console.log(`  Files found: ${result.total}`);
+  console.log(`  Files extracted: ${result.extracted}`);
+  console.log(`  Files saved: ${savedFiles.length}`);
+  console.log(`  Files skipped: ${result.skipped}`);
+  console.log(`  Output directory: ${config.output}`);
+  console.log(`  Format: ${config.format}`);
 
   if (savedFiles.length > 0) {
-    logger.info('');
-    logger.info('Extracted files:');
-    savedFiles.forEach(file => logger.info(`  ${file}`));
+    console.log('');
+    console.log('Extracted files:');
+    savedFiles.forEach(file => console.log(`  ${file}`));
   }
 }
 
 async function executeList(config: InferValue<typeof listCommand>, extractor: FileExtractor) {
   if (config.verbose) {
     logger.info('Listing files', { replayFile: config.replayFile });
-    logger.info(`Listing files in: ${config.replayFile}`);
+    console.log(`Listing files in: ${config.replayFile}`);
   }
 
   const files = extractor.getAvailableFiles();
@@ -247,12 +231,12 @@ async function executeList(config: InferValue<typeof listCommand>, extractor: Fi
     : files;
 
   if (filteredFiles.length === 0) {
-    logger.info('No files found matching the criteria.');
+    console.log('No files found matching the criteria.');
     return;
   }
 
-  logger.info(`Found ${filteredFiles.length} file(s) in replay archive:`);
-  logger.info('');
+  console.log(`Found ${filteredFiles.length} file(s) in replay archive:`);
+  console.log('');
 
   if (config.details) {
     for (const filename of filteredFiles) {
@@ -260,8 +244,8 @@ async function executeList(config: InferValue<typeof listCommand>, extractor: Fi
         const file = extractor.archive?.getFile(filename);
         if (file) {
           const fileInfo = OutputFormatter.formatFileInfo(file);
-          fileInfo.split('\n').forEach(line => logger.info(line));
-          logger.info('');
+          fileInfo.split('\n').forEach(line => console.log(line));
+          console.log('');
         }
       } catch (error) {
         logger.error('Failed to get file details', { filename, error });
@@ -271,15 +255,15 @@ async function executeList(config: InferValue<typeof listCommand>, extractor: Fi
   } else {
     const fileList = OutputFormatter.formatFileList(filteredFiles);
     fileList.split('\n').forEach(line => {
-      if (line.trim()) logger.info(line);
+      if (line.trim()) console.log(line);
     });
   }
 
   if (config.verbose) {
-    logger.info('');
-    logger.info(`Total files in archive: ${files.length}`);
+    console.log('');
+    console.log(`Total files in archive: ${files.length}`);
     if (config.filter) {
-      logger.info(`Files matching filter '${config.filter}': ${filteredFiles.length}`);
+      console.log(`Files matching filter '${config.filter}': ${filteredFiles.length}`);
     }
   }
 }
@@ -287,7 +271,7 @@ async function executeList(config: InferValue<typeof listCommand>, extractor: Fi
 async function executeInfo(config: InferValue<typeof infoCommand>, extractor: FileExtractor) {
   if (config.verbose) {
     logger.info('Getting replay info', { replayFile: config.replayFile });
-    logger.info(`Getting info from: ${config.replayFile}`);
+    console.log(`Getting info from: ${config.replayFile}`);
   }
 
   const replay = extractor.replayInstance;
@@ -304,78 +288,78 @@ async function executeInfo(config: InferValue<typeof infoCommand>, extractor: Fi
   if (config.json) {
     const jsonOutput = JSON.stringify(info, (_, value) =>
       typeof value === 'bigint' ? value.toString() : value, 2);
-    jsonOutput.split('\n').forEach(line => logger.info(line));
+    console.log(jsonOutput);
     return;
   }
 
-  logger.info('SC2 Replay Information');
-  logger.info('======================');
-  logger.info('');
+  console.log('SC2 Replay Information');
+  console.log('======================');
+  console.log('');
 
   // Basic replay info
   if (info.header) {
-    logger.info('Header:');
-    logger.info(`  Version: ${info.header.version?.major}.${info.header.version?.minor}.${info.header.version?.revision}.${info.header.version?.build}`);
-    logger.info(`  Length: ${info.header.length} bytes`);
-    logger.info('');
+    console.log('Header:');
+    console.log(`  Version: ${info.header.version?.major}.${info.header.version?.minor}.${info.header.version?.revision}.${info.header.version?.build}`);
+    console.log(`  Length: ${info.header.length} bytes`);
+    console.log('');
   }
 
   // Game details
   if (info.details) {
-    logger.info('Game Details:');
-    logger.info(`  Title: ${info.details.title || 'Unknown'}`);
-    logger.info(`  Map: ${info.details.mapFileName || 'Unknown'}`);
-    logger.info(`  Game Speed: ${info.details.gameSpeed || 'Unknown'}`);
-    logger.info(`  Duration: ${formatDuration(info.duration)} (${info.duration} seconds)`);
-    logger.info(`  Game Length: ${info.gameLength} loops`);
-    logger.info(`  Players: ${info.details.playerList?.length || 0}`);
-    logger.info('');
+    console.log('Game Details:');
+    console.log(`  Title: ${info.details.title || 'Unknown'}`);
+    console.log(`  Map: ${info.details.mapFileName || 'Unknown'}`);
+    console.log(`  Game Speed: ${info.details.gameSpeed || 'Unknown'}`);
+    console.log(`  Duration: ${formatDuration(info.duration)} (${info.duration} seconds)`);
+    console.log(`  Game Length: ${info.gameLength} loops`);
+    console.log(`  Players: ${info.details.playerList?.length || 0}`);
+    console.log('');
   }
 
   // Winner information
   if (info.winner) {
-    logger.info('Winner:');
-    logger.info(`  Name: ${info.winner.name}`);
-    logger.info(`  Race: ${info.winner.race}`);
-    logger.info(`  Team: ${info.winner.teamId}`);
-    logger.info('');
+    console.log('Winner:');
+    console.log(`  Name: ${info.winner.name}`);
+    console.log(`  Race: ${info.winner.race}`);
+    console.log(`  Team: ${info.winner.teamId}`);
+    console.log('');
   }
 
   // Player information
   if (config.players && info.players && info.players.length > 0) {
-    logger.info('Players:');
+    console.log('Players:');
     info.players.forEach((player: Player, index: number) => {
-      logger.info(`  ${index + 1}. ${player.name || 'Unknown'}`);
-      logger.info(`     Race: ${player.race || 'Unknown'}`);
-      logger.info(`     Team: ${player.teamId !== undefined ? player.teamId : 'Unknown'}`);
-      logger.info(`     Result: ${formatResult(player.result)}`);
-      logger.info(`     Color: RGB(${player.color?.r || 0}, ${player.color?.g || 0}, ${player.color?.b || 0})`);
-      logger.info('');
+      console.log(`  ${index + 1}. ${player.name || 'Unknown'}`);
+      console.log(`     Race: ${player.race || 'Unknown'}`);
+      console.log(`     Team: ${player.teamId !== undefined ? player.teamId : 'Unknown'}`);
+      console.log(`     Result: ${formatResult(player.result)}`);
+      console.log(`     Color: RGB(${player.color?.r || 0}, ${player.color?.g || 0}, ${player.color?.b || 0})`);
+      console.log('');
     });
   }
 
   // Event counts
   if (config.events) {
-    logger.info('Events:');
-    logger.info('  Game Events: Available');
-    logger.info('  Message Events: Available');
-    logger.info('  Tracker Events: Available');
-    logger.info('');
+    console.log('Events:');
+    console.log('  Game Events: Available');
+    console.log('  Message Events: Available');
+    console.log('  Tracker Events: Available');
+    console.log('');
   }
 
   // Archive information
-  logger.info('Archive Information:');
+  console.log('Archive Information:');
   const archiveInfo = extractor.archive?.archiveHeader;
   if (archiveInfo) {
-    logger.info(`  Format Version: ${archiveInfo.formatVersion}`);
-    logger.info(`  Archive Size: ${archiveInfo.archiveSize} bytes`);
-    logger.info(`  Block Size: ${archiveInfo.blockSize}`);
-    logger.info(`  Hash Table Size: ${archiveInfo.hashTableSize} entries`);
-    logger.info(`  Block Table Size: ${archiveInfo.blockTableSize} entries`);
+    console.log(`  Format Version: ${archiveInfo.formatVersion}`);
+    console.log(`  Archive Size: ${archiveInfo.archiveSize} bytes`);
+    console.log(`  Block Size: ${archiveInfo.blockSize}`);
+    console.log(`  Hash Table Size: ${archiveInfo.hashTableSize} entries`);
+    console.log(`  Block Table Size: ${archiveInfo.blockTableSize} entries`);
   }
 
   const fileCount = extractor.getAvailableFiles().length;
-  logger.info(`  Files in Archive: ${fileCount}`);
+  console.log(`  Files in Archive: ${fileCount}`);
 }
 
 function formatDuration(seconds: number): string {
@@ -421,11 +405,11 @@ const config = run(cli, {
 async function executeParse(config: InferValue<typeof parseCommand>) {
   if (config.verbose) {
     logger.info('Parsing replay', { replayFile: config.replayFile });
-    logger.info(`Parsing replay: ${config.replayFile}`);
+    console.log(`Parsing replay: ${config.replayFile}`);
     if (config.output) {
-      logger.info(`Output file: ${config.output}`);
+      console.log(`Output file: ${config.output}`);
     } else {
-      logger.info('Output: Console');
+      console.log('Output: Console');
     }
   }
 
@@ -472,48 +456,48 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
         const { dirname } = await import('node:path');
         await mkdir(dirname(config.output), { recursive: true });
         await writeFile(config.output, jsonOutput, 'utf8');
-        logger.info(`Parsed data saved to: ${config.output}`);
+        console.log(`Parsed data saved to: ${config.output}`);
       } else {
         // stdout으로 직접 출력 (valid JSON을 위해)
         console.log(jsonOutput);
       }
     } else {
       // 사람이 읽기 쉬운 형태로 출력
-      logger.info('='.repeat(60));
-      logger.info('SC2 REPLAY PARSED DATA');
-      logger.info('='.repeat(60));
-      logger.info('');
+      console.log('='.repeat(60));
+      console.log('SC2 REPLAY PARSED DATA');
+      console.log('='.repeat(60));
+      console.log('');
 
       // 기본 정보
       if (parsedData.details) {
-        logger.info('📋 GAME DETAILS:');
-        logger.info(`  Title: ${parsedData.details.title || 'Unknown'}`);
-        logger.info(`  Map: ${parsedData.details.mapFileName || 'Unknown'}`);
-        logger.info(`  Duration: ${parsedData.summary.duration}s (${parsedData.summary.gameLength} loops)`);
-        logger.info(`  Players: ${parsedData.players.length}`);
-        logger.info('');
+        console.log('📋 GAME DETAILS:');
+        console.log(`  Title: ${parsedData.details.title || 'Unknown'}`);
+        console.log(`  Map: ${parsedData.details.mapFileName || 'Unknown'}`);
+        console.log(`  Duration: ${parsedData.summary.duration}s (${parsedData.summary.gameLength} loops)`);
+        console.log(`  Players: ${parsedData.players.length}`);
+        console.log('');
       }
 
       // 승자 정보
       if (parsedData.summary.winner) {
-        logger.info('🏆 WINNER:');
-        logger.info(`  ${parsedData.summary.winner.name} (${parsedData.summary.winner.race})`);
-        logger.info('');
+        console.log('🏆 WINNER:');
+        console.log(`  ${parsedData.summary.winner.name} (${parsedData.summary.winner.race})`);
+        console.log('');
       }
 
       // 플레이어 정보
       if (parsedData.players.length > 0) {
-        logger.info('👥 PLAYERS:');
+        console.log('👥 PLAYERS:');
         parsedData.players.forEach((player, index) => {
           const result = player.result === 1 ? '🏆' : player.result === 2 ? '💀' : '🤝';
-          logger.info(`  ${index + 1}. ${result} ${player.name || 'Unknown'} (${player.race || 'Unknown'}) - Team ${player.teamId}`);
+          console.log(`  ${index + 1}. ${result} ${player.name || 'Unknown'} (${player.race || 'Unknown'}) - Team ${player.teamId}`);
         });
-        logger.info('');
+        console.log('');
       }
 
       // 채팅 메시지
       if (parsedData.events.message.length > 0) {
-        logger.info('💬 CHAT MESSAGES:');
+        console.log('💬 CHAT MESSAGES:');
         parsedData.events.message.forEach((msg, index) => {
           if (index < 10) { // 처음 10개만 표시
             const playerName = msg.userId !== undefined ? parsedData.players[msg.userId]?.name || `Player ${msg.userId}` : 'Unknown Player';
@@ -522,23 +506,23 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
               : isChatMessageData(msg.messageData)
                 ? msg.messageData.m_string
                 : `(${msg.messageType})`;
-            logger.info(`  [${Math.floor(msg.loop / 16)}s] ${playerName}: ${messageText}`);
+            console.log(`  [${Math.floor(msg.loop / 16)}s] ${playerName}: ${messageText}`);
           }
         });
         if (parsedData.events.message.length > 10) {
-          logger.info(`  ... and ${parsedData.events.message.length - 10} more messages`);
+          console.log(`  ... and ${parsedData.events.message.length - 10} more messages`);
         }
-        logger.info('');
+        console.log('');
       }
 
       // 이벤트 요약
-      logger.info('📊 EVENT SUMMARY:');
-      logger.info(`  Game Events: ${parsedData.summary.totalGameEvents}`);
-      logger.info(`  Chat Messages: ${parsedData.summary.totalMessageEvents}`);
-      logger.info(`  Tracker Events: ${parsedData.summary.totalTrackerEvents}`);
-      logger.info('');
+      console.log('📊 EVENT SUMMARY:');
+      console.log(`  Game Events: ${parsedData.summary.totalGameEvents}`);
+      console.log(`  Chat Messages: ${parsedData.summary.totalMessageEvents}`);
+      console.log(`  Tracker Events: ${parsedData.summary.totalTrackerEvents}`);
+      console.log('');
 
-      logger.info('✅ Parsing completed successfully!');
+      console.log('✅ Parsing completed successfully!');
     }
 
   } catch (error) {
@@ -555,11 +539,11 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
 async function executeEvents(config: InferValue<typeof eventsCommand>) {
   if (config.verbose) {
     logger.info('Analyzing game events', { replayFile: config.replayFile });
-    logger.info(`Analyzing events from: ${config.replayFile}`);
+    console.log(`Analyzing events from: ${config.replayFile}`);
     if (config.output) {
-      logger.info(`Output file: ${config.output}`);
+      console.log(`Output file: ${config.output}`);
     } else {
-      logger.info('Output: Console');
+      console.log('Output: Console');
     }
   }
 
@@ -578,7 +562,7 @@ async function executeEvents(config: InferValue<typeof eventsCommand>) {
     const loopsPerSecond = getLoopsPerSecond(gameSpeed);
 
     // 이벤트 타입별로 데이터 수집
-    let eventsData: any = {};
+    const eventsData: any = {};
 
     if (config.type === 'all' || config.type === 'game') {
       let gameEvents = limit ? replay.gameEvents.slice(0, limit) : replay.gameEvents;
@@ -656,54 +640,54 @@ async function executeEvents(config: InferValue<typeof eventsCommand>) {
         const { dirname } = await import('node:path');
         await mkdir(dirname(config.output), { recursive: true });
         await writeFile(config.output, jsonOutput, 'utf8');
-        logger.info(`Events data saved to: ${config.output}`);
+        console.log(`Events data saved to: ${config.output}`);
       } else {
         // stdout으로 직접 출력 (valid JSON을 위해)
         console.log(jsonOutput);
       }
     } else {
       // 사람이 읽기 쉬운 형태로 출력
-      logger.info('='.repeat(60));
-      logger.info('SC2 REPLAY EVENTS ANALYSIS');
-      logger.info('='.repeat(60));
-      logger.info('');
+      console.log('='.repeat(60));
+      console.log('SC2 REPLAY EVENTS ANALYSIS');
+      console.log('='.repeat(60));
+      console.log('');
 
-      logger.info('📊 EVENT SUMMARY:');
-      logger.info(`  Total Game Events: ${eventsData.summary.totalGameEvents}`);
-      logger.info(`  Total Tracker Events: ${eventsData.summary.totalTrackerEvents}`);
-      logger.info(`  Total Message Events: ${eventsData.summary.totalMessageEvents}`);
+      console.log('📊 EVENT SUMMARY:');
+      console.log(`  Total Game Events: ${eventsData.summary.totalGameEvents}`);
+      console.log(`  Total Tracker Events: ${eventsData.summary.totalTrackerEvents}`);
+      console.log(`  Total Message Events: ${eventsData.summary.totalMessageEvents}`);
       if (eventsData.unitEvents) {
-        logger.info(`  Unit-related Events: ${eventsData.summary.unitEventsFound}`);
+        console.log(`  Unit-related Events: ${eventsData.summary.unitEventsFound}`);
       }
-      logger.info(`  Game Duration: ${eventsData.summary.duration}s (${eventsData.summary.gameLength} loops)`);
-      logger.info('');
+      console.log(`  Game Duration: ${eventsData.summary.duration}s (${eventsData.summary.gameLength} loops)`);
+      console.log('');
 
       // 유닛 이벤트 샘플 표시
       if (eventsData.unitEvents && eventsData.unitEvents.length > 0) {
-        logger.info('🎮 UNIT EVENTS (Sample):');
-        logger.info(`  Game Speed: ${gameSpeed} (${loopsPerSecond} loops/sec)`);
-        eventsData.unitEvents.slice(0, 10).forEach((event: any, index: number) => {
+        console.log('🎮 UNIT EVENTS (Sample):');
+        console.log(`  Game Speed: ${gameSpeed} (${loopsPerSecond} loops/sec)`);
+        eventsData.unitEvents.slice(0, 10).forEach((event: any) => {
           const timeInSeconds = Math.floor(event.loop / loopsPerSecond);
           const minutes = Math.floor(timeInSeconds / 60);
           const seconds = timeInSeconds % 60;
           const timeStr = minutes > 0 ? `${minutes}:${seconds.toString().padStart(2, '0')}` : `${seconds}s`;
-          logger.info(`  [${timeStr}] ${event.eventType || event._event || 'Unknown'}`);
+          console.log(`  [${timeStr}] ${event.eventType || event._event || 'Unknown'}`);
           if (event.m_unitTypeName || event.unitTypeName) {
-            logger.info(`    Unit: ${event.m_unitTypeName || event.unitTypeName}`);
+            console.log(`    Unit: ${event.m_unitTypeName || event.unitTypeName}`);
           }
           if (event.m_controlPlayerId !== undefined) {
-            logger.info(`    Player: ${event.m_controlPlayerId}`);
+            console.log(`    Player: ${event.m_controlPlayerId}`);
           }
         });
 
         if (eventsData.unitEvents.length > 10) {
-          logger.info(`  ... and ${eventsData.unitEvents.length - 10} more unit events`);
+          console.log(`  ... and ${eventsData.unitEvents.length - 10} more unit events`);
         }
-        logger.info('');
+        console.log('');
       }
 
-      logger.info('✅ Events analysis completed!');
-      logger.info('💡 Use --json option to get full event data');
+      console.log('✅ Events analysis completed!');
+      console.log('💡 Use --json option to get full event data');
     }
 
   } catch (error) {
