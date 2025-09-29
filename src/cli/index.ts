@@ -456,7 +456,9 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
         const { dirname } = await import('node:path');
         await mkdir(dirname(config.output), { recursive: true });
         await writeFile(config.output, jsonOutput, 'utf8');
-        console.log(`Parsed data saved to: ${config.output}`);
+        if (config.verbose) {
+          console.log(`Parsed data saved to: ${config.output}`);
+        }
       } else {
         // stdout으로 직접 출력 (valid JSON을 위해)
         console.log(jsonOutput);
@@ -640,7 +642,9 @@ async function executeEvents(config: InferValue<typeof eventsCommand>) {
         const { dirname } = await import('node:path');
         await mkdir(dirname(config.output), { recursive: true });
         await writeFile(config.output, jsonOutput, 'utf8');
-        console.log(`Events data saved to: ${config.output}`);
+        if (config.verbose) {
+          console.log(`Events data saved to: ${config.output}`);
+        }
       } else {
         // stdout으로 직접 출력 (valid JSON을 위해)
         console.log(jsonOutput);
