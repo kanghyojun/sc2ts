@@ -29,8 +29,8 @@
     "clean": "rm -rf dist dist-esm",
     "dev": "tsc --watch",
     "dev:cli": "tsx src/cli/index.ts",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "test": "jest --config jest.config.ts",
     "test:watch": "jest --config jest.config.ts --watch",
@@ -59,7 +59,8 @@
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.1"
   },
   "dependencies": {
     "@logtape/logtape": "^1.1.0",
