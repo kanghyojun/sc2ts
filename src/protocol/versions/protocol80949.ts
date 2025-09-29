@@ -1,30 +1,25 @@
-// Protocol for StarCraft II build 80949
-// Compatible with builds 80949-93333
-// Based on Blizzard's s2protocol implementation
+import seekBzip from "seek-bzip";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-// S2Protocol implementation for build 80949 with bzip2 decompression support
-
-import seekBzip from 'seek-bzip';
-
-import { VersionedDecoder, BitPackedDecoder, BitPackedBuffer } from '../sc2-decoder';
-import type { ProtocolDecoder, TypeInfo } from '../types';
+import { VersionedDecoder, BitPackedDecoder, BitPackedBuffer } from "../sc2-decoder";
+import type { ProtocolDecoder, TypeInfo } from "../types";
 
 // Bzip2 decompression utility functions
 function isBzip2Compressed(data: Buffer): boolean {
   // Check for bzip2 signature at offset 0 or offset 1
   if (data.length >= 4) {
     // Direct bzip2 header: 'BZh'
-    if (data[0] === 0x42 && data[1] === 0x5A && data[2] === 0x68) {
+    if (data[0] === 0x42 && data[1] === 0x5a && data[2] === 0x68) {
       return true;
     }
 
     // SC2 bzip2 with 0x10 prefix: 0x10 + 'BZh'
-    if (data[0] === 0x10 &&
-        data[1] === 0x42 && // 'B'
-        data[2] === 0x5A && // 'Z'
-        data[3] === 0x68) { // 'h'
+    if (
+      data[0] === 0x10 &&
+            data[1] === 0x42 && // 'B'
+            data[2] === 0x5a && // 'Z'
+            data[3] === 0x68
+    ) {
+      // 'h'
       return true;
     }
   }
@@ -525,11 +520,13 @@ function* decodeEventStreamBitPacked(
     // Decode the event id
     const eventid = decoder.instance(eventid_typeid) as number;
     const event_info = event_types[eventid];
+
     if (!event_info) {
       // Skip unknown events gracefully for build 94137+ compatibility
-      // Use silent skip to avoid console noise - these are expected for newer builds
-      decoder.byte_align();
-      continue;
+      // Let's check the previous few events to see if we can identify the corruption point
+      // eslint-disable-next-line no-console
+      console.warn(`⚠️ Stopping event parsing at unknown eventid ${eventid} to prevent corruption`);
+      break;
     }
 
     const [typeid, typename] = event_info;
@@ -676,5 +673,4 @@ const protocol80949: ProtocolDecoder = {
   },
 };
 
-export { typeinfos };
 export default protocol80949;

@@ -454,9 +454,11 @@ export class BitPackedDecoder {
     return bytes.toString('ascii');
   }
 
-  private _bitarray(bounds: [number, number]): [number, Buffer] {
+  private _bitarray(bounds: [number, number]): [number, number] {
     const length = this._int(bounds);
-    return [length, this.buffer.readAlignedBytes(Math.floor((length + 7) / 8))];
+    // BitPackedDecoder reads bits directly, not aligned bytes like VersionedDecoder
+    const bits = this.buffer.readBits(length);
+    return [length, bits];
   }
 
   private _real32(): number {
