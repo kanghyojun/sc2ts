@@ -422,7 +422,7 @@ import type {
 git clone <repository-url>
 cd sc2ts
 
-# Install dependencies
+# Install dependencies (this also sets up Git hooks via Husky)
 pnpm install
 
 # Build the library
@@ -434,6 +434,8 @@ pnpm run test
 # Watch mode for development
 pnpm run dev
 ```
+
+**Note**: `pnpm install` automatically sets up Git hooks (via Husky) that run quality checks before each commit. This ensures code quality and prevents regressions.
 
 ### Scripts
 

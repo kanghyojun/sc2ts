@@ -15,6 +15,58 @@ This project uses:
 - **Testing**: Jest with coverage
 - **Build Configuration**: Dual module output (CommonJS and ESM)
 - **Linting**: ESLint with TypeScript support and import ordering
+- **Git Hooks**: Husky for automated quality checks (committed to repository)
+
+## Code Quality Workflow
+
+**MANDATORY**: All code changes must pass automated quality checks before committing.
+
+### Pre-commit Hook (Husky)
+
+This project uses **Husky** to manage Git hooks, ensuring all developers have the same pre-commit checks:
+
+1. **ESLint with auto-fix** (`pnpm run lint:fix`)
+   - Automatically fixes formatting issues (quotes, semicolons, import order)
+   - Fails if there are unfixable lint errors
+
+2. **TypeScript type checking** (`pnpm run typecheck`)
+   - Validates all type definitions
+   - Ensures strict type safety across the codebase
+
+3. **Test suite** (`pnpm run test`)
+   - Runs all unit and integration tests
+   - Ensures no regressions
+
+The hook will:
+- ✅ Auto-fix linting issues and stage the changes
+- ✅ Validate types and run tests
+- ❌ Block the commit if any check fails
+- ✅ Show clear error messages for manual fixes
+
+**Setup**: The pre-commit hook is automatically installed when you run `pnpm install` (via the `prepare` script). The hook configuration is stored in `.husky/pre-commit` and is committed to the repository, so all team members use the same checks.
+
+### Quality Standards While Writing Code
+
+1. **Type Safety**:
+   - Avoid `any` type - use `unknown` with type guards or `z.infer` from Zod schemas
+   - Use bracket notation `["property"]` for index signature access
+   - Leverage TypeScript's strict mode features
+
+2. **Import Guidelines**:
+   - Use `@/` alias for cross-module imports in src/
+   - Use `@/` alias in test files for importing from src/
+   - Relative imports for same directory or one level up/down
+   - Follow the 3-level rule: use `@/` for paths 3+ levels deep
+
+3. **Code Style**:
+   - Max line length: 120 characters
+   - Use double quotes for strings
+   - Follow existing import ordering (builtin/external, internal, relative)
+
+4. **Testing**:
+   - Write tests BEFORE implementation (TDD)
+   - Add regression tests for bug fixes
+   - Use descriptive test names
 
 ## Development Commands
 
@@ -898,18 +950,16 @@ Closes #42"
 
 ### Commit Workflow:
 
-**CRITICAL**: Always run quality checks before committing to ensure code integrity and prevent regressions.
+**Note**: The pre-commit hook automatically runs quality checks (lint, typecheck, test) before every commit. You don't need to run them manually.
 
 1. **Stage Related Changes Only**: Use `git add` selectively for atomic commits
 2. **Review Before Committing**: Use `git diff --cached` to verify staged changes
 3. **Write Clear Messages**: Follow the prefix and format guidelines above
-4. **MANDATORY Quality Checks**: Before every commit, you MUST run:
-    ```bash
-    pnpm run test      # All tests must pass
-    pnpm run typecheck # TypeScript compilation must succeed
-    pnpm run lint      # Linting must pass (warnings acceptable, errors not)
-    ```
-5. **One Logical Change**: If you have multiple unrelated changes, make separate commits
+4. **One Logical Change**: If you have multiple unrelated changes, make separate commits
+5. **Pre-commit Hook Runs Automatically**:
+   - Fixes linting issues automatically
+   - Validates types and runs tests
+   - Blocks commit if checks fail
 
 #### Example Workflow:
 
@@ -917,29 +967,38 @@ Closes #42"
 # Make changes to hash table parsing
 git add src/mpq-reader.ts src/__tests__/mpq-reader.test.ts
 
-# MANDATORY: Run quality checks before committing
-pnpm run test && pnpm run typecheck && pnpm run lint
-
-# Commit only if all checks pass
+# Commit - pre-commit hook runs automatically
 git commit -m "fix: correct endianness handling in hash table parsing"
+# Hook output:
+# 🔍 Running pre-commit checks...
+# 📝 Running ESLint with auto-fix...
+# 🔎 Running TypeScript type check...
+# 🧪 Running tests...
+# ✅ All pre-commit checks passed!
 
 # Make separate commit for type improvements
 git add src/types.ts
-
-# MANDATORY: Run quality checks again
-pnpm run test && pnpm run typecheck && pnpm run lint
-
-# Commit only if all checks pass
 git commit -m "refactor: improve type definitions for MpqHashTableEntry"
 
 # Make separate commit for documentation
 git add README.md
-
-# MANDATORY: Run quality checks (even for docs - may affect examples)
-pnpm run test && pnpm run typecheck && pnpm run lint
-
-# Commit only if all checks pass
 git commit -m "docs: add hash table parsing examples to README"
+```
+
+#### If Pre-commit Hook Fails:
+
+```bash
+# Example: Commit blocked by failing test
+git commit -m "fix: some change"
+# Hook output:
+# 🔍 Running pre-commit checks...
+# 📝 Running ESLint with auto-fix...
+# 🔎 Running TypeScript type check...
+# 🧪 Running tests...
+# ❌ Tests failed. Please fix the failing tests.
+
+# Fix the issue, then try again
+git commit -m "fix: some change"
 ```
 
 ### Commit History Quality:

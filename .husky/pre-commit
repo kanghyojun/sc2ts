@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+# Pre-commit hook for sc2ts project
+# Runs linting, type checking, and tests before allowing commit
+#
+
+echo "🔍 Running pre-commit checks..."
+
+# Run lint with auto-fix
+echo "📝 Running ESLint with auto-fix..."
+pnpm run lint:fix || {
+  echo "❌ ESLint failed. Please fix the errors manually."
+  exit 1
+}
+
+# Run type checking
+echo "🔎 Running TypeScript type check..."
+pnpm run typecheck || {
+  echo "❌ TypeScript type check failed. Please fix the type errors."
+  exit 1
+}
+
+# Run tests
+echo "🧪 Running tests..."
+pnpm run test || {
+  echo "❌ Tests failed. Please fix the failing tests."
+  exit 1
+}
+
+# Stage any files that were auto-fixed by lint
+git add -u
+
+echo "✅ All pre-commit checks passed!"
+exit 0
