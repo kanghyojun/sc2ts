@@ -7,7 +7,7 @@ module.exports = [
     js.configs.recommended,
 
     // TypeScript configuration - apply TypeScript rules only to TS files
-    ...tseslint.configs.recommended.map(config => ({
+    ...tseslint.configs.recommended.map((config) => ({
         ...config,
         files: ["src/**/*.ts", "test/**/*.ts"],
     })),
@@ -56,7 +56,7 @@ module.exports = [
             quotes: ["error", "double"],
             semi: ["error", "always"],
             "comma-dangle": ["error", "always-multiline"],
-            indent: ["error", 4],
+            indent: ["error", 2],
             "object-curly-spacing": ["error", "always"],
             "array-bracket-spacing": ["error", "never"],
         },
