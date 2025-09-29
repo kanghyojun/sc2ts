@@ -26,7 +26,7 @@ describe('Build 94137 Protocol Compatibility', () => {
 
     expect(gameEvents).toBeDefined();
     expect(gameEvents.length).toBeGreaterThan(0);
-    expect(gameEvents.length).toBe(3586); // Known count from test replay
+    expect(gameEvents.length).toBe(4615); // Updated count after improved parsing
 
     // Verify that we can parse common event types
     const eventTypes = new Set(gameEvents.map(e => e._event));

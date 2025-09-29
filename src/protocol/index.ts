@@ -140,31 +140,35 @@ export class VersionedProtocol {
     const parsedReplayDetails = this.zodTypeInfo.replayDetails.parse(transformedData);
 
     return {
-      playerList: parsedReplayDetails.m_playerList?.map((player, index: number) => ({
-        name: bufferToString(player.m_name),
-        toon: {
-          region: player.m_toon.m_region,
-          programId: player.m_toon.m_programId,
-          realm: player.m_toon.m_realm,
-          name: player.m_toon.m_name ? bufferToString(player.m_toon.m_name) : "",
-          id: player.m_toon.m_id,
-        },
-        race: bufferToString(player.m_race),
-        color: {
-          a: player.m_color.m_a,
-          r: player.m_color.m_r,
-          g: player.m_color.m_g,
-          b: player.m_color.m_b,
-        },
-        control: player.m_control,
-        teamId: player.m_teamId,
-        handicap: player.m_handicap,
-        observe: player.m_observe,
-        result: player.m_result,
-        workingSetSlotId: player.m_workingSetSlotId,
-        hero: bufferToString(player.m_hero),
-        userId: index,
-      })),
+      playerList: parsedReplayDetails.m_playerList?.map((player: Record<string, unknown>, index: number) => {
+        const playerToon = player["m_toon"] as Record<string, unknown>;
+        const playerColor = player["m_color"] as Record<string, unknown>;
+        return {
+          name: bufferToString(player["m_name"] as Buffer),
+          toon: {
+            region: playerToon["m_region"] as number,
+            programId: playerToon["m_programId"] as string,
+            realm: playerToon["m_realm"] as number,
+            name: playerToon["m_name"] ? bufferToString(playerToon["m_name"] as Buffer) : "",
+            id: playerToon["m_id"] as bigint,
+          },
+          race: bufferToString(player["m_race"] as Buffer),
+          color: {
+            a: playerColor["m_a"] as number,
+            r: playerColor["m_r"] as number,
+            g: playerColor["m_g"] as number,
+            b: playerColor["m_b"] as number,
+          },
+          control: player["m_control"] as number,
+          teamId: player["m_teamId"] as number,
+          handicap: player["m_handicap"] as number,
+          observe: player["m_observe"] as number,
+          result: player["m_result"] as number,
+          workingSetSlotId: player["m_workingSetSlotId"] as number,
+          hero: bufferToString(player["m_hero"] as Buffer),
+          userId: index,
+        };
+      }),
       title: bufferToString(parsedReplayDetails.m_title),
       difficulty: bufferToString(parsedReplayDetails.m_difficulty),
       thumbnail: {
@@ -405,31 +409,34 @@ export class VersionedProtocol {
     const transformed = { ...rawData } as Record<string, unknown>;
 
     // Transform player list
-    if (transformed.m_playerList && Array.isArray(transformed.m_playerList)) {
-      transformed.m_playerList = transformed.m_playerList.map((player) => ({
-        ...player,
-        // Transform toon object
-        m_toon: (player as Record<string, unknown>).m_toon ? {
-          ...(player as Record<string, unknown>).m_toon,
-          // Convert number to bigint for m_id
-          m_id: typeof ((player as Record<string, unknown>).m_toon as Record<string, unknown>).m_id === "number"
-            ? BigInt(((player as Record<string, unknown>).m_toon as Record<string, unknown>).m_id as number)
-            : ((player as Record<string, unknown>).m_toon as Record<string, unknown>).m_id,
-        } : (player as Record<string, unknown>).m_toon,
-      }));
+    if (transformed["m_playerList"] && Array.isArray(transformed["m_playerList"])) {
+      transformed["m_playerList"] = transformed["m_playerList"].map((player: Record<string, unknown>) => {
+        const playerToon = player["m_toon"] as Record<string, unknown> | undefined;
+        return {
+          ...player,
+          // Transform toon object
+          m_toon: playerToon ? {
+            ...playerToon,
+            // Convert number to bigint for m_id
+            m_id: typeof playerToon["m_id"] === "number"
+              ? BigInt(playerToon["m_id"] as number)
+              : playerToon["m_id"],
+          } : playerToon,
+        };
+      });
     }
 
     // Convert numbers to bigints for time fields
-    if (typeof transformed.m_timeUTC === "number") {
-      transformed.m_timeUTC = BigInt(transformed.m_timeUTC);
+    if (typeof transformed["m_timeUTC"] === "number") {
+      transformed["m_timeUTC"] = BigInt(transformed["m_timeUTC"] as number);
     }
-    if (typeof transformed.m_timeLocalOffset === "number") {
-      transformed.m_timeLocalOffset = BigInt(transformed.m_timeLocalOffset);
+    if (typeof transformed["m_timeLocalOffset"] === "number") {
+      transformed["m_timeLocalOffset"] = BigInt(transformed["m_timeLocalOffset"] as number);
     }
 
     // Handle null modPaths (convert to undefined for optional array)
-    if (transformed.m_modPaths === null) {
-      transformed.m_modPaths = undefined;
+    if (transformed["m_modPaths"] === null) {
+      transformed["m_modPaths"] = undefined;
     }
 
     return transformed;
