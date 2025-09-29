@@ -44,10 +44,23 @@
     "blizzard",
     "archive",
     "parser",
-    "typescript"
+    "typescript",
+    "starcraft",
+    "starcraft2",
+    "sc2",
+    "replay",
+    "replay-parser"
   ],
-  "author": "",
+  "author": "kanghyojun",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kanghyojun/sc2ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kanghyojun/sc2ts/issues"
+  },
+  "homepage": "https://github.com/kanghyojun/sc2ts#readme",
   "packageManager": "pnpm@10.17.0",
   "devDependencies": {
     "@eslint/js": "^9.35.0",
