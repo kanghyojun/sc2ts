@@ -1,5 +1,5 @@
 // Logger Configuration
-import { configure, getConsoleSink, getLogger, type Logger } from '@logtape/logtape';
+import { configure, getConsoleSink, getLogger, type Logger } from "@logtape/logtape";
 
 let isConfigured = false;
 
@@ -11,16 +11,16 @@ export async function configureLogger(): Promise<void> {
       console: getConsoleSink(),
     },
     loggers: [
-      { category: ['logtape', 'meta'], sinks: ['console'], lowestLevel: 'warning' },
+      { category: ["logtape", "meta"], sinks: ["console"], lowestLevel: "warning" },
       {
-        category: 'sc2ts',
-        lowestLevel: process.env['NODE_ENV'] === 'development' ? 'debug' : 'warning',
-        sinks: ['console'],
+        category: "sc2ts",
+        lowestLevel: process.env["NODE_ENV"] === "development" ? "debug" : "warning",
+        sinks: ["console"],
       },
       {
-        category: ['sc2ts', 'cli'],
-        lowestLevel: 'debug',
-        sinks: ['console'],
+        category: ["sc2ts", "cli"],
+        lowestLevel: "debug",
+        sinks: ["console"],
       },
     ],
   });
@@ -30,9 +30,9 @@ export async function configureLogger(): Promise<void> {
 
 // Get logger instance for different modules
 export function createLogger(category: string | string[]): Logger {
-  const fullCategory = Array.isArray(category) ? ['sc2ts', ...category] : ['sc2ts', category];
+  const fullCategory = Array.isArray(category) ? ["sc2ts", ...category] : ["sc2ts", category];
   return getLogger(fullCategory);
 }
 
 // Default logger for the library
-export const logger = getLogger(['sc2ts']);
+export const logger = getLogger(["sc2ts"]);

@@ -1,8 +1,9 @@
 // SC2 Protocol System
 // Based on Blizzard's s2protocol implementation
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { createLogger } from '../logger';
+import type z from "zod";
+
+import { createLogger } from "../logger";
 import type {
   ReplayHeader,
   ReplayDetails,
@@ -11,10 +12,10 @@ import type {
   MessageEvent,
   TrackerEvent,
   AttributeEvent,
-} from '../types';
-import type { ProtocolDecoder, SupportProtocolVersion, ZodTypeInfos } from './types';
-import protocol80949 from './versions/protocol80949';
-import buildZodTypeinfo from './zod-typeinfo/index';
+} from "../types";
+import type { ProtocolDecoder, SupportProtocolVersion, ZodTypeInfos } from "./types";
+import protocol80949 from "./versions/protocol80949";
+import buildZodTypeinfo from "./zod-typeinfo/index";
 
 // Direct mapping from build versions to protocol decoders
 // Protocol 80949 now supports bzip2 decompression and is compatible with builds 80949-94137
@@ -73,7 +74,7 @@ export function isBuildSupported(buildVersion: number): boolean {
 export function getLatestBuildVersion(): number {
   const buildVersions = Object.keys(BUILD_TO_PROTOCOL).map(Number).sort((a, b) => b - a);
   if (buildVersions[0] == null) {
-    throw new Error('No supported build versions available');
+    throw new Error("No supported build versions available");
   }
   return buildVersions[0];
 }
@@ -82,17 +83,17 @@ export function getLatestBuildVersion(): number {
  * Converts Buffer to clean UTF-8 string by removing null bytes and trimming whitespace
  */
 function bufferToString(buffer: Buffer): string {
-  return buffer.toString('utf8').replace(/\0/g, '').trim();
+  return buffer.toString("utf8").replace(/\0/g, "").trim();
 }
 
 export class VersionedProtocol {
 
   private protocol: ProtocolDecoder;
   private zodTypeInfo: ZodTypeInfos;
-  private logger = createLogger('protocol');
+  private logger = createLogger("protocol");
 
   constructor(buildVersion?: number) {
-    const actualBuildVersion = buildVersion || getLatestBuildVersion();
+    const actualBuildVersion = buildVersion ?? getLatestBuildVersion();
     this.logger.info(`Using protocol for build version: ${actualBuildVersion}`);
     this.protocol = getProtocol(actualBuildVersion);
     this.zodTypeInfo = getZodTypeInfo(actualBuildVersion as SupportProtocolVersion);
@@ -102,7 +103,7 @@ export class VersionedProtocol {
     const parsedReplayHeader = this.zodTypeInfo.replayHeader.parse(rawReplayHeader);
 
     return {
-      signature: parsedReplayHeader.m_signature.toString('utf8').replace(/\0/g, '').trim(),
+      signature: parsedReplayHeader.m_signature.toString("utf8").replace(/\0/g, "").trim(),
       version: {
         flags: parsedReplayHeader.m_version.m_flags,
         major: parsedReplayHeader.m_version.m_major,
@@ -139,13 +140,13 @@ export class VersionedProtocol {
     const parsedReplayDetails = this.zodTypeInfo.replayDetails.parse(transformedData);
 
     return {
-      playerList: parsedReplayDetails.m_playerList?.map((player: any, index: number) => ({
+      playerList: parsedReplayDetails.m_playerList?.map((player, index: number) => ({
         name: bufferToString(player.m_name),
         toon: {
           region: player.m_toon.m_region,
           programId: player.m_toon.m_programId,
           realm: player.m_toon.m_realm,
-          name: player.m_toon.m_name ? bufferToString(player.m_toon.m_name) : '',
+          name: player.m_toon.m_name ? bufferToString(player.m_toon.m_name) : "",
           id: player.m_toon.m_id,
         },
         race: bufferToString(player.m_race),
@@ -178,7 +179,7 @@ export class VersionedProtocol {
       imageFilePath: bufferToString(parsedReplayDetails.m_imageFilePath),
       campaignIndex: parsedReplayDetails.m_campaignIndex,
       mapFileName: bufferToString(parsedReplayDetails.m_mapFileName),
-      cacheHandles: parsedReplayDetails.m_cacheHandles?.map(bufferToString) || [],
+      cacheHandles: parsedReplayDetails.m_cacheHandles?.map(bufferToString) ?? [],
       miniSave: parsedReplayDetails.m_miniSave,
       gameSpeed: parsedReplayDetails.m_gameSpeed,
       defaultDifficulty: parsedReplayDetails.m_defaultDifficulty,
@@ -192,11 +193,12 @@ export class VersionedProtocol {
 
   decodeReplayInitdata(data: Buffer): ReplayInitData {
     const rawReplayInitdata = this.protocol.decodeReplayInitdata(data);
-    const parsedReplayInitdata = this.zodTypeInfo.replayInitdata.parse(rawReplayInitdata);
+    type ReplayInitdata = z.infer<typeof this.zodTypeInfo.replayInitdata>;
+    const parsedReplayInitdata: ReplayInitdata = this.zodTypeInfo.replayInitdata.parse(rawReplayInitdata);
 
     return {
       syncLobbyState: {
-        userInitialData: parsedReplayInitdata.m_syncLobbyState.m_userInitialData.map((user: any) => ({
+        userInitialData: parsedReplayInitdata.m_syncLobbyState.m_userInitialData.map((user: ReplayInitdata["m_syncLobbyState"]["m_userInitialData"][number]) => ({
           name: user.m_name,
           clanTag: user.m_clanTag,
           clanLogo: user.m_clanLogo,
@@ -227,6 +229,7 @@ export class VersionedProtocol {
           gameOptions: {
             lockTeams: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_lockTeams,
             teamsTogether: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_teamsTogether,
+            // eslint-disable-next-line max-len
             advancedSharedControl: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_advancedSharedControl,
             randomRaces: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_randomRaces,
             battleNet: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_battleNet,
@@ -234,12 +237,15 @@ export class VersionedProtocol {
             competitive: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_competitive,
             practice: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_practice,
             cooperative: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_cooperative,
+            // eslint-disable-next-line max-len
             noVictoryOrDefeat: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_noVictoryOrDefeat,
+            // eslint-disable-next-line max-len
             heroDuplicatesAllowed: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_heroDuplicatesAllowed,
             fog: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_fog,
             observers: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_observers,
             userDifficulty: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_userDifficulty,
             clientDebugFlags: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_clientDebugFlags,
+            // eslint-disable-next-line max-len
             buildCoachEnabled: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameOptions.m_buildCoachEnabled,
           },
           gameSpeed: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_gameSpeed,
@@ -257,7 +263,7 @@ export class VersionedProtocol {
           mapFileName: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_mapFileName,
           mapAuthorName: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_mapAuthorName,
           modFileSyncChecksum: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_modFileSyncChecksum,
-          slotDescriptions: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_slotDescriptions.map((slot: any) => ({
+          slotDescriptions: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_slotDescriptions.map((slot: ReplayInitdata["m_syncLobbyState"]["m_gameDescription"]["m_slotDescriptions"][number]) => ({
             allowedColors: slot.m_allowedColors,
             allowedRaces: slot.m_allowedRaces,
             allowedDifficulty: slot.m_allowedDifficulty,
@@ -269,6 +275,7 @@ export class VersionedProtocol {
           defaultAIBuild: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_defaultAIBuild,
           cacheHandles: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_cacheHandles,
           hasExtensionMod: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_hasExtensionMod,
+          // eslint-disable-next-line max-len
           hasNonBlizzardExtensionMod: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_hasNonBlizzardExtensionMod,
           isBlizzardMap: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_isBlizzardMap,
           isPremadeFFA: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_isPremadeFFA,
@@ -279,7 +286,7 @@ export class VersionedProtocol {
           phase: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_phase,
           maxUsers: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_maxUsers,
           maxObservers: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_maxObservers,
-          slots: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_slots.map((slot: any) => ({
+          slots: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_slots.map((slot: ReplayInitdata["m_syncLobbyState"]["m_slots"]["m_slots"][number]) => ({
             control: slot.m_control,
             userId: slot.m_userId,
             teamId: slot.m_teamId,
@@ -310,7 +317,7 @@ export class VersionedProtocol {
             commanderMasteryLevel: slot.m_commanderMasteryLevel,
             commanderMasteryTalents: slot.m_commanderMasteryTalents,
             trophyId: slot.m_trophyId,
-            rewardOverrides: slot.m_rewardOverrides.map((override: any) => ({
+            rewardOverrides: slot.m_rewardOverrides.map((override: ReplayInitdata["m_syncLobbyState"]["m_slots"]["m_slots"][number]["m_rewardOverrides"][number]) => ({
               key: override.m_key,
               rewards: override.m_rewards,
             })),
@@ -334,9 +341,10 @@ export class VersionedProtocol {
 
   decodeReplayGameEvents(data: Buffer): GameEvent[] {
     const rawGameEvents = this.protocol.decodeReplayGameEvents(data);
-    const parsedGameEvents = this.zodTypeInfo.replayGameEvents.parse(rawGameEvents);
+    type ReplayEventsType = z.infer<typeof this.zodTypeInfo.replayGameEvents>;
+    const parsedGameEvents: ReplayEventsType = this.zodTypeInfo.replayGameEvents.parse(rawGameEvents);
 
-    return parsedGameEvents.map((event: any) => ({
+    return parsedGameEvents.map((event: ReplayEventsType[number]) => ({
       ...event,
       loop: event._gameloop,
       userId: event._userid,
@@ -347,9 +355,10 @@ export class VersionedProtocol {
 
   decodeReplayMessageEvents(data: Buffer): MessageEvent[] {
     const rawMessageEvents = this.protocol.decodeReplayMessageEvents(data);
-    const parsedMessageEvents = this.zodTypeInfo.replayMessageEvents.parse(rawMessageEvents);
+    type MessageEventsType = z.infer<typeof this.zodTypeInfo.replayMessageEvents>;
+    const parsedMessageEvents: MessageEventsType = this.zodTypeInfo.replayMessageEvents.parse(rawMessageEvents);
 
-    return parsedMessageEvents.map((event: any) => ({
+    return parsedMessageEvents.map((event: MessageEventsType[number]) => ({
       ...event,
       loop: event._gameloop,
       userId: event._userid,
@@ -359,10 +368,11 @@ export class VersionedProtocol {
   }
 
   decodeReplayTrackerEvents(data: Buffer): TrackerEvent[] {
-    const rawTrackerEvents = this.protocol.decodeReplayTrackerEvents?.(data) || [];
-    const parsedTrackerEvents = this.zodTypeInfo.replayTrackerEvents.parse(rawTrackerEvents);
+    const rawTrackerEvents = this.protocol.decodeReplayTrackerEvents?.(data) ?? [];
+    type TrackerEventsType = z.infer<typeof this.zodTypeInfo.replayTrackerEvents>;
+    const parsedTrackerEvents: TrackerEventsType = this.zodTypeInfo.replayTrackerEvents.parse(rawTrackerEvents);
 
-    return parsedTrackerEvents.map((event: any) => ({
+    return parsedTrackerEvents.map((event: TrackerEventsType[number]) => ({
       ...event,
       loop: event._gameloop,
       eventType: event._event,
@@ -387,31 +397,33 @@ export class VersionedProtocol {
    * Transform raw replay details data to match Zod schema expectations
    * Only converts numbers to bigints where needed - Buffer fields are kept as-is
    */
-  private transformReplayDetailsForValidation(rawData: any): any {
-    if (!rawData || typeof rawData !== 'object') {
+  private transformReplayDetailsForValidation(rawData: unknown): unknown {
+    if (!rawData || typeof rawData !== "object") {
       return rawData;
     }
 
-    const transformed = { ...rawData };
+    const transformed = { ...rawData } as Record<string, unknown>;
 
     // Transform player list
     if (transformed.m_playerList && Array.isArray(transformed.m_playerList)) {
-      transformed.m_playerList = transformed.m_playerList.map((player: any) => ({
+      transformed.m_playerList = transformed.m_playerList.map((player) => ({
         ...player,
         // Transform toon object
-        m_toon: player.m_toon ? {
-          ...player.m_toon,
+        m_toon: (player as Record<string, unknown>).m_toon ? {
+          ...(player as Record<string, unknown>).m_toon,
           // Convert number to bigint for m_id
-          m_id: typeof player.m_toon.m_id === 'number' ? BigInt(player.m_toon.m_id) : player.m_toon.m_id,
-        } : player.m_toon,
+          m_id: typeof ((player as Record<string, unknown>).m_toon as Record<string, unknown>).m_id === "number"
+            ? BigInt(((player as Record<string, unknown>).m_toon as Record<string, unknown>).m_id as number)
+            : ((player as Record<string, unknown>).m_toon as Record<string, unknown>).m_id,
+        } : (player as Record<string, unknown>).m_toon,
       }));
     }
 
     // Convert numbers to bigints for time fields
-    if (typeof transformed.m_timeUTC === 'number') {
+    if (typeof transformed.m_timeUTC === "number") {
       transformed.m_timeUTC = BigInt(transformed.m_timeUTC);
     }
-    if (typeof transformed.m_timeLocalOffset === 'number') {
+    if (typeof transformed.m_timeLocalOffset === "number") {
       transformed.m_timeLocalOffset = BigInt(transformed.m_timeLocalOffset);
     }
 

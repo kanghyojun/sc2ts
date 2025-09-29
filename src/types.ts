@@ -444,4 +444,3 @@ export interface ReplayOptions {
   decodeTrackerEvents?: boolean;
   decodeInitData?: boolean;
 }
-

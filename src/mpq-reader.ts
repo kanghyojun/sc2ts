@@ -1,13 +1,13 @@
 // MPQ Archive Reader Implementation
 
-import { Buffer } from 'node:buffer';
-import { readFile } from 'node:fs/promises';
+import { Buffer } from "node:buffer";
+import { readFile } from "node:fs/promises";
 
-import { MpqInvalidFormatError } from './errors';
-import { createLogger } from './logger';
-import type { MpqHeader, MpqUserData, MpqHashTableEntry, MpqBlockTableEntry } from './types';
+import { MpqInvalidFormatError } from "./errors";
+import { createLogger } from "./logger";
+import type { MpqHeader, MpqUserData, MpqHashTableEntry, MpqBlockTableEntry, BetTableHeader, HetTableHeader } from "./types";
 
-const logger = createLogger('mpq-reader');
+const logger = createLogger("mpq-reader");
 
 export class MpqReader {
   private buffer: Buffer;
@@ -124,7 +124,7 @@ export class MpqReader {
       }
     }
 
-    throw new MpqInvalidFormatError('No valid MPQ header found in file');
+    throw new MpqInvalidFormatError("No valid MPQ header found in file");
   }
 
   readMpqUserData(): MpqUserData {
@@ -335,7 +335,7 @@ export class MpqReader {
 
     for (let i = 0; i < data.length; i += 4) {
       // Step 1: Update seed2 - exactly like mpyq
-      seed2 = (seed2 + (this.cryptTable[0x400 + (seed1 & 0xFF)] || 0)) >>> 0;
+      seed2 = (seed2 + (this.cryptTable[0x400 + (seed1 & 0xFF)] ?? 0)) >>> 0;
 
       // Step 2: Read 4 bytes as little-endian 32-bit unsigned integer
       const value = data.readUInt32LE(i);
@@ -381,12 +381,12 @@ export class MpqReader {
     let seed1 = 0x7FED7FED;
     let seed2 = 0xEEEEEEEE;
 
-    str = str.toUpperCase().replace(/\//g, '\\');
+    str = str.toUpperCase().replace(/\//g, "\\");
 
     for (let i = 0; i < str.length; i++) {
       const ch = str.charCodeAt(i);
       const tableIndex = (hashType << 8) + ch;
-      const cryptValue = this.cryptTable[tableIndex] || 0;
+      const cryptValue = this.cryptTable[tableIndex] ?? 0;
       seed1 = (cryptValue ^ (seed1 + seed2)) >>> 0;
       seed2 = (ch + seed1 + seed2 + (seed2 << 5) + 3) >>> 0;
     }
@@ -400,16 +400,16 @@ export class MpqReader {
     const rawData = this.readBytes(size * 16); // Each entry is 16 bytes
 
     // Log raw data for debugging
-    logger.debug(`Raw hash table data (first 32 bytes): ${rawData.subarray(0, 32).toString('hex')}`);
+    logger.debug(`Raw hash table data (first 32 bytes): ${rawData.subarray(0, 32).toString("hex")}`);
 
     // Decrypt the hash table using the standard MPQ key
-    const key = this.hashString('(hash table)', 3);
+    const key = this.hashString("(hash table)", 3);
     logger.debug(`Decryption key for "(hash table)": ${key.toString(16)}`);
 
     const decryptedData = this.decrypt(rawData, key);
 
     // Log decrypted data for debugging
-    logger.debug(`Decrypted hash table data (first 32 bytes): ${decryptedData.subarray(0, 32).toString('hex')}`);
+    logger.debug(`Decrypted hash table data (first 32 bytes): ${decryptedData.subarray(0, 32).toString("hex")}`);
     const firstEntry = {
       name1: decryptedData.readUInt32LE(0),
       name2: decryptedData.readUInt32LE(4),
@@ -450,7 +450,7 @@ export class MpqReader {
     const rawData = this.readBytes(size * 16); // Each entry is 16 bytes
 
     // Decrypt the block table using the standard MPQ key
-    const key = this.hashString('(block table)', 3);
+    const key = this.hashString("(block table)", 3);
     const decryptedData = this.decrypt(rawData, key);
 
     const entries: MpqBlockTableEntry[] = [];
@@ -487,7 +487,7 @@ export class MpqReader {
     return entries;
   }
 
-  readHetTable(hetTablePos: number, hetTableSize: number, headerOffset = 0): any {
+  readHetTable(hetTablePos: number, hetTableSize: number, headerOffset = 0): HetTableHeader | null {
     if (hetTablePos === 0 || hetTableSize === 0) {
       return null; // No HET table
     }
@@ -522,7 +522,7 @@ export class MpqReader {
     return hetHeader;
   }
 
-  readBetTable(betTablePos: number, betTableSize: number, headerOffset = 0): any {
+  readBetTable(betTablePos: number, betTableSize: number, headerOffset = 0): BetTableHeader | null {
     if (betTablePos === 0 || betTableSize === 0) {
       return null; // No BET table
     }

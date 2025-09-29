@@ -1,6 +1,7 @@
-import { resolve } from 'path';
-import { MpqArchive } from '@/mpq-archive';
 import { readFileSync } from 'fs';
+import { resolve } from 'path';
+
+import { MpqArchive } from '@/mpq-archive';
 
 describe('MpqReader', () => {
   // Regression test for hash table parsing - validates against mpyq reference implementation

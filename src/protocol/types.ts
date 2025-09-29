@@ -1,6 +1,6 @@
 // Protocol System Types
 
-import type z from 'zod';
+import type z from "zod";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface ProtocolDecoder {
@@ -19,62 +19,62 @@ interface BaseTypeInfo {
 }
 
 export interface IntTypeInfo extends BaseTypeInfo {
-  type: '_int';
+  type: "_int";
   args: [number | bigint, number][];
 }
 
 export interface StructTypeInfo extends BaseTypeInfo {
-  type: '_struct';
+  type: "_struct";
   args: [string, number, number][][];
 }
 
 export interface BlobTypeInfo extends BaseTypeInfo {
-  type: '_blob';
+  type: "_blob";
   args: [number, number][];
 }
 
 export interface BoolTypeInfo extends BaseTypeInfo {
-  type: '_bool';
+  type: "_bool";
   args: [];
 }
 
 export interface OptionalTypeInfo extends BaseTypeInfo {
-  type: '_optional';
+  type: "_optional";
   args: [number];
 }
 
 interface ArrayTypeInfo extends BaseTypeInfo {
-  type: '_array';
+  type: "_array";
   args: [[number, number], number];
 }
 
 interface ChoiceTypeInfo extends BaseTypeInfo {
-  type: '_choice';
+  type: "_choice";
   args: [[number, number], Record<number, [string, number]>];
 }
 
 interface FourccTypeInfo extends BaseTypeInfo {
-  type: '_fourcc';
+  type: "_fourcc";
   args: [];
 }
 
 interface NullTypeInfo extends BaseTypeInfo {
-  type: '_null';
+  type: "_null";
   args: [];
 }
 
 export interface BitarrayTypeInfo extends BaseTypeInfo {
-  type: '_bitarray';
+  type: "_bitarray";
   args: [number, number][];
 }
 
 interface Real32TypeInfo extends BaseTypeInfo {
-  type: '_real32';
+  type: "_real32";
   args: [];
 }
 
 interface Real64TypeInfo extends BaseTypeInfo {
-  type: '_real64';
+  type: "_real64";
   args: [];
 }
 

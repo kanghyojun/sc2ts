@@ -1,7 +1,7 @@
 // S2Protocol TypeScript decoder implementation
 // Simplified version of s2protocol's VersionedDecoder
 
-import type { BitarrayTypeInfo, IntTypeInfo, StructTypeInfo, TypeInfo } from './types';
+import type { BitarrayTypeInfo, IntTypeInfo, StructTypeInfo, TypeInfo } from "./types";
 
 export class BitPackedBuffer {
   private data: Buffer;
@@ -10,9 +10,9 @@ export class BitPackedBuffer {
   private nextbits = 0;
   private bigendian: boolean;
 
-  constructor(contents: Buffer, endian: 'big' | 'little' = 'big') {
+  constructor(contents: Buffer, endian: "big" | "little" = "big") {
     this.data = contents;
-    this.bigendian = endian === 'big';
+    this.bigendian = endian === "big";
   }
 
   done(): boolean {
@@ -32,7 +32,7 @@ export class BitPackedBuffer {
     const data = this.data.subarray(this.used, this.used + bytes);
     this.used += bytes;
     if (data.length !== bytes) {
-      throw new Error('TruncatedError: not enough data');
+      throw new Error("TruncatedError: not enough data");
     }
     return data;
   }
@@ -44,9 +44,9 @@ export class BitPackedBuffer {
     while (resultbits !== bits) {
       if (this.nextbits === 0) {
         if (this.done()) {
-          throw new Error('TruncatedError: buffer exhausted');
+          throw new Error("TruncatedError: buffer exhausted");
         }
-        this.next = this.data[this.used] || 0;
+        this.next = this.data[this.used] ?? 0;
         this.used += 1;
         this.nextbits = 8;
       }
@@ -94,7 +94,7 @@ export class VersionedDecoder {
     const actual = this.buffer.readBits(8);
     if (actual !== expected) {
       const position = this.buffer.usedBits() - 8;
-      throw new Error(`CorruptedError: unexpected skip byte at bit ${position} (byte ${Math.floor(position/8)}): expected 0x${expected.toString(16).padStart(2, '0')}, got 0x${actual.toString(16).padStart(2, '0')}`);
+      throw new Error(`CorruptedError: unexpected skip byte at bit ${position} (byte ${Math.floor(position/8)}): expected 0x${expected.toString(16).padStart(2, "0")}, got 0x${actual.toString(16).padStart(2, "0")}`);
     }
   }
 
@@ -161,38 +161,38 @@ export class VersionedDecoder {
       throw new Error(`Invalid typeinfo for typeid ${typeid}`);
     }
     switch (typeinfo.type) {
-    case '_int': {
+    case "_int": {
       return this._int(...typeinfo.args);
     }
-    case '_struct': {
+    case "_struct": {
       if (typeinfo.args[0] == null || typeinfo.args.length !== 1) {
         throw new Error(`Invalid struct args for typeid ${typeid}`);
       }
       return this._struct(...typeinfo.args[0]);
     }
-    case '_blob':
+    case "_blob":
       if (typeinfo.args[0] == null) {
         throw new Error(`Invalid _blob args for typeid ${typeid}`);
       } else {
         return this._blob(typeinfo.args[0]);
       }
-    case '_bool':
+    case "_bool":
       return this._bool();
-    case '_optional':
+    case "_optional":
       return this._optional(typeinfo.args[0]);
-    case '_array':
+    case "_array":
       return this._array(typeinfo.args[0], typeinfo.args[1]);
-    case '_choice':
+    case "_choice":
       return this._choice(typeinfo.args[0], typeinfo.args[1]);
-    case '_fourcc':
+    case "_fourcc":
       return this._fourcc();
-    case '_null':
+    case "_null":
       return null;
-    case '_bitarray':
+    case "_bitarray":
       return this._bitarray(...typeinfo.args);
-    case '_real32':
+    case "_real32":
       return this._real32();
-    case '_real64':
+    case "_real64":
       return this._real64();
     default: {
       const t: never = typeinfo;
@@ -202,12 +202,12 @@ export class VersionedDecoder {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private _int(..._bounds: IntTypeInfo['args']): number {
+  private _int(..._bounds: IntTypeInfo["args"]): number {
     this._expect_skip(9);
     return this._vint();
   }
 
-  private _struct(...fields: StructTypeInfo['args'][number]): Record<string, unknown> {
+  private _struct(...fields: StructTypeInfo["args"][number]): Record<string, unknown> {
     this._expect_skip(5);
     const result: Record<string, unknown> = {};
     const length = this._vint();
@@ -219,9 +219,9 @@ export class VersionedDecoder {
       if (field) {
         const [name, typeid] = field as [string, number, number];
 
-        if (name === '__parent') {
+        if (name === "__parent") {
           const parent = this.instance(typeid);
-          if (typeof parent === 'object' && parent !== null) {
+          if (typeof parent === "object" && parent !== null) {
             Object.assign(result, parent);
           } else if (fields.length === 1) {
             return parent as Record<string, unknown>;
@@ -282,11 +282,11 @@ export class VersionedDecoder {
   private _fourcc(): string {
     this._expect_skip(7);
     const bytes = this.buffer.readAlignedBytes(4);
-    return bytes.toString('ascii');
+    return bytes.toString("ascii");
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private _bitarray(..._bounds: BitarrayTypeInfo['args']): [number, Buffer] {
+  private _bitarray(..._bounds: BitarrayTypeInfo["args"]): [number, Buffer] {
     this._expect_skip(1);
     const length = this._vint();
     return [length, this.buffer.readAlignedBytes(Math.floor((length + 7) / 8))];
@@ -338,49 +338,49 @@ export class BitPackedDecoder {
       throw new Error(`Invalid typeinfo for typeid ${typeid}`);
     }
     switch (typeinfo.type) {
-    case '_int': {
+    case "_int": {
       if (!typeinfo.args[0]) {
         throw new Error(`Invalid _int args for typeid ${typeid}`);
       }
       const bounds = typeinfo.args[0];
       const normalizedBounds: [number, number] = [
-        typeof bounds[0] === 'bigint' ? Number(bounds[0]) : bounds[0],
+        typeof bounds[0] === "bigint" ? Number(bounds[0]) : bounds[0],
         bounds[1],
       ];
       return this._int(normalizedBounds);
     }
-    case '_struct': {
+    case "_struct": {
       if (typeinfo.args[0] == null || typeinfo.args.length !== 1) {
         throw new Error(`Invalid struct args for typeid ${typeid}`);
       }
       return this._struct(typeinfo.args[0]);
     }
-    case '_blob':
+    case "_blob":
       if (typeinfo.args[0] == null) {
         throw new Error(`Invalid _blob args for typeid ${typeid}`);
       } else {
         return this._blob(typeinfo.args[0]);
       }
-    case '_bool':
+    case "_bool":
       return this._bool();
-    case '_optional':
+    case "_optional":
       return this._optional(typeinfo.args[0]);
-    case '_array':
+    case "_array":
       return this._array(typeinfo.args[0], typeinfo.args[1]);
-    case '_choice':
+    case "_choice":
       return this._choice(typeinfo.args[0], typeinfo.args[1]);
-    case '_fourcc':
+    case "_fourcc":
       return this._fourcc();
-    case '_null':
+    case "_null":
       return null;
-    case '_bitarray':
+    case "_bitarray":
       if (!typeinfo.args[0]) {
         throw new Error(`Invalid _bitarray args for typeid ${typeid}`);
       }
       return this._bitarray(typeinfo.args[0]);
-    case '_real32':
+    case "_real32":
       return this._real32();
-    case '_real64':
+    case "_real64":
       return this._real64();
     default: {
       const t: never = typeinfo;
@@ -393,18 +393,19 @@ export class BitPackedDecoder {
     return bounds[0] + this.buffer.readBits(bounds[1]);
   }
 
-  private _struct(fields: StructTypeInfo['args'][number]): Record<string, unknown> {
-    const result: Record<string, unknown> = {};
+  private _struct(fields: StructTypeInfo["args"][number]): Record<string, unknown> {
+    let result: Record<string, unknown> = {};
 
+    // BitPacked format reads all fields sequentially (same as s2protocol)
     for (const field of fields) {
       const [name, typeid] = field as [string, number, number];
 
-      if (name === '__parent') {
+      if (name === "__parent") {
         const parent = this.instance(typeid);
-        if (typeof parent === 'object' && parent !== null) {
+        if (typeof parent === "object" && parent !== null) {
           Object.assign(result, parent);
         } else if (fields.length === 1) {
-          return parent as Record<string, unknown>;
+          result = parent as Record<string, unknown>;
         } else {
           result[name] = parent;
         }
@@ -432,6 +433,7 @@ export class BitPackedDecoder {
 
   private _array(bounds: [number, number], typeid: number): unknown[] {
     const length = this._int(bounds);
+
     const result: unknown[] = [];
     for (let i = 0; i < length; i++) {
       result.push(this.instance(typeid));
@@ -451,7 +453,7 @@ export class BitPackedDecoder {
 
   private _fourcc(): string {
     const bytes = this.buffer.readAlignedBytes(4);
-    return bytes.toString('ascii');
+    return bytes.toString("ascii");
   }
 
   private _bitarray(bounds: [number, number]): [number, number] {

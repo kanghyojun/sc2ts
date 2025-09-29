@@ -1,5 +1,5 @@
-import type { SupportProtocolVersion, ZodTypeInfos } from '../types';
-import zod80949 from './zod80949';
+import type { SupportProtocolVersion, ZodTypeInfos } from "../types";
+import zod80949 from "./zod80949";
 
 export default {
   80949: zod80949,

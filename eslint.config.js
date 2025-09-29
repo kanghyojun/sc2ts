@@ -59,6 +59,7 @@ module.exports = [
             indent: ["error", 2],
             "object-curly-spacing": ["error", "always"],
             "array-bracket-spacing": ["error", "never"],
+            "max-len": ["error", { "code": 120, "ignoreUrls": true, "ignoreStrings": true, "ignoreTemplateLiterals": true }],
         },
     },
 

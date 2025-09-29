@@ -1,16 +1,16 @@
-import { MpqArchive } from '../../mpq-archive';
-import { SC2Replay } from '../../sc2-replay';
-import { createLogger } from '../../logger';
-import type { MpqFile } from '../../types';
+import { createLogger } from "../../logger";
+import type { MpqArchive } from "../../mpq-archive";
+import { SC2Replay } from "../../sc2-replay";
+import type { MpqFile } from "../../types";
 
-const logger = createLogger('cli-extractor');
+const logger = createLogger("cli-extractor");
 
 export interface ExtractionResult {
-  files: Map<string, MpqFile>;
-  total: number;
-  extracted: number;
-  skipped: number;
-  errors: string[];
+    files: Map<string, MpqFile>;
+    total: number;
+    extracted: number;
+    skipped: number;
+    errors: string[];
 }
 
 export class FileExtractor {
@@ -21,8 +21,8 @@ export class FileExtractor {
     try {
       logger.debug(`Opening replay file: ${replayPath}`);
       this.replay = await SC2Replay.fromFile(replayPath);
-      this._archive = (this.replay as any).mpqArchive; // Access private field
-      logger.debug('Replay file opened successfully');
+      this._archive = this.replay.mpqArchive; // Access private field
+      logger.debug("Replay file opened successfully");
     } catch (error) {
       logger.error(`Failed to open replay file: ${error}`);
       throw new Error(`Failed to open replay file: ${error}`);
@@ -35,7 +35,7 @@ export class FileExtractor {
 
   getAvailableFiles(): string[] {
     if (!this._archive) {
-      throw new Error('No archive opened. Call openReplay() first.');
+      throw new Error("No archive opened. Call openReplay() first.");
     }
 
     const files = this._archive.listFiles();
@@ -43,9 +43,9 @@ export class FileExtractor {
     return files;
   }
 
-  async extractFiles(filePatterns: string[] = ['all']): Promise<ExtractionResult> {
+  async extractFiles(filePatterns: string[] = ["all"]): Promise<ExtractionResult> {
     if (!this._archive) {
-      throw new Error('No archive opened. Call openReplay() first.');
+      throw new Error("No archive opened. Call openReplay() first.");
     }
 
     const availableFiles = this.getAvailableFiles();
@@ -80,13 +80,13 @@ export class FileExtractor {
 
   get replayInstance(): SC2Replay {
     if (!this.replay) {
-      throw new Error('No replay opened. Call openReplay() first.');
+      throw new Error("No replay opened. Call openReplay() first.");
     }
     return this.replay;
   }
 
   private resolveFilePatterns(patterns: string[], availableFiles: string[]): string[] {
-    if (patterns.includes('all')) {
+    if (patterns.includes("all")) {
       return [...availableFiles];
     }
 
@@ -97,10 +97,10 @@ export class FileExtractor {
         filesToExtract.add(pattern);
       } else {
         // Try pattern matching
-        const matchedFiles = availableFiles.filter(file =>
+        const matchedFiles = availableFiles.filter((file) =>
           file.toLowerCase().includes(pattern.toLowerCase()),
         );
-        matchedFiles.forEach(file => filesToExtract.add(file));
+        matchedFiles.forEach((file) => filesToExtract.add(file));
       }
     }
 
@@ -110,6 +110,6 @@ export class FileExtractor {
   close(): void {
     this._archive = null;
     this.replay = null;
-    logger.debug('Extractor closed');
+    logger.debug("Extractor closed");
   }
 }

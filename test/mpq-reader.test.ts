@@ -1,5 +1,5 @@
-import { MpqReader } from '@/mpq-reader';
 import { MpqInvalidFormatError } from '@/errors';
+import { MpqReader } from '@/mpq-reader';
 
 describe('MpqReader', () => {
   describe('Direct MPQ Header (0x1A)', () => {

@@ -1,6 +1,6 @@
-import * as z from 'zod';
+import * as z from "zod";
 
-import type { ZodTypeInfos } from '../types';
+import type { ZodTypeInfos } from "../types";
 
 // Basic type schemas (typeids 0, 1, 2)
 export const PIntTypeInfo = z.number(); // typeid 0: 7-bit integer

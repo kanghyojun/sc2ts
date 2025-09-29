@@ -1,14 +1,14 @@
 // MPQ Archive Main Class
 
-import Compress from 'compressjs';
-import { gunzipSync, inflateSync } from 'fflate';
+import Compress from "compressjs";
+import { gunzipSync, inflateSync } from "fflate";
 
-import { MpqFileNotFoundError } from './errors';
-import { createLogger } from './logger';
-import { MpqReader } from './mpq-reader';
-import type { MpqHeader, MpqHashTableEntry, MpqBlockTableEntry, MpqFile, MpqParseOptions } from './types';
+import { MpqFileNotFoundError } from "./errors";
+import { createLogger } from "./logger";
+import { MpqReader } from "./mpq-reader";
+import type { MpqHeader, MpqHashTableEntry, MpqBlockTableEntry, MpqFile, MpqParseOptions } from "./types";
 
-const logger = createLogger('mpq-archive');
+const logger = createLogger("mpq-archive");
 
 export class MpqArchive {
   private reader: MpqReader;
@@ -80,8 +80,8 @@ export class MpqArchive {
 
       try {
         hetTable = this.reader.readHetTable(
-          Number(this.header.hetTablePos64 || 0),
-          Number(this.header.hetTableSize64 || 0),
+          Number(this.header.hetTablePos64 ?? 0),
+          Number(this.header.hetTableSize64 ?? 0),
           this.headerOffset,
         );
       } catch (error) {
@@ -90,8 +90,8 @@ export class MpqArchive {
 
       try {
         betTable = this.reader.readBetTable(
-          Number(this.header.betTablePos64 || 0),
-          Number(this.header.betTableSize64 || 0),
+          Number(this.header.betTablePos64 ?? 0),
+          Number(this.header.betTableSize64 ?? 0),
           this.headerOffset,
         );
       } catch (error) {
@@ -99,11 +99,11 @@ export class MpqArchive {
       }
 
       if (hetTable && betTable) {
-        logger.debug('Using HET/BET tables');
+        logger.debug("Using HET/BET tables");
         // TODO: Implement file search using HET/BET tables
         // For now, fall back to traditional tables
       } else {
-        logger.debug('No valid HET/BET tables found, using traditional Hash/Block tables');
+        logger.debug("No valid HET/BET tables found, using traditional Hash/Block tables");
       }
 
       // Check if tables might be compressed
@@ -114,13 +114,13 @@ export class MpqArchive {
       logger.debug(`Expected block table size: ${expectedBlockTableSize} bytes`);
 
       if (hashTableDataSize < expectedHashTableSize || blockTableDataSize < expectedBlockTableSize) {
-        logger.warn('Tables appear to be compressed! Attempting decompression...');
+        logger.warn("Tables appear to be compressed! Attempting decompression...");
         // For now, try to read as uncompressed anyway
-        logger.warn('WARNING: Compressed table decompression not fully implemented, trying as uncompressed...');
+        logger.warn("WARNING: Compressed table decompression not fully implemented, trying as uncompressed...");
       } else {
-        logger.debug('Tables appear to be uncompressed');
+        logger.debug("Tables appear to be uncompressed");
         // Try both encrypted and unencrypted to see which gives better results
-        logger.debug('Trying unencrypted tables...');
+        logger.debug("Trying unencrypted tables...");
         try {
           this.hashTable = this.reader.readHashTableUnencrypted(
             actualHashTablePos,
@@ -157,7 +157,7 @@ export class MpqArchive {
           // For SC2 replays (formatVersion 3+), try encrypted hash table
           // to see if it matches the expected values
           if (this.header.formatVersion >= 3) {
-            logger.debug('SC2 replay (formatVersion 3+), trying encrypted hash table...');
+            logger.debug("SC2 replay (formatVersion 3+), trying encrypted hash table...");
             this.hashTable = this.reader.readHashTable(
               actualHashTablePos,
               this.header.hashTableSize,
@@ -167,28 +167,28 @@ export class MpqArchive {
             // SC2 replays use the encrypted hash table - keep using the decrypted one
 
           } else if (validHashEntries === 0) {
-            logger.debug('Hash table looks invalid, trying encrypted...');
+            logger.debug("Hash table looks invalid, trying encrypted...");
             this.hashTable = this.reader.readHashTable(
               actualHashTablePos,
               this.header.hashTableSize,
               this.headerOffset,
             );
           } else {
-            logger.debug('Using unencrypted hash table');
+            logger.debug("Using unencrypted hash table");
           }
 
           if (validBlockEntries === 0) {
-            logger.debug('Block table looks invalid, trying encrypted...');
+            logger.debug("Block table looks invalid, trying encrypted...");
             this.blockTable = this.reader.readBlockTable(
               actualBlockTablePos,
               this.header.blockTableSize,
               this.headerOffset,
             );
           } else {
-            logger.debug('Using unencrypted block table');
+            logger.debug("Using unencrypted block table");
           }
         } catch {
-          logger.debug('Error reading unencrypted tables, trying encrypted...');
+          logger.debug("Error reading unencrypted tables, trying encrypted...");
           this.hashTable = this.reader.readHashTable(
             actualHashTablePos,
             this.header.hashTableSize,
@@ -268,12 +268,12 @@ export class MpqArchive {
     let seed2 = 0xEEEEEEEE;
 
     // Convert to uppercase and replace forward slashes with backslashes
-    str = str.toUpperCase().replace(/\//g, '\\');
+    str = str.toUpperCase().replace(/\//g, "\\");
 
     for (let i = 0; i < str.length; i++) {
       const ch = str.charCodeAt(i);
       const tableIndex = (hashType << 8) + ch;
-      const cryptValue = this.cryptTable[tableIndex] || 0;
+      const cryptValue = this.cryptTable[tableIndex] ?? 0;
       seed1 = (cryptValue ^ (seed1 + seed2)) >>> 0;
       seed2 = (ch + seed1 + seed2 + (seed2 << 5) + 3) >>> 0;
     }
@@ -397,7 +397,7 @@ export class MpqArchive {
     // Check for GZIP (RFC 1952)
     if (data.length >= 2 && data[0] === 0x1F && data[1] === 0x8B) {
       try {
-        logger.debug('Detected GZIP compression, decompressing with fflate...');
+        logger.debug("Detected GZIP compression, decompressing with fflate...");
         const decompressed = gunzipSync(new Uint8Array(data));
         logger.debug(`GZIP decompression successful: ${data.length} -> ${decompressed.length} bytes`);
         return Buffer.from(decompressed);
@@ -413,7 +413,7 @@ export class MpqArchive {
       // zlib header: (CMF * 256 + FLG) % 31 == 0
       if ((first * 256 + second) % 31 === 0 && (first & 0x0F) === 0x08) {
         try {
-          logger.debug('Detected DEFLATE/zlib compression, decompressing with fflate...');
+          logger.debug("Detected DEFLATE/zlib compression, decompressing with fflate...");
           const decompressed = inflateSync(new Uint8Array(data));
           logger.debug(`DEFLATE decompression successful: ${data.length} -> ${decompressed.length} bytes`);
           return Buffer.from(decompressed);

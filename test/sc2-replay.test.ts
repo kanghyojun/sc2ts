@@ -1,6 +1,7 @@
-import { SC2Replay } from '@/sc2-replay';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+
+import { SC2Replay } from '@/sc2-replay';
 
 describe('SC2Replay', () => {
   // Use the constant replay data extracted from a.SC2Replay
