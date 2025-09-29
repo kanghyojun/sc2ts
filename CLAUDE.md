@@ -9,6 +9,7 @@ A comprehensive TypeScript library for parsing MPQ (MoPaQ) archive files and Sta
 ## Development Setup
 
 This project uses:
+
 - **Package Manager**: pnpm (v10.16.1)
 - **Language**: TypeScript (v5.9.2)
 - **Testing**: Jest with coverage
@@ -98,6 +99,7 @@ pnpm run dev:cli         # Run CLI in development mode with tsx
 ## TypeScript Configuration
 
 The project uses strict TypeScript settings with:
+
 - Module system: Dual output (CommonJS and ESM)
 - Target: ES2022
 - Strict mode enabled with all strict checks
@@ -122,10 +124,11 @@ The project uses TypeScript path mapping for cleaner imports:
 ```
 
 This allows for clean imports in test files:
+
 ```typescript
 // Instead of: import { SC2Replay } from '../src/sc2-replay';
-import { SC2Replay } from '@/sc2-replay';
-import { BitPackedBuffer } from '@/protocol/sc2-decoder';
+import { SC2Replay } from "@/sc2-replay";
+import { BitPackedBuffer } from "@/protocol/sc2-decoder";
 ```
 
 ## ESLint Configuration
@@ -149,13 +152,13 @@ ESLint automatically organizes imports into groups:
 
 ```typescript
 // Automatically organized by ESLint:
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
-import { SC2Replay } from '@/sc2-replay';
-import { MpqArchive } from '@/mpq-archive';
+import { SC2Replay } from "@/sc2-replay";
+import { MpqArchive } from "@/mpq-archive";
 
-import { someUtility } from './utils';
+import { someUtility } from "./utils";
 ```
 
 ### Configuration Structure
@@ -163,32 +166,35 @@ import { someUtility } from './utils';
 ```typescript
 // eslint.config.ts
 export default tseslint.config(
-  // Base configurations
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
+    // Base configurations
+    js.configs.recommended,
+    ...tseslint.configs.recommended,
 
-  // Main source files
-  {
-    files: ['src/**/*.ts'],
-    rules: {
-      'import/order': ['error', {
-        'groups': [['builtin', 'external'], ['internal'], ['parent', 'sibling', 'index']],
-        'newlines-between': 'always',
-        'alphabetize': { 'order': 'asc', 'caseInsensitive': true },
-      }],
-      // ... other rules
-    }
-  },
+    // Main source files
+    {
+        files: ["src/**/*.ts"],
+        rules: {
+            "import/order": [
+                "error",
+                {
+                    groups: [["builtin", "external"], ["internal"], ["parent", "sibling", "index"]],
+                    "newlines-between": "always",
+                    alphabetize: { order: "asc", caseInsensitive: true },
+                },
+            ],
+            // ... other rules
+        },
+    },
 
-  // Test files (relaxed rules)
-  {
-    files: ['test/**/*.ts'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      'no-console': 'off',
-      // ... relaxed test rules
-    }
-  }
+    // Test files (relaxed rules)
+    {
+        files: ["test/**/*.ts"],
+        rules: {
+            "@typescript-eslint/no-explicit-any": "off",
+            "no-console": "off",
+            // ... relaxed test rules
+        },
+    },
 );
 ```
 
@@ -207,23 +213,23 @@ pnpm run lint:fix
 The library is structured around these main components:
 
 1. **MpqArchive**: Main class for working with MPQ archives
-   - Opens and parses MPQ files
-   - Manages file listing and extraction
-   - Handles both file and buffer inputs
+    - Opens and parses MPQ files
+    - Manages file listing and extraction
+    - Handles both file and buffer inputs
 
 2. **MpqReader**: Low-level binary reader
-   - Reads MPQ headers, hash tables, and block tables
-   - Provides position-based reading methods
+    - Reads MPQ headers, hash tables, and block tables
+    - Provides position-based reading methods
 
 3. **Type Definitions**: Comprehensive TypeScript types for MPQ structures
-   - MpqHeader, MpqHashTableEntry, MpqBlockTableEntry
-   - MpqFile, MpqParseOptions
-   - Enums for flags and compression types
+    - MpqHeader, MpqHashTableEntry, MpqBlockTableEntry
+    - MpqFile, MpqParseOptions
+    - Enums for flags and compression types
 
 4. **Error Handling**: Custom error classes for MPQ-specific errors
-   - MpqError (base class)
-   - MpqInvalidFormatError, MpqDecryptionError, MpqDecompressionError
-   - MpqFileNotFoundError
+    - MpqError (base class)
+    - MpqInvalidFormatError, MpqDecryptionError, MpqDecompressionError
+    - MpqFileNotFoundError
 
 ## Command Line Interface (CLI)
 
@@ -247,6 +253,7 @@ pnpm run dev:cli extract "replays/a.SC2Replay" --format json
 ### Available CLI Commands
 
 #### 1. Parse Command
+
 Parses SC2 replay files and extracts comprehensive game data including events, players, and metadata.
 
 ```bash
@@ -264,6 +271,7 @@ pnpm run dev:cli parse "replay.SC2Replay" --verbose
 ```
 
 **Parse Command Features:**
+
 - Decodes game events, message events, and tracker events
 - Shows player information with races, teams, and results
 - Displays chat messages with timestamps
@@ -272,6 +280,7 @@ pnpm run dev:cli parse "replay.SC2Replay" --verbose
 - Uses emoji indicators for player results (🏆 victory, 💀 defeat, 🤝 tie)
 
 #### 2. Info Command
+
 Displays detailed information about SC2 replay files including game details, players, and archive metadata.
 
 ```bash
@@ -289,6 +298,7 @@ pnpm run dev:cli info "replay.SC2Replay" --json
 ```
 
 #### 3. List Command
+
 Lists all files contained within the MPQ archive of a replay file.
 
 ```bash
@@ -303,6 +313,7 @@ pnpm run dev:cli list "replay.SC2Replay" --filter "replay.game"
 ```
 
 #### 4. Extract Command
+
 Extracts files from the MPQ archive to disk in various formats.
 
 ```bash
@@ -322,6 +333,7 @@ pnpm run dev:cli extract "replay.SC2Replay" --format json --pretty
 ### CLI Error Handling
 
 The CLI provides detailed error reporting with:
+
 - Clear error messages showing the actual problem
 - Full stack traces for debugging
 - Context about which operation failed
@@ -361,39 +373,43 @@ pnpm run dev:cli parse "replays/a.SC2Replay" --json --verbose
 5. **Refactor**: Clean up and optimize the implementation while keeping tests green
 
 #### ❌ **NEVER do this:**
+
 ```typescript
 // Wrong: Writing implementation first
 function parseHashTable(buffer: Buffer): MpqHashTableEntry[] {
-  // Implementation code here...
-  return entries;
+    // Implementation code here...
+    return entries;
 }
 
 // Then writing tests afterwards
-it('should parse hash table', () => {
-  // Test written after implementation
+it("should parse hash table", () => {
+    // Test written after implementation
 });
 ```
 
 #### ✅ **ALWAYS do this:**
+
 ```typescript
 // Correct: Write test first
-it('should parse hash table with correct name1/name2 values', () => {
-  const testBuffer = Buffer.from([/* test data */]);
-  const expectedEntries = [
-    { filename: 'replay.details', name1: 0xD383C29C, name2: 0xEF402E92 },
-    { filename: 'replay.initData', name1: 0x12345678, name2: 0x87654321 }
-  ];
+it("should parse hash table with correct name1/name2 values", () => {
+    const testBuffer = Buffer.from([
+        /* test data */
+    ]);
+    const expectedEntries = [
+        { filename: "replay.details", name1: 0xd383c29c, name2: 0xef402e92 },
+        { filename: "replay.initData", name1: 0x12345678, name2: 0x87654321 },
+    ];
 
-  const entries = parseHashTable(testBuffer);
+    const entries = parseHashTable(testBuffer);
 
-  expect(entries).toHaveLength(2);
-  expect(entries[0]).toEqual(expectedEntries[0]);
-  expect(entries[1]).toEqual(expectedEntries[1]);
+    expect(entries).toHaveLength(2);
+    expect(entries[0]).toEqual(expectedEntries[0]);
+    expect(entries[1]).toEqual(expectedEntries[1]);
 });
 
 // Then implement the function
 function parseHashTable(buffer: Buffer): MpqHashTableEntry[] {
-  // Implementation to make the test pass
+    // Implementation to make the test pass
 }
 ```
 
@@ -415,6 +431,7 @@ function parseHashTable(buffer: Buffer): MpqHashTableEntry[] {
 - Use `beforeEach`/`afterEach` for test setup and cleanup
 
 **Test Directory Structure:**
+
 ```
 test/
 ├── fixtures/              # Test data and fixtures
@@ -428,38 +445,39 @@ test/
 ```
 
 **Import Guidelines for Tests:**
+
 ```typescript
 // Use @ alias for clean imports
-import { SC2Replay } from '@/sc2-replay';
-import { BitPackedBuffer } from '@/protocol/sc2-decoder';
+import { SC2Replay } from "@/sc2-replay";
+import { BitPackedBuffer } from "@/protocol/sc2-decoder";
 
 // Fixtures are accessed relatively from test files
-const testDataPath = path.join(__dirname, 'fixtures/test-data-a.json');
-const testDataPath = path.join(__dirname, '../fixtures/test-data-a.json'); // from protocol/
+const testDataPath = path.join(__dirname, "fixtures/test-data-a.json");
+const testDataPath = path.join(__dirname, "../fixtures/test-data-a.json"); // from protocol/
 ```
 
 #### Example TDD Process:
 
 ```typescript
 // Step 1: Write failing test
-describe('MpqArchive', () => {
-  it('should throw MpqInvalidFormatError for corrupted headers', () => {
-    const corruptedBuffer = Buffer.from([0x00, 0x00, 0x00, 0x00]); // Invalid signature
+describe("MpqArchive", () => {
+    it("should throw MpqInvalidFormatError for corrupted headers", () => {
+        const corruptedBuffer = Buffer.from([0x00, 0x00, 0x00, 0x00]); // Invalid signature
 
-    expect(() => new MpqArchive(corruptedBuffer))
-      .toThrow(MpqInvalidFormatError);
-  });
+        expect(() => new MpqArchive(corruptedBuffer)).toThrow(MpqInvalidFormatError);
+    });
 });
 
 // Step 2: Run test (should fail)
 // Step 3: Implement minimal code to pass test
 export class MpqArchive {
-  constructor(buffer: Buffer) {
-    if (buffer.readUInt32LE(0) !== 0x1A51504D) { // 'MPQ\x1A'
-      throw new MpqInvalidFormatError('Invalid MPQ signature');
+    constructor(buffer: Buffer) {
+        if (buffer.readUInt32LE(0) !== 0x1a51504d) {
+            // 'MPQ\x1A'
+            throw new MpqInvalidFormatError("Invalid MPQ signature");
+        }
+        // ... rest of implementation
     }
-    // ... rest of implementation
-  }
 }
 
 // Step 4: Run test (should pass)
@@ -489,15 +507,15 @@ export class MpqArchive {
 
 ```typescript
 // Regression test for issue #123: Hash table parsing returns incorrect name1/name2
-it('should correctly parse hash table name1/name2 values (regression test)', () => {
-  // This test prevents regression of hash table parsing bug found in a.SC2Replay
-  const expectedEntries = [
-    { filename: 'replay.details', name1: 0xD383C29C, name2: 0xEF402E92 },
-    // ... more expected values from known good data
-  ];
+it("should correctly parse hash table name1/name2 values (regression test)", () => {
+    // This test prevents regression of hash table parsing bug found in a.SC2Replay
+    const expectedEntries = [
+        { filename: "replay.details", name1: 0xd383c29c, name2: 0xef402e92 },
+        // ... more expected values from known good data
+    ];
 
-  // Validate that parsing produces expected hash values
-  // ... test implementation
+    // Validate that parsing produces expected hash values
+    // ... test implementation
 });
 ```
 
@@ -519,17 +537,17 @@ All debugging and analysis scripts should be placed in the `.debug/` directory t
 
 ```javascript
 // .debug/analyze-issue.js
-const fs = require('fs');
+const fs = require("fs");
 
 // Helper functions
 function helperFunction() {
-  // Implementation
+    // Implementation
 }
 
 // Main analysis
-console.log('Starting analysis...');
+console.log("Starting analysis...");
 // Analysis code here
-console.log('Analysis complete.');
+console.log("Analysis complete.");
 ```
 
 #### Running Debug Scripts:
@@ -547,29 +565,32 @@ node .debug/test-sc2-decryption.js
 ### TypeScript Import Rules
 
 #### ❌ **NEVER do this:**
+
 ```typescript
 // Wrong: Using .js extension in TypeScript files
-import { something } from './module.js';
-import type { Type } from '../types.js';
+import { something } from "./module.js";
+import type { Type } from "../types.js";
 
 // Wrong: Relative imports in test files
-import { SC2Replay } from '../src/sc2-replay';
-import { MpqArchive } from '../../src/mpq-archive';
+import { SC2Replay } from "../src/sc2-replay";
+import { MpqArchive } from "../../src/mpq-archive";
 ```
 
 #### ✅ **ALWAYS do this:**
+
 ```typescript
 // Correct: No extension in TypeScript files
-import { something } from './module';
-import type { Type } from '../types';
+import { something } from "./module";
+import type { Type } from "../types";
 
 // Correct: Use @ alias in test files
-import { SC2Replay } from '@/sc2-replay';
-import { MpqArchive } from '@/mpq-archive';
-import { BitPackedBuffer } from '@/protocol/sc2-decoder';
+import { SC2Replay } from "@/sc2-replay";
+import { MpqArchive } from "@/mpq-archive";
+import { BitPackedBuffer } from "@/protocol/sc2-decoder";
 ```
 
 #### Why?
+
 - TypeScript compiler handles extension resolution automatically
 - `.js` extensions in TypeScript source cause module resolution issues
 - Build tools (webpack, esbuild, etc.) expect TypeScript-style imports
@@ -579,49 +600,56 @@ import { BitPackedBuffer } from '@/protocol/sc2-decoder';
 ### When to Use @ Alias vs Relative Imports
 
 #### ✅ **Use @ alias when:**
+
 ```typescript
 // 1. In test files (always use @ for src imports)
-import { SC2Replay } from '@/sc2-replay';
-import { BitPackedBuffer } from '@/protocol/sc2-decoder';
+import { SC2Replay } from "@/sc2-replay";
+import { BitPackedBuffer } from "@/protocol/sc2-decoder";
 
 // 2. Deep relative paths (3+ levels)
 // Instead of: import { utils } from '../../../shared/utils';
-import { utils } from '@/shared/utils';
+import { utils } from "@/shared/utils";
 
 // 3. Cross-module imports in src/
 // Instead of: import { MpqArchive } from '../mpq-archive';
-import { MpqArchive } from '@/mpq-archive';
+import { MpqArchive } from "@/mpq-archive";
 ```
 
 #### ✅ **Use relative imports when:**
+
 ```typescript
 // 1. Same directory or one level up/down
-import { helper } from './helper';
-import { types } from '../types';
+import { helper } from "./helper";
+import { types } from "../types";
 
 // 2. Sibling modules in same package
-import { validator } from './validator';
-import { parser } from './parser';
+import { validator } from "./validator";
+import { parser } from "./parser";
 ```
 
 #### 📏 **3-Level Rule:**
+
 When relative imports become 3+ levels deep (`../../../`), always prefer `@/` alias for better maintainability:
+
 ```typescript
 // ❌ Hard to read and maintain
-import { DeepUtil } from '../../../shared/utils/deep-util';
+import { DeepUtil } from "../../../shared/utils/deep-util";
 
 // ✅ Clean and maintainable
-import { DeepUtil } from '@/shared/utils/deep-util';
+import { DeepUtil } from "@/shared/utils/deep-util";
 ```
 
 #### How to Check:
+
 ```bash
 # Search for problematic imports
 grep -r "\.js';" src/
 ```
 
 #### Auto-fix with ESLint:
+
 Consider adding ESLint rules to catch these issues automatically:
+
 ```typescript
 // Add to eslint rules if needed
 "@typescript-eslint/consistent-type-imports": "error"
@@ -634,6 +662,7 @@ Consider adding ESLint rules to catch these issues automatically:
 **CRITICAL**: This project prioritizes type safety above all else. Always leverage TypeScript's type system to its fullest potential.
 
 #### ❌ **NEVER do this:**
+
 ```typescript
 // Wrong: Avoid any and unknown types
 const data: any = parseResponse(buffer);
@@ -645,21 +674,21 @@ const entry = data as MpqHashTableEntry;
 ```
 
 #### ✅ **ALWAYS do this:**
+
 ```typescript
 // Correct: Define proper interfaces and use type guards
 interface ParsedResponse {
-  header: MpqHeader;
-  entries: MpqHashTableEntry[];
+    header: MpqHeader;
+    entries: MpqHashTableEntry[];
 }
 
 function parseResponse(buffer: Buffer): ParsedResponse {
-  // Implementation with proper typing
+    // Implementation with proper typing
 }
 
 // Correct: Use type guards instead of casting
 function isMpqHeader(data: unknown): data is MpqHeader {
-  return typeof data === 'object' && data !== null &&
-         'signature' in data && 'headerSize' in data;
+    return typeof data === "object" && data !== null && "signature" in data && "headerSize" in data;
 }
 ```
 
@@ -685,17 +714,17 @@ If you encounter data with an unknown structure, follow this process:
 
 ```javascript
 // Step 1: Create .debug/analyze-data-structure.js
-const fs = require('fs');
+const fs = require("fs");
 
 function analyzeUnknownData(buffer) {
-  // Parse and log the structure
-  console.log('Data structure analysis:');
-  console.log(JSON.stringify(parsed, null, 2));
+    // Parse and log the structure
+    console.log("Data structure analysis:");
+    console.log(JSON.stringify(parsed, null, 2));
 
-  // Identify field types and patterns
-  Object.entries(parsed).forEach(([key, value]) => {
-    console.log(`${key}: ${typeof value} (${Array.isArray(value) ? 'array' : 'single'})`);
-  });
+    // Identify field types and patterns
+    Object.entries(parsed).forEach(([key, value]) => {
+        console.log(`${key}: ${typeof value} (${Array.isArray(value) ? "array" : "single"})`);
+    });
 }
 
 // Run analysis
@@ -705,31 +734,37 @@ analyzeUnknownData(testBuffer);
 ```typescript
 // Step 2: Create interface based on analysis
 interface NewDataStructure {
-  field1: string;
-  field2: number;
-  field3: Array<{
-    subField1: string;
-    subField2: number;
-  }>;
+    field1: string;
+    field2: number;
+    field3: Array<{
+        subField1: string;
+        subField2: number;
+    }>;
 }
 
 // Step 3: Implement type guard
 function isNewDataStructure(data: unknown): data is NewDataStructure {
-  return typeof data === 'object' && data !== null &&
-         'field1' in data && typeof (data as any).field1 === 'string' &&
-         'field2' in data && typeof (data as any).field2 === 'number' &&
-         'field3' in data && Array.isArray((data as any).field3);
+    return (
+        typeof data === "object" &&
+        data !== null &&
+        "field1" in data &&
+        typeof (data as any).field1 === "string" &&
+        "field2" in data &&
+        typeof (data as any).field2 === "number" &&
+        "field3" in data &&
+        Array.isArray((data as any).field3)
+    );
 }
 
 // Step 4: Use in production code
 function parseNewData(buffer: Buffer): NewDataStructure {
-  const parsed = parseBuffer(buffer);
+    const parsed = parseBuffer(buffer);
 
-  if (!isNewDataStructure(parsed)) {
-    throw new Error('Invalid data structure');
-  }
+    if (!isNewDataStructure(parsed)) {
+        throw new Error("Invalid data structure");
+    }
 
-  return parsed; // TypeScript now knows this is NewDataStructure
+    return parsed; // TypeScript now knows this is NewDataStructure
 }
 ```
 
@@ -737,12 +772,12 @@ function parseNewData(buffer: Buffer): NewDataStructure {
 
 - **Review Process**: All PRs must demonstrate proper typing without `any`/`unknown`
 - **ESLint Rules**: Configure ESLint to ban `any` and `unknown` types:
-  ```typescript
-  "@typescript-eslint/no-explicit-any": "error",
-  "@typescript-eslint/no-unsafe-assignment": "error",
-  "@typescript-eslint/no-unsafe-call": "error",
-  "@typescript-eslint/no-unsafe-member-access": "error"
-  ```
+    ```typescript
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unsafe-assignment": "error",
+    "@typescript-eslint/no-unsafe-call": "error",
+    "@typescript-eslint/no-unsafe-member-access": "error"
+    ```
 - **Build Verification**: TypeScript strict mode must pass without warnings
 
 ## Git Commit Guidelines
@@ -759,6 +794,7 @@ function parseNewData(buffer: Buffer): NewDataStructure {
 4. **Complete**: Include all necessary files for the change to work properly
 
 #### ❌ **BAD Examples:**
+
 ```bash
 # Wrong: Multiple unrelated changes
 git commit -m "Add new feature, fix bug, and update docs"
@@ -772,6 +808,7 @@ git commit -m "changes"
 ```
 
 #### ✅ **GOOD Examples:**
+
 ```bash
 # Correct: Single, focused changes with clear prefixes
 git commit -m "feat: add MPQ hash table parsing with encryption support"
@@ -867,11 +904,11 @@ Closes #42"
 2. **Review Before Committing**: Use `git diff --cached` to verify staged changes
 3. **Write Clear Messages**: Follow the prefix and format guidelines above
 4. **MANDATORY Quality Checks**: Before every commit, you MUST run:
-   ```bash
-   pnpm run test      # All tests must pass
-   pnpm run typecheck # TypeScript compilation must succeed
-   pnpm run lint      # Linting must pass (warnings acceptable, errors not)
-   ```
+    ```bash
+    pnpm run test      # All tests must pass
+    pnpm run typecheck # TypeScript compilation must succeed
+    pnpm run lint      # Linting must pass (warnings acceptable, errors not)
+    ```
 5. **One Logical Change**: If you have multiple unrelated changes, make separate commits
 
 #### Example Workflow:
@@ -920,3 +957,7 @@ fix: handle corrupted MPQ signatures gracefully
 refactor: optimize memory usage in large file processing
 docs: document MPQ archive API with usage examples
 ```
+
+## ETC
+
+- The .reference directory contains code implemented in Python such as s2protocol and mpyq. This project is a library ported by referencing implementations in Python.
