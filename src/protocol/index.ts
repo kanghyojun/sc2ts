@@ -137,35 +137,39 @@ export class VersionedProtocol {
 
     // Transform raw data to match Zod schema expectations
     const transformedData = this.transformReplayDetailsForValidation(rawReplayDetails);
+    type ReplayDetail = z.infer<typeof this.zodTypeInfo.replayDetails>;
+    type Player = NonNullable<ReplayDetail["m_playerList"]>[number];
+    type PlayerToon = Player["m_toon"];
+    type PlayerColor = Player["m_color"];
     const parsedReplayDetails = this.zodTypeInfo.replayDetails.parse(transformedData);
 
     return {
-      playerList: parsedReplayDetails.m_playerList?.map((player: Record<string, unknown>, index: number) => {
-        const playerToon = player["m_toon"] as Record<string, unknown>;
-        const playerColor = player["m_color"] as Record<string, unknown>;
+      playerList: parsedReplayDetails.m_playerList?.map((player: Player, index: number) => {
+        const playerToon = player["m_toon"] as PlayerToon;
+        const playerColor = player["m_color"] as PlayerColor;
         return {
-          name: bufferToString(player["m_name"] as Buffer),
+          name: bufferToString(player["m_name"]),
           toon: {
-            region: playerToon["m_region"] as number,
-            programId: playerToon["m_programId"] as string,
-            realm: playerToon["m_realm"] as number,
-            name: playerToon["m_name"] ? bufferToString(playerToon["m_name"] as Buffer) : "",
-            id: playerToon["m_id"] as bigint,
+            region: playerToon["m_region"],
+            programId: playerToon["m_programId"],
+            realm: playerToon["m_realm"],
+            name: playerToon["m_name"] ? bufferToString(playerToon["m_name"]) : "",
+            id: playerToon["m_id"],
           },
-          race: bufferToString(player["m_race"] as Buffer),
+          race: bufferToString(player["m_race"]),
           color: {
-            a: playerColor["m_a"] as number,
-            r: playerColor["m_r"] as number,
-            g: playerColor["m_g"] as number,
-            b: playerColor["m_b"] as number,
+            a: playerColor["m_a"],
+            r: playerColor["m_r"],
+            g: playerColor["m_g"],
+            b: playerColor["m_b"],
           },
-          control: player["m_control"] as number,
-          teamId: player["m_teamId"] as number,
-          handicap: player["m_handicap"] as number,
-          observe: player["m_observe"] as number,
-          result: player["m_result"] as number,
-          workingSetSlotId: player["m_workingSetSlotId"] as number,
-          hero: bufferToString(player["m_hero"] as Buffer),
+          control: player["m_control"],
+          teamId: player["m_teamId"],
+          handicap: player["m_handicap"],
+          observe: player["m_observe"],
+          result: player["m_result"],
+          workingSetSlotId: player["m_workingSetSlotId"],
+          hero: bufferToString(player["m_hero"]),
           userId: index,
         };
       }),
@@ -198,11 +202,14 @@ export class VersionedProtocol {
   decodeReplayInitdata(data: Buffer): ReplayInitData {
     const rawReplayInitdata = this.protocol.decodeReplayInitdata(data);
     type ReplayInitdata = z.infer<typeof this.zodTypeInfo.replayInitdata>;
+    type UserInitialData = ReplayInitdata["m_syncLobbyState"]["m_userInitialData"][number];
+    type SlotDescription = ReplayInitdata["m_syncLobbyState"]["m_gameDescription"]["m_slotDescriptions"][number];
+    type LobbySlot = ReplayInitdata["m_syncLobbyState"]["m_lobbyState"]["m_slots"][number];
     const parsedReplayInitdata: ReplayInitdata = this.zodTypeInfo.replayInitdata.parse(rawReplayInitdata);
 
     return {
       syncLobbyState: {
-        userInitialData: parsedReplayInitdata.m_syncLobbyState.m_userInitialData.map((user: ReplayInitdata["m_syncLobbyState"]["m_userInitialData"][number]) => ({
+        userInitialData: parsedReplayInitdata.m_syncLobbyState.m_userInitialData.map((user: UserInitialData) => ({
           name: user.m_name,
           clanTag: user.m_clanTag,
           clanLogo: user.m_clanLogo,
@@ -267,14 +274,16 @@ export class VersionedProtocol {
           mapFileName: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_mapFileName,
           mapAuthorName: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_mapAuthorName,
           modFileSyncChecksum: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_modFileSyncChecksum,
-          slotDescriptions: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_slotDescriptions.map((slot: ReplayInitdata["m_syncLobbyState"]["m_gameDescription"]["m_slotDescriptions"][number]) => ({
-            allowedColors: slot.m_allowedColors,
-            allowedRaces: slot.m_allowedRaces,
-            allowedDifficulty: slot.m_allowedDifficulty,
-            allowedControls: slot.m_allowedControls,
-            allowedObserveTypes: slot.m_allowedObserveTypes,
-            allowedAIBuilds: slot.m_allowedAIBuilds,
-          })),
+          slotDescriptions: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_slotDescriptions.map(
+            (slot: SlotDescription) => ({
+              allowedColors: slot.m_allowedColors,
+              allowedRaces: slot.m_allowedRaces,
+              allowedDifficulty: slot.m_allowedDifficulty,
+              allowedControls: slot.m_allowedControls,
+              allowedObserveTypes: slot.m_allowedObserveTypes,
+              allowedAIBuilds: slot.m_allowedAIBuilds,
+            }),
+          ),
           defaultDifficulty: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_defaultDifficulty,
           defaultAIBuild: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_defaultAIBuild,
           cacheHandles: parsedReplayInitdata.m_syncLobbyState.m_gameDescription.m_cacheHandles,
@@ -290,7 +299,7 @@ export class VersionedProtocol {
           phase: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_phase,
           maxUsers: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_maxUsers,
           maxObservers: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_maxObservers,
-          slots: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_slots.map((slot: ReplayInitdata["m_syncLobbyState"]["m_slots"]["m_slots"][number]) => ({
+          slots: parsedReplayInitdata.m_syncLobbyState.m_lobbyState.m_slots.map((slot: LobbySlot) => ({
             control: slot.m_control,
             userId: slot.m_userId,
             teamId: slot.m_teamId,
