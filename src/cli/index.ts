@@ -13,7 +13,7 @@ import {
   or,
   withDefault,
 } from "@optique/core/parser";
-import { choice, string } from "@optique/core/valueparser";
+import { choice, integer, string } from "@optique/core/valueparser";
 import { path, run } from "@optique/run";
 
 import { configureLogger, createLogger } from "../logger";
@@ -94,6 +94,7 @@ const parseCommand = command(
     output: optional(option("-o", "--output", path())),
     json: optional(option("-j", "--json")),
     pretty: optional(option("--pretty")),
+    limit: optional(option("-l", "--limit", integer())),
     verbose: optional(option("-v", "--verbose")),
   }),
 );
@@ -109,7 +110,7 @@ const eventsCommand = command(
     pretty: optional(option("--pretty")),
     type: withDefault(option("-t", "--type", choice(["game", "tracker", "message", "all"])), "all"),
     filter: optional(option("-f", "--filter", string())),
-    limit: optional(option("-l", "--limit", string())),
+    limit: optional(option("-l", "--limit", integer())),
     gameplayOnly: optional(option("-g", "--gameplay-only")),
     verbose: optional(option("-v", "--verbose")),
   }),
@@ -458,6 +459,8 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
       decodeTrackerEvents: true,
     });
 
+    const limit = config.limit;
+
     // 파싱된 데이터 수집
     const parsedData = {
       header: replay.replayHeader,
@@ -465,9 +468,9 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
       initData: replay.replayInitData,
       players: replay.players,
       events: {
-        game: replay.gameEvents.slice(0, 100), // 처음 100개만 (너무 많을 수 있음)
+        game: limit ? replay.gameEvents.slice(0, limit) : replay.gameEvents,
         message: replay.messageEvents,
-        tracker: replay.trackerEvents.slice(0, 100), // 처음 100개만
+        tracker: limit ? replay.trackerEvents.slice(0, limit) : replay.trackerEvents,
       },
       summary: {
         duration: replay.duration,
@@ -598,7 +601,7 @@ async function executeEvents(config: InferValue<typeof eventsCommand>) {
       decodeTrackerEvents: true,
     });
 
-    const limit = config.limit ? parseInt(config.limit, 10) : undefined;
+    const limit = config.limit;
 
     // 게임 속도에 따른 초당 게임루프 수 계산
     const gameSpeed = replay.replayDetails?.gameSpeed ?? 4;
