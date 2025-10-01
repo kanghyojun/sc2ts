@@ -1,7 +1,11 @@
 // MPQ (MoPaQ) Archive Parser Library with SC2 Replay Support
 // Main entry point
-
+import { MpqError } from "./errors";
 import { configureLogger } from "./logger";
+import { MpqArchive } from "./mpq-archive";
+import { MpqReader } from "./mpq-reader";
+import { VersionedDecoder, BitPackedBuffer } from "./protocol/sc2-decoder";
+import { SC2Replay } from "./sc2-replay";
 
 // Initialize logger on module load
 // eslint-disable-next-line no-console
@@ -31,3 +35,14 @@ export type {
 } from "./types";
 
 export { MpqError } from "./errors";
+
+// Default export for convenience
+export default {
+  MpqArchive,
+  MpqReader,
+  SC2Replay,
+  VersionedDecoder,
+  BitPackedBuffer,
+  configureLogger,
+  MpqError,
+};
