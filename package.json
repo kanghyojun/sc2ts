@@ -1,6 +1,6 @@
 {
   "name": "sc2ts",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "TypeScript library for parsing MPQ (MoPaQ) archive files",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
