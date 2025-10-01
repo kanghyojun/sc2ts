@@ -34,5 +34,10 @@ export function createLogger(category: string | string[]): Logger {
   return getLogger(fullCategory);
 }
 
-// Default logger for the library
-export const logger = getLogger(["sc2ts"]);
+// Lazy logger initialization for bundler compatibility
+let _logger: Logger | undefined;
+
+export function getDefaultLogger(): Logger {
+  _logger ??= getLogger(["sc2ts"]);
+  return _logger;
+}
