@@ -31,8 +31,60 @@ function copyAndRename(src, dest, renameExt = null) {
       }
 
       fs.copyFileSync(srcPath, destPath);
+
+      // Fix ESM imports: add .mjs extensions
+      if (destPath.endsWith('.mjs')) {
+        fixEsmImports(destPath);
+      }
     }
   }
+}
+
+/**
+ * Fix ESM imports by adding .mjs extensions to relative imports
+ */
+function fixEsmImports(filePath) {
+  let content = fs.readFileSync(filePath, 'utf-8');
+
+  // Replace relative imports without extensions with .mjs
+  // Matches: from "./something" or from "../something" or from "./path/something"
+  content = content.replace(
+    /from\s+['"](\.\/?[^'"]+)['"]/g,
+    (match, importPath) => {
+      // Don't add extension if it already has one
+      if (importPath.match(/\.(m?js|json)$/)) {
+        return match;
+      }
+      // If it's a directory import (like './protocol'), add /index.mjs
+      // Check if the path exists as a directory relative to the file
+      const fileDir = path.dirname(filePath);
+      const resolvedPath = path.resolve(fileDir, importPath);
+      if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isDirectory()) {
+        return match.replace(importPath, importPath + '/index.mjs');
+      }
+      // Otherwise add .mjs extension
+      return match.replace(importPath, importPath + '.mjs');
+    },
+  );
+
+  // Also fix export ... from statements
+  content = content.replace(
+    /export\s+(?:\*|{[^}]+})\s+from\s+['"](\.\/?[^'"]+)['"]/g,
+    (match, importPath) => {
+      if (importPath.match(/\.(m?js|json)$/)) {
+        return match;
+      }
+      // Check if it's a directory import
+      const fileDir = path.dirname(filePath);
+      const resolvedPath = path.resolve(fileDir, importPath);
+      if (fs.existsSync(resolvedPath) && fs.statSync(resolvedPath).isDirectory()) {
+        return match.replace(importPath, importPath + '/index.mjs');
+      }
+      return match.replace(importPath, importPath + '.mjs');
+    },
+  );
+
+  fs.writeFileSync(filePath, content, 'utf-8');
 }
 
 console.log('Post-processing build files...');
