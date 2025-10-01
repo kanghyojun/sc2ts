@@ -4,7 +4,10 @@ import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 
 import { MpqInvalidFormatError } from "./errors";
+import { getScLogger } from "./logger";
 import type { MpqHeader, MpqUserData, MpqHashTableEntry, MpqBlockTableEntry, BetTableHeader, HetTableHeader } from "./types";
+
+const logger = getScLogger("mpq-reader");
 
 export class MpqReader {
   private buffer: Buffer;
@@ -157,6 +160,7 @@ export class MpqReader {
       // Reset to read the full user data header
       this.seek(headerOffset);
       const userData = this.readMpqUserData();
+      logger.debug(`Header offset: ${headerOffset}, MPQ header offset: ${userData.mpqHeaderOffset.toString(16)}`);
 
       // Navigate to the actual MPQ header (relative to the begin of user data header)
       this.seek(headerOffset + userData.mpqHeaderOffset);
@@ -189,6 +193,17 @@ export class MpqReader {
         hashTableSize,
         blockTableSize,
       };
+      logger.debug(`MPQ Header found at offset ${actualStartOffset.toString(16)}: ${JSON.stringify({
+        magic: actualMagic.toString(16),
+        headerSize: headerSize.toString(16),
+        archiveSize: archiveSize.toString(16),
+        formatVersion: formatVersion.toString(16),
+        blockSize: blockSize.toString(16),
+        hashTablePos: hashTablePos.toString(16),
+        blockTablePos: blockTablePos.toString(16),
+        hashTableSize: hashTableSize.toString(16),
+        blockTableSize: blockTableSize.toString(16),
+      })}`);
 
       // Read extended header for format version 2+
       if (formatVersion >= 2) {
@@ -380,13 +395,35 @@ export class MpqReader {
   }
 
   readHashTable(offset: number, size: number, headerOffset = 0): MpqHashTableEntry[] {
+    logger.debug(`Start readHashTable at ${(headerOffset + offset).toString(16)}, size: ${size * 16}`);
     this.seek(headerOffset + offset);
     const rawData = this.readBytes(size * 16); // Each entry is 16 bytes
 
+    // Log raw data for debugging
+    logger.debug(`Raw hash table data (first 32 bytes): ${rawData.subarray(0, 32).toString("hex")}`);
+
     // Decrypt the hash table using the standard MPQ key
     const key = this.hashString("(hash table)", 3);
+    logger.debug(`Decryption key for "(hash table)": ${key.toString(16)}`);
 
     const decryptedData = this.decrypt(rawData, key);
+
+    // Log decrypted data for debugging
+    logger.debug(`Decrypted hash table data (first 32 bytes): ${decryptedData.subarray(0, 32).toString("hex")}`);
+    const firstEntry = {
+      name1: decryptedData.readUInt32LE(0),
+      name2: decryptedData.readUInt32LE(4),
+      locale: decryptedData.readUInt16LE(8),
+      platform: decryptedData.readUInt16LE(10),
+      blockIndex: decryptedData.readUInt32LE(12),
+    };
+    logger.debug(`First decrypted hash entry: ${JSON.stringify({
+      name1: firstEntry.name1.toString(16),
+      name2: firstEntry.name2.toString(16),
+      locale: firstEntry.locale,
+      platform: firstEntry.platform,
+      blockIndex: firstEntry.blockIndex.toString(16),
+    })}`);
 
     const entries: MpqHashTableEntry[] = [];
     for (let i = 0; i < size; i++) {
@@ -460,6 +497,7 @@ export class MpqReader {
     // Read HET table header
     const signature = this.readUInt32LE();
     if (signature !== 0x1A544548) { // 'HET\x1A'
+      logger.warn(`Invalid HET table signature: ${signature.toString(16)}`);
       return null;
     }
 
@@ -477,6 +515,8 @@ export class MpqReader {
       blockTableSize: this.readUInt32LE(),
     };
 
+    logger.debug(`HET Table found: ${JSON.stringify(hetHeader)}`);
+
     // TODO: Implement full HET table parsing
     // For now, return header info
     return hetHeader;
@@ -492,6 +532,7 @@ export class MpqReader {
     // Read BET table header
     const signature = this.readUInt32LE();
     if (signature !== 0x1A544542) { // 'BET\x1A'
+      logger.warn(`Invalid BET table signature: ${signature.toString(16)}`);
       return null;
     }
 
@@ -519,6 +560,8 @@ export class MpqReader {
       betHashArraySize: this.readUInt32LE(),
       flagCount: this.readUInt32LE(),
     };
+
+    logger.debug(`BET Table found: ${JSON.stringify(betHeader)}`);
 
     // TODO: Implement full BET table parsing
     // For now, return header info

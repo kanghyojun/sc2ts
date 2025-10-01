@@ -11,6 +11,7 @@ A comprehensive TypeScript library for parsing MPQ (MoPaQ) archive files and Sta
 - 🛡️ **Type Safety**: Full TypeScript support with comprehensive type definitions
 - 🧪 **Well Tested**: Extensive test coverage with real replay files
 - 🔍 **Binary Data Handling**: Advanced bit-packed data decoding
+- 📝 **Structured Logging**: Optional LogTape integration for debugging and monitoring
 
 ## Installation
 
@@ -361,6 +362,88 @@ try {
   }
 }
 ```
+
+### Logging Configuration (Optional)
+
+sc2ts uses [LogTape](https://logtape.org/) for structured logging. Following LogTape's best practices for library authors, **sc2ts does not configure logging itself** - it's up to your application to configure logging if you want to see debug output.
+
+#### Basic Logging Setup
+
+If you want to see debug logs from sc2ts in your application:
+
+```typescript
+import { configure, getConsoleSink } from '@logtape/logtape';
+import { SC2Replay } from 'sc2ts';
+
+// Configure LogTape in your application (not in the library)
+await configure({
+  sinks: {
+    console: getConsoleSink(),
+  },
+  loggers: [
+    // Configure sc2ts logging
+    {
+      category: ['sc2ts'],
+      lowestLevel: 'debug',  // Show all debug logs
+      sinks: ['console'],
+    },
+  ],
+});
+
+// Now sc2ts will log debug information
+const replay = await SC2Replay.fromFile('replay.SC2Replay');
+// Logs will show: MPQ header parsing, file extraction, decompression, etc.
+```
+
+#### Log Categories
+
+sc2ts uses these log categories (all under the `sc2ts` namespace):
+
+- `['sc2ts', 'mpq-archive']` - MPQ archive parsing and file extraction
+- `['sc2ts', 'mpq-reader']` - Low-level binary reading and decryption
+- `['sc2ts', 'sc2-replay']` - SC2 replay parsing
+- `['sc2ts', 'protocol']` - Protocol decoder and event parsing
+- `['sc2ts', 'cli']` - CLI command execution
+- `['sc2ts', 'cli-extractor']` - CLI file extraction
+- `['sc2ts', 'cli-formatter']` - CLI output formatting
+
+#### Production vs Development
+
+```typescript
+await configure({
+  sinks: {
+    console: getConsoleSink(),
+  },
+  loggers: [
+    {
+      category: ['sc2ts'],
+      // Only show warnings and errors in production
+      lowestLevel: process.env.NODE_ENV === 'production' ? 'warning' : 'debug',
+      sinks: ['console'],
+    },
+  ],
+});
+```
+
+#### Disabling Logs
+
+If you don't configure LogTape, sc2ts will not produce any log output. This is intentional - libraries should not force logging configuration on applications.
+
+#### Custom Logger Access
+
+If you're building tools on top of sc2ts and want to use the same logger:
+
+```typescript
+import { getScLogger } from 'sc2ts';
+
+// Create a logger for your module (will be under ['sc2ts', 'your-module'])
+const logger = getScLogger('your-module');
+
+logger.info('Processing replay batch', { count: 10 });
+logger.debug('Detailed processing info', { fileSize: 1024 });
+```
+
+For more information about LogTape configuration, see the [LogTape documentation](https://logtape.org/).
 
 ## API Reference
 

@@ -3,6 +3,7 @@
 
 import type z from "zod";
 
+import { getScLogger } from "../logger";
 import type {
   ReplayHeader,
   ReplayDetails,
@@ -89,9 +90,11 @@ export class VersionedProtocol {
 
   private protocol: ProtocolDecoder;
   private zodTypeInfo: ZodTypeInfos;
+  private logger = getScLogger("protocol");
 
   constructor(buildVersion?: number) {
     const actualBuildVersion = buildVersion ?? getLatestBuildVersion();
+    this.logger.info(`Using protocol for build version: ${actualBuildVersion}`);
     this.protocol = getProtocol(actualBuildVersion);
     this.zodTypeInfo = getZodTypeInfo(actualBuildVersion as SupportProtocolVersion);
   }

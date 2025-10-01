@@ -1,7 +1,10 @@
 import { writeFile, mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 
+import { getScLogger } from "../../logger";
 import type { MpqFile } from "../../types";
+
+const logger = getScLogger("cli-formatter");
 
 export interface FormatOptions {
   format: "json" | "raw";
@@ -46,11 +49,13 @@ export class OutputFormatter {
       : JSON.stringify(jsonData);
 
     await writeFile(jsonPath, content, "utf8");
+    logger.debug(`Saved JSON file: ${jsonPath}`);
     return jsonPath;
   }
 
   private async saveAsRaw(outputPath: string, file: MpqFile): Promise<string> {
     await writeFile(outputPath, file.data);
+    logger.debug(`Saved raw file: ${outputPath}`);
     return outputPath;
   }
 

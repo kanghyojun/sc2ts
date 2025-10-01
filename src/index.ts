@@ -10,6 +10,7 @@ export { MpqArchive } from "./mpq-archive";
 export { MpqReader } from "./mpq-reader";
 export { SC2Replay } from "./sc2-replay";
 export { VersionedDecoder, BitPackedBuffer } from "./protocol/sc2-decoder";
+export { getScLogger } from "./logger";
 
 export type {
   MpqHeader,

@@ -148,6 +148,147 @@ sc2ts extract "replay.SC2Replay" --files "replay.details,replay.initData"
 sc2ts extract "replay.SC2Replay" --format raw
 ```
 
+## Logging
+
+SC2TS uses [LogTape](https://logtape.org/) for structured logging, following best practices for library authors.
+
+### Key Principles
+
+- **No Configuration Required**: SC2TS does not configure logging - your application controls all logging configuration
+- **Optional Logging**: If you don't configure LogTape, sc2ts produces no log output
+- **Namespaced Categories**: All logs are under the `['sc2ts']` category namespace
+
+### Basic Setup
+
+If you want to see debug logs from sc2ts:
+
+```typescript
+import { configure, getConsoleSink } from '@logtape/logtape';
+import { SC2Replay } from 'sc2ts';
+
+// Configure LogTape in your application (NOT in the library)
+await configure({
+  sinks: {
+    console: getConsoleSink(),
+  },
+  loggers: [
+    {
+      category: ['sc2ts'],           // All sc2ts logs
+      lowestLevel: 'debug',          // Show debug, info, warn, error
+      sinks: ['console'],
+    },
+  ],
+});
+
+// Now sc2ts will log debug information
+const replay = await SC2Replay.fromFile('replay.SC2Replay');
+// Logs: MPQ header parsing, decompression, event decoding, etc.
+```
+
+### Log Categories
+
+SC2TS uses these log categories (all under `['sc2ts']`):
+
+| Category | Description |
+|----------|-------------|
+| `['sc2ts', 'mpq-archive']` | MPQ archive parsing, file extraction, compression |
+| `['sc2ts', 'mpq-reader']` | Binary reading, decryption, hash/block tables |
+| `['sc2ts', 'sc2-replay']` | SC2 replay parsing, header decoding |
+| `['sc2ts', 'protocol']` | Protocol decoder, version detection |
+| `['sc2ts', 'cli']` | CLI command execution |
+| `['sc2ts', 'cli-extractor']` | CLI file extraction operations |
+| `['sc2ts', 'cli-formatter']` | CLI output formatting |
+
+### Production vs Development
+
+```typescript
+await configure({
+  sinks: {
+    console: getConsoleSink(),
+  },
+  loggers: [
+    {
+      category: ['sc2ts'],
+      // Only warnings and errors in production
+      lowestLevel: process.env.NODE_ENV === 'production' ? 'warning' : 'debug',
+      sinks: ['console'],
+    },
+  ],
+});
+```
+
+### Selective Logging by Category
+
+```typescript
+await configure({
+  sinks: {
+    console: getConsoleSink(),
+  },
+  loggers: [
+    // Only log MPQ archive operations
+    {
+      category: ['sc2ts', 'mpq-archive'],
+      lowestLevel: 'debug',
+      sinks: ['console'],
+    },
+    // Only errors for everything else
+    {
+      category: ['sc2ts'],
+      lowestLevel: 'error',
+      sinks: ['console'],
+    },
+  ],
+});
+```
+
+### Custom Logger for Your Tools
+
+If you're building on top of sc2ts:
+
+```typescript
+import { getScLogger } from 'sc2ts';
+
+// Create a logger under the sc2ts namespace
+const logger = getScLogger('my-tool');
+
+logger.info('Starting replay batch processing', { count: 100 });
+logger.debug('Processing file', { filename: 'replay.SC2Replay' });
+```
+
+### What Gets Logged
+
+#### Debug Level
+- MPQ header offsets and sizes
+- Hash/block table parsing details
+- Decompression operations
+- File extraction details
+- Protocol version detection
+
+#### Info Level
+- Protocol build version in use
+- Major parsing milestones
+
+#### Warning Level
+- Missing or invalid data (with fallbacks)
+- Decompression failures (trying alternative methods)
+- Invalid table signatures
+
+#### Error Level
+- Critical failures requiring user action
+- File parsing errors
+
+### Example Log Output
+
+```
+[debug] sc2ts:mpq-archive: MPQ Header Offset: 200
+[debug] sc2ts:mpq-archive: Hash table data size: 32768 bytes
+[info] sc2ts:protocol: Using protocol for build version: 94137
+[debug] sc2ts:mpq-archive: Detected GZIP compression, decompressing...
+[debug] sc2ts:mpq-archive: GZIP decompression successful: 1024 -> 4096 bytes
+```
+
+For more information, see the [LogTape documentation](https://logtape.org/).
+
 ## API Reference
 
 ### SC2Replay Class
