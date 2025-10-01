@@ -1,7 +1,6 @@
 // MPQ (MoPaQ) Archive Parser Library with SC2 Replay Support
 // Main entry point
 import { MpqError } from "./errors";
-import { configureLogger } from "./logger";
 import { MpqArchive } from "./mpq-archive";
 import { MpqReader } from "./mpq-reader";
 import { VersionedDecoder, BitPackedBuffer } from "./protocol/sc2-decoder";
@@ -11,7 +10,6 @@ export { MpqArchive } from "./mpq-archive";
 export { MpqReader } from "./mpq-reader";
 export { SC2Replay } from "./sc2-replay";
 export { VersionedDecoder, BitPackedBuffer } from "./protocol/sc2-decoder";
-export { configureLogger } from "./logger";
 
 export type {
   MpqHeader,
@@ -39,6 +37,5 @@ export default {
   SC2Replay,
   VersionedDecoder,
   BitPackedBuffer,
-  configureLogger,
   MpqError,
 };

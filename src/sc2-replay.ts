@@ -1,12 +1,9 @@
 // SC2 Replay Parser
 // Based on Blizzard's s2protocol implementation
 
-import { createLogger } from "./logger";
 import { MpqArchive } from "./mpq-archive";
 import { VersionedProtocol } from "./protocol";
 import type { ReplayDetails, ReplayInitData, ReplayOptions, GameEvent, MessageEvent, TrackerEvent, ReplayHeader, Player } from "./types";
-
-const logger = createLogger("sc2-replay");
 
 export class SC2Replay {
   private _mpqArchive: MpqArchive;
@@ -86,13 +83,10 @@ export class SC2Replay {
     // Get user data content from the MPQ archive
     const userDataContent = this.mpqArchive.getUserDataContent();
     if (!userDataContent) {
-      logger.warn("No user data content found, using default values");
       throw new Error("No user data content");
     }
 
     const header = this.decoder.decodeReplayHeader(userDataContent);
-
-    logger.debug("Decoded header info:", { signature: header.signature, version: header.version, length: header.length });
 
     // Create SC2 replay header using all information from headerInfo
     this.header = header;

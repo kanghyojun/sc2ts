@@ -16,7 +16,6 @@ import {
 import { choice, integer, string } from "@optique/core/valueparser";
 import { path, run } from "@optique/run";
 
-import { configureLogger, createLogger } from "../logger";
 import { SC2Replay } from "../sc2-replay";
 import type { Player } from "../types";
 import { FileExtractor } from "./utils/extractor";
@@ -39,12 +38,6 @@ function isChatMessageData(data: unknown): data is ChatMessageData {
         typeof (data as Record<string, unknown>)["m_recipient"] === "number"
   );
 }
-
-// Initialize logger
-configureLogger().catch(console.error);
-
-// Create CLI logger
-const logger = createLogger("cli");
 
 // Extract command parser
 const extractCommand = command(
@@ -128,7 +121,6 @@ async function executeCommand(config: Config) {
     try {
       await executeParse(config);
     } catch (error) {
-      logger.error("CLI execution error", { error });
       console.error("\nCLI Error Details:");
       console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
       if (error instanceof Error && error.stack) {
@@ -143,7 +135,6 @@ async function executeCommand(config: Config) {
     try {
       await executeEvents(config);
     } catch (error) {
-      logger.error("CLI execution error", { error });
       console.error("\nCLI Error Details:");
       console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
       if (error instanceof Error && error.stack) {
@@ -172,7 +163,6 @@ async function executeCommand(config: Config) {
       break;
     }
   } catch (error) {
-    logger.error("CLI execution error", { error });
     console.error("\nCLI Error Details:");
     console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
     if (error instanceof Error && error.stack) {
@@ -192,11 +182,6 @@ async function executeExtract(config: InferValue<typeof extractCommand>, extract
   });
 
   if (config.verbose) {
-    logger.info("Starting extraction", {
-      replayFile: config.replayFile,
-      outputDir: config.output,
-      format: config.format,
-    });
     console.log(`Extracting files from: ${config.replayFile}`);
     console.log(`Output directory: ${config.output}`);
     console.log(`Format: ${config.format}`);
@@ -206,7 +191,6 @@ async function executeExtract(config: InferValue<typeof extractCommand>, extract
   const result = await extractor.extractFiles(filePatterns);
 
   if (result.errors.length > 0) {
-    logger.warn("Errors occurred during extraction", { errors: result.errors });
     if (config.verbose) {
       console.log("Errors occurred during extraction:");
       result.errors.forEach((error) => console.log(`  ${error}`));
@@ -222,7 +206,6 @@ async function executeExtract(config: InferValue<typeof extractCommand>, extract
         console.log(`Saved: ${outputPath}`);
       }
     } catch (error) {
-      logger.error("Failed to save file", { filename, error });
       console.log(`Failed to save ${filename}: ${error}`);
     }
   }
@@ -245,7 +228,6 @@ async function executeExtract(config: InferValue<typeof extractCommand>, extract
 
 async function executeList(config: InferValue<typeof listCommand>, extractor: FileExtractor) {
   if (config.verbose) {
-    logger.info("Listing files", { replayFile: config.replayFile });
     console.log(`Listing files in: ${config.replayFile}`);
   }
 
@@ -272,7 +254,6 @@ async function executeList(config: InferValue<typeof listCommand>, extractor: Fi
           console.log("");
         }
       } catch (error) {
-        logger.error("Failed to get file details", { filename, error });
         process.stderr.write(`Failed to get details for ${filename}: ${error}\n`);
       }
     }
@@ -294,7 +275,6 @@ async function executeList(config: InferValue<typeof listCommand>, extractor: Fi
 
 async function executeInfo(config: InferValue<typeof infoCommand>, extractor: FileExtractor) {
   if (config.verbose) {
-    logger.info("Getting replay info", { replayFile: config.replayFile });
     console.log(`Getting info from: ${config.replayFile}`);
   }
 
@@ -442,7 +422,6 @@ const config = run(cli, {
 
 async function executeParse(config: InferValue<typeof parseCommand>) {
   if (config.verbose) {
-    logger.info("Parsing replay", { replayFile: config.replayFile });
     console.log(`Parsing replay: ${config.replayFile}`);
     if (config.output) {
       console.log(`Output file: ${config.output}`);
@@ -572,7 +551,6 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
       console.log("✅ Parsing completed successfully!");
     }
   } catch (error) {
-    logger.error("Failed to parse replay", { error });
     console.error("\nParse Error Details:");
     console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
     if (error instanceof Error && error.stack) {
@@ -584,7 +562,6 @@ async function executeParse(config: InferValue<typeof parseCommand>) {
 
 async function executeEvents(config: InferValue<typeof eventsCommand>) {
   if (config.verbose) {
-    logger.info("Analyzing game events", { replayFile: config.replayFile });
     console.log(`Analyzing events from: ${config.replayFile}`);
     if (config.output) {
       console.log(`Output file: ${config.output}`);
@@ -740,7 +717,6 @@ async function executeEvents(config: InferValue<typeof eventsCommand>) {
       console.log("💡 Use --json option to get full event data");
     }
   } catch (error) {
-    logger.error("Failed to analyze events", { error });
     console.error("\nEvents Analysis Error Details:");
     console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
     if (error instanceof Error && error.stack) {
@@ -751,7 +727,6 @@ async function executeEvents(config: InferValue<typeof eventsCommand>) {
 }
 
 executeCommand(config).catch((error) => {
-  logger.error("Fatal CLI error", { error });
   console.error("\nFatal CLI Error Details:");
   console.error(`Message: ${error instanceof Error ? error.message : String(error)}`);
   if (error instanceof Error && error.stack) {

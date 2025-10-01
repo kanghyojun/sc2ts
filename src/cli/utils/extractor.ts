@@ -1,9 +1,6 @@
-import { createLogger } from "../../logger";
 import type { MpqArchive } from "../../mpq-archive";
 import { SC2Replay } from "../../sc2-replay";
 import type { MpqFile } from "../../types";
-
-const logger = createLogger("cli-extractor");
 
 export interface ExtractionResult {
     files: Map<string, MpqFile>;
@@ -19,12 +16,9 @@ export class FileExtractor {
 
   async openReplay(replayPath: string): Promise<void> {
     try {
-      logger.debug(`Opening replay file: ${replayPath}`);
       this.replay = await SC2Replay.fromFile(replayPath);
       this._archive = this.replay.mpqArchive; // Access private field
-      logger.debug("Replay file opened successfully");
     } catch (error) {
-      logger.error(`Failed to open replay file: ${error}`);
       throw new Error(`Failed to open replay file: ${error}`);
     }
   }
@@ -39,7 +33,6 @@ export class FileExtractor {
     }
 
     const files = this._archive.listFiles();
-    logger.debug(`Found ${files.length} files in archive`);
     return files;
   }
 
@@ -61,20 +54,16 @@ export class FileExtractor {
 
     for (const filename of filesToExtract) {
       try {
-        logger.debug(`Extracting file: ${filename}`);
         const file = this._archive.getFile(filename);
         result.files.set(filename, file);
         result.extracted++;
-        logger.debug(`Successfully extracted: ${filename} (${file.fileSize} bytes)`);
       } catch (error) {
         const errorMsg = `Failed to extract ${filename}: ${error}`;
-        logger.warn(errorMsg);
         result.errors.push(errorMsg);
         result.skipped++;
       }
     }
 
-    logger.info(`Extraction completed: ${result.extracted}/${result.total} files extracted`);
     return result;
   }
 
@@ -110,6 +99,5 @@ export class FileExtractor {
   close(): void {
     this._archive = null;
     this.replay = null;
-    logger.debug("Extractor closed");
   }
 }
