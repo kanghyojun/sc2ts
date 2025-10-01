@@ -229,23 +229,30 @@ When using `--format raw`, files are extracted as their original binary data, pe
 import { MpqArchive } from 'sc2ts';
 import { readFileSync } from 'fs';
 
-// Load an MPQ archive from file
+// Method 1: Load from buffer
 const buffer = readFileSync('example.mpq');
-const archive = new MpqArchive(buffer);
+const archive = MpqArchive.fromBuffer(buffer);
+
+// Method 2: Load from file path (async)
+const archive2 = await MpqArchive.open('example.mpq');
 
 // List all files in the archive
-const files = archive.getFileList();
+const files = archive.listFiles();
 console.log('Files in archive:', files);
 
 // Extract a specific file
-const fileData = archive.readFile('path/to/file.txt');
-if (fileData) {
-  console.log('File content:', fileData.toString());
+const fileData = archive.getFile('path/to/file.txt');
+console.log('File content:', fileData.data.toString());
+console.log('Original size:', fileData.fileSize);
+console.log('Compressed size:', fileData.compressedSize);
+
+// Check if file exists
+if (archive.hasFile('some/file.dat')) {
+  console.log('File exists!');
 }
 
 // Get archive information
 console.log('Archive has', archive.fileCount, 'files');
-console.log('Archive version:', archive.formatVersion);
 ```
 
 ### StarCraft II Replay Analysis
@@ -254,13 +261,17 @@ console.log('Archive version:', archive.formatVersion);
 import { SC2Replay } from 'sc2ts';
 import { readFileSync } from 'fs';
 
-// Load and parse a StarCraft II replay
+// Method 1: Load from buffer
 const replayBuffer = readFileSync('replay.SC2Replay');
 const replay = SC2Replay.fromBuffer(replayBuffer);
 
+// Method 2: Load from file path (async)
+const replay2 = await SC2Replay.fromFile('replay.SC2Replay');
+
 // Get basic replay information
 console.log('Map name:', replay.replayDetails?.title);
-console.log('Game duration:', replay.duration, 'seconds');
+console.log('Game duration:', replay.duration, 'seconds');  // Getter property
+console.log('Game loops:', replay.gameLength);              // Getter property
 console.log('Players:', replay.players.length);
 
 // Access player information
@@ -270,19 +281,20 @@ replay.players.forEach((player, index) => {
     race: player.race,
     teamId: player.teamId,
     color: player.color,
-    result: player.result
+    result: player.result  // 1 = Win, 2 = Loss, 3 = Tie
   });
 });
 
-// Get the winner
+// Get the winner (getter property)
 const winner = replay.winner;
 if (winner) {
   console.log('Winner:', winner.name);
 }
 
-// Access replay data directly
+// Access replay events
 console.log('Game events:', replay.gameEvents.length);
 console.log('Chat messages:', replay.messageEvents.length);
+console.log('Tracker events:', replay.trackerEvents.length);
 ```
 
 ### Advanced Replay Parsing with Options
@@ -292,24 +304,21 @@ import { SC2Replay } from 'sc2ts';
 
 const replay = SC2Replay.fromBuffer(buffer, {
   // Enable/disable specific event parsing for performance
-  decodeGameEvents: true,     // Parse gameplay events
-  decodeMessageEvents: true,  // Parse chat messages
-  decodeTrackerEvents: true,  // Parse detailed tracking events
-
-  // Use fallback data if internal files are encrypted/missing
-  allowFallback: true
+  decodeGameEvents: true,     // Parse gameplay events (default: true)
+  decodeMessageEvents: true,  // Parse chat messages (default: true)
+  decodeTrackerEvents: true,  // Parse detailed tracking events (default: true)
+  decodeInitData: false       // Parse initialization data (default: false)
 });
 
 // Access different types of events
-const events = replay.events;
-console.log('Game events:', events.game.length);
-console.log('Message events:', events.message.length);
-console.log('Tracker events:', events.tracker.length);
+console.log('Game events:', replay.gameEvents.length);
+console.log('Message events:', replay.messageEvents.length);
+console.log('Tracker events:', replay.trackerEvents.length);
 
 // Example: Find all chat messages
-events.message.forEach(msg => {
-  if (msg.text) {
-    console.log(`${msg.playerId}: ${msg.text}`);
+replay.messageEvents.forEach(msg => {
+  if (msg._event === 'NNet.Game.SChatMessage') {
+    console.log(`Player ${msg.m_userId}: ${msg.m_string}`);
   }
 });
 ```
@@ -359,19 +368,26 @@ try {
 
 The main class for working with MPQ archives.
 
-#### Constructor
+#### Static Methods
 ```typescript
-new MpqArchive(buffer: Buffer, options?: MpqParseOptions)
+MpqArchive.fromBuffer(buffer: Buffer, options?: MpqParseOptions): MpqArchive
+MpqArchive.open(filepath: string, options?: MpqParseOptions): Promise<MpqArchive>
 ```
 
-#### Properties
+#### Constructor (Advanced)
+```typescript
+new MpqArchive(reader: MpqReader)
+```
+
+#### Properties (Getters)
 - `fileCount: number` - Number of files in the archive
-- `formatVersion: number` - MPQ format version
+- `archiveHeader: MpqHeader | null` - MPQ archive header information
 
 #### Methods
-- `getFileList(): string[]` - Get list of all file paths
-- `readFile(filename: string): Buffer | null` - Extract file content
+- `listFiles(): string[]` - Get list of all file paths
+- `getFile(filename: string): MpqFile` - Extract file content and metadata
 - `hasFile(filename: string): boolean` - Check if file exists
+- `getUserDataContent(): Buffer | null` - Get user data content from SC2 replays
 
 ### SC2Replay
 
@@ -379,20 +395,22 @@ Parser for StarCraft II replay files.
 
 #### Static Methods
 ```typescript
-SC2Replay.fromBuffer(buffer: Buffer, options?: SC2ReplayOptions): SC2Replay
+SC2Replay.fromBuffer(buffer: Buffer, options?: ReplayOptions): SC2Replay
+SC2Replay.fromFile(filepath: string, options?: ReplayOptions): Promise<SC2Replay>
 ```
 
-#### Properties
-- `replayHeader: SC2ReplayHeader | null` - Replay file header
-- `replayDetails: SC2ReplayDetails | null` - Game details and metadata
-- `players: SC2Player[]` - Array of player information
-- `events: SC2Events` - Game, message, and tracker events
-
-#### Methods
-- `getDuration(): number` - Get game duration in seconds
-- `getGameLength(): number` - Get game length in game time units
-- `getWinner(): SC2Player | null` - Get winning player
-- `getReplayData(): SC2ReplayData` - Get complete structured data
+#### Properties (Getters)
+- `replayHeader: ReplayHeader | null` - Replay file header
+- `replayDetails: ReplayDetails | null` - Game details and metadata
+- `replayInitData: ReplayInitData | null` - Initialization data (if parsed)
+- `players: Player[]` - Array of player information
+- `gameEvents: GameEvent[]` - Gameplay events
+- `messageEvents: MessageEvent[]` - Chat messages and pings
+- `trackerEvents: TrackerEvent[]` - Detailed unit/building tracking events
+- `gameLength: number` - Game length in game loops
+- `duration: number` - Game duration in seconds (gameLength / 16)
+- `winner: Player | null` - Winning player
+- `mpqArchive: MpqArchive` - Access to underlying MPQ archive
 
 ### Types
 
@@ -404,12 +422,16 @@ import type {
   MpqHashTableEntry,
   MpqBlockTableEntry,
   MpqFile,
-  SC2ReplayHeader,
-  SC2ReplayDetails,
-  SC2Player,
-  SC2GameEvent,
-  SC2MessageEvent,
-  SC2TrackerEvent
+  MpqParseOptions,
+  ReplayHeader,
+  ReplayDetails,
+  ReplayInitData,
+  ReplayData,
+  Player,
+  GameEvent,
+  MessageEvent,
+  TrackerEvent,
+  ReplayOptions
 } from 'sc2ts';
 ```
 
