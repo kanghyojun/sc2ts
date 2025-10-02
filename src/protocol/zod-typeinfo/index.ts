@@ -15,4 +15,5 @@ export default {
   92440: zod80949,
   93333: zod80949,
   94137: zod80949,
+  95248: zod80949,
 } as Record<SupportProtocolVersion, ZodTypeInfos>;

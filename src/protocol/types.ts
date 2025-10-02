@@ -106,7 +106,8 @@ export type SupportProtocolVersion =
   | 90136
   | 92440
   | 93333
-  | 94137;
+  | 94137
+  | 95248;
 
 export interface ZodTypeInfos {
   replayHeader: z.ZodType<any>;

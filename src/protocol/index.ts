@@ -18,7 +18,7 @@ import protocol80949 from "./versions/protocol80949";
 import buildZodTypeinfo from "./zod-typeinfo/index";
 
 // Direct mapping from build versions to protocol decoders
-// Protocol 80949 now supports bzip2 decompression and is compatible with builds 80949-94137
+// Protocol 80949 now supports bzip2 decompression and is compatible with builds 80949-95248
 const BUILD_TO_PROTOCOL: Record<SupportProtocolVersion, ProtocolDecoder> = {
   80949: protocol80949,
   81009: protocol80949,
@@ -33,6 +33,7 @@ const BUILD_TO_PROTOCOL: Record<SupportProtocolVersion, ProtocolDecoder> = {
   92440: protocol80949,
   93333: protocol80949,
   94137: protocol80949,
+  95248: protocol80949,
 };
 
 function numberIsBuildVersion(build: number): build is SupportProtocolVersion {
