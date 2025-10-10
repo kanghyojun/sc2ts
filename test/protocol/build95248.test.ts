@@ -1,4 +1,4 @@
-import { getProtocol, isBuildSupported } from "@/protocol";
+import { getLatestBuildVersion, getProtocol, isBuildSupported } from "@/protocol";
 
 describe("Build 95248 Protocol Compatibility", () => {
   it("should be listed as a supported build version", () => {
@@ -28,7 +28,6 @@ describe("Build 95248 Protocol Compatibility", () => {
     expect(protocol).toBeDefined();
 
     // 95248 is currently the latest build version
-    const { getLatestBuildVersion } = require("@/protocol");
     expect(getLatestBuildVersion()).toBe(95248);
   });
 });
