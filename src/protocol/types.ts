@@ -105,6 +105,7 @@ export type SupportProtocolVersion =
   | 88661
   | 90136
   | 92440
+  | 93272
   | 93333
   | 94137
   | 95248;

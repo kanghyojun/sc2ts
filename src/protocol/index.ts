@@ -31,6 +31,7 @@ const BUILD_TO_PROTOCOL: Record<SupportProtocolVersion, ProtocolDecoder> = {
   88661: protocol80949,
   90136: protocol80949,
   92440: protocol80949,
+  93272: protocol80949,
   93333: protocol80949,
   94137: protocol80949,
   95248: protocol80949,
