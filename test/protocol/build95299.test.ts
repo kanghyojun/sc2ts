@@ -1,17 +1,17 @@
 import { getLatestBuildVersion, getProtocol, isBuildSupported } from "@/protocol";
 
-describe("Build 95248 Protocol Compatibility", () => {
+describe("Build 95299 Protocol Compatibility", () => {
   it("should be listed as a supported build version", () => {
-    expect(isBuildSupported(95248)).toBe(true);
+    expect(isBuildSupported(95299)).toBe(true);
   });
 
   it("should map to protocol 80949", () => {
-    const protocol = getProtocol(95248);
+    const protocol = getProtocol(95299);
     expect(protocol.version).toBe(80949);
   });
 
   it("should have all required decoder methods", () => {
-    const protocol = getProtocol(95248);
+    const protocol = getProtocol(95299);
 
     // Verify all required protocol methods exist
     expect(typeof protocol.decodeReplayHeader).toBe("function");
@@ -23,11 +23,11 @@ describe("Build 95248 Protocol Compatibility", () => {
     expect(typeof protocol.decodeReplayAttributesEvents).toBe("function");
   });
 
-  it("should be a supported build version", () => {
-    const protocol = getProtocol(95248);
+  it("should be the latest supported build version", () => {
+    const protocol = getProtocol(95299);
     expect(protocol).toBeDefined();
 
-    // 95248 is no longer the latest (95299 is now the latest)
-    expect(isBuildSupported(95248)).toBe(true);
+    // 95299 is now the latest build version
+    expect(getLatestBuildVersion()).toBe(95299);
   });
 });
