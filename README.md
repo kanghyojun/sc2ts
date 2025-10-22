@@ -12,6 +12,7 @@ A comprehensive TypeScript library for parsing MPQ (MoPaQ) archive files and Sta
 - 🧪 **Well Tested**: Extensive test coverage with real replay files
 - 🔍 **Binary Data Handling**: Advanced bit-packed data decoding
 - 📝 **Structured Logging**: Optional LogTape integration for debugging and monitoring
+- ⚡ **Modern Bundler Support**: Works seamlessly with Next.js, Webpack, Vite, and other modern bundlers
 
 ## Installation
 
@@ -230,9 +231,9 @@ When using `--format raw`, files are extracted as their original binary data, pe
 import { MpqArchive } from 'sc2ts';
 import { readFileSync } from 'fs';
 
-// Method 1: Load from buffer
+// Method 1: Load from buffer (async)
 const buffer = readFileSync('example.mpq');
-const archive = MpqArchive.fromBuffer(buffer);
+const archive = await MpqArchive.fromBuffer(buffer);
 
 // Method 2: Load from file path (async)
 const archive2 = await MpqArchive.open('example.mpq');
@@ -241,8 +242,8 @@ const archive2 = await MpqArchive.open('example.mpq');
 const files = archive.listFiles();
 console.log('Files in archive:', files);
 
-// Extract a specific file
-const fileData = archive.getFile('path/to/file.txt');
+// Extract a specific file (async)
+const fileData = await archive.getFile('path/to/file.txt');
 console.log('File content:', fileData.data.toString());
 console.log('Original size:', fileData.fileSize);
 console.log('Compressed size:', fileData.compressedSize);
@@ -262,9 +263,9 @@ console.log('Archive has', archive.fileCount, 'files');
 import { SC2Replay } from 'sc2ts';
 import { readFileSync } from 'fs';
 
-// Method 1: Load from buffer
+// Method 1: Load from buffer (async)
 const replayBuffer = readFileSync('replay.SC2Replay');
-const replay = SC2Replay.fromBuffer(replayBuffer);
+const replay = await SC2Replay.fromBuffer(replayBuffer);
 
 // Method 2: Load from file path (async)
 const replay2 = await SC2Replay.fromFile('replay.SC2Replay');
@@ -303,7 +304,7 @@ console.log('Tracker events:', replay.trackerEvents.length);
 ```typescript
 import { SC2Replay } from 'sc2ts';
 
-const replay = SC2Replay.fromBuffer(buffer, {
+const replay = await SC2Replay.fromBuffer(buffer, {
   // Enable/disable specific event parsing for performance
   decodeGameEvents: true,     // Parse gameplay events (default: true)
   decodeMessageEvents: true,  // Parse chat messages (default: true)
@@ -350,7 +351,7 @@ console.log('Block entries:', blockTable.length);
 import { MpqError, MpqInvalidFormatError, SC2Replay } from 'sc2ts';
 
 try {
-  const replay = SC2Replay.fromBuffer(buffer);
+  const replay = await SC2Replay.fromBuffer(buffer);
   console.log('Replay parsed successfully');
 } catch (error) {
   if (error instanceof MpqInvalidFormatError) {
@@ -453,7 +454,7 @@ The main class for working with MPQ archives.
 
 #### Static Methods
 ```typescript
-MpqArchive.fromBuffer(buffer: Buffer, options?: MpqParseOptions): MpqArchive
+MpqArchive.fromBuffer(buffer: Buffer, options?: MpqParseOptions): Promise<MpqArchive>
 MpqArchive.open(filepath: string, options?: MpqParseOptions): Promise<MpqArchive>
 ```
 
@@ -468,7 +469,7 @@ new MpqArchive(reader: MpqReader)
 
 #### Methods
 - `listFiles(): string[]` - Get list of all file paths
-- `getFile(filename: string): MpqFile` - Extract file content and metadata
+- `getFile(filename: string): Promise<MpqFile>` - Extract file content and metadata (async)
 - `hasFile(filename: string): boolean` - Check if file exists
 - `getUserDataContent(): Buffer | null` - Get user data content from SC2 replays
 
@@ -478,7 +479,7 @@ Parser for StarCraft II replay files.
 
 #### Static Methods
 ```typescript
-SC2Replay.fromBuffer(buffer: Buffer, options?: ReplayOptions): SC2Replay
+SC2Replay.fromBuffer(buffer: Buffer, options?: ReplayOptions): Promise<SC2Replay>
 SC2Replay.fromFile(filepath: string, options?: ReplayOptions): Promise<SC2Replay>
 ```
 

@@ -11,12 +11,12 @@ describe('SC2Replay - Real Files', () => {
     let replayBuffer: Buffer;
     let replay: SC2Replay;
 
-    beforeAll(() => {
+    beforeAll(async () => {
       const filePath = resolve('replays', filename);
       replayBuffer = readFileSync(filePath);
 
       // Parse with minimal options to avoid errors from missing files
-      replay = SC2Replay.fromBuffer(replayBuffer, {
+      replay = await SC2Replay.fromBuffer(replayBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
@@ -117,7 +117,7 @@ describe('SC2Replay - Real Files', () => {
   });
 
   describe('parseHeader functionality', () => {
-    it('should parse SC2ReplayHeader correctly from a.SC2Replay using SC2Replay.parse() (regression test)', () => {
+    it('should parse SC2ReplayHeader correctly from a.SC2Replay using SC2Replay.parse() (regression test)', async () => {
       // Regression test for SC2Replay parseHeader - validates SC2ReplayHeader structure from a.SC2Replay
       // This test prevents regression of SC2 replay header parsing bugs
       // Updated to match actual decoded values from the real replay file
@@ -134,7 +134,7 @@ describe('SC2Replay - Real Files', () => {
 
       const replayPath = resolve('replays', 'a.SC2Replay');
       const replayBuffer = readFileSync(replayPath);
-      const replay = SC2Replay.fromBuffer(replayBuffer, {
+      const replay = await SC2Replay.fromBuffer(replayBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
@@ -151,7 +151,7 @@ describe('SC2Replay - Real Files', () => {
       expect(header!.length).toBe(expectedSC2Header.length);
     });
 
-    it('should parse MPQ archive header correctly from a.SC2Replay (regression test)', () => {
+    it('should parse MPQ archive header correctly from a.SC2Replay (regression test)', async () => {
       // Regression test for MPQ parseHeader - validates against known good MPQ header values from a.SC2Replay
       // This test prevents regression of MPQ header parsing bugs by testing against actual SC2 replay data
       const expectedMpqHeader = {
@@ -170,7 +170,7 @@ describe('SC2Replay - Real Files', () => {
 
       const replayPath = resolve('replays', 'a.SC2Replay');
       const replayBuffer = readFileSync(replayPath);
-      const replay = SC2Replay.fromBuffer(replayBuffer, {
+      const replay = await SC2Replay.fromBuffer(replayBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
@@ -194,12 +194,12 @@ describe('SC2Replay - Real Files', () => {
     });
   });
 
-  it('should handle all test files consistently', () => {
-    const results = replayFiles.map(filename => {
+  it('should handle all test files consistently', async () => {
+    const results = await Promise.all(replayFiles.map(async filename => {
       const filePath = resolve('replays', filename);
       const buffer = readFileSync(filePath);
 
-      const replay = SC2Replay.fromBuffer(buffer, {
+      const replay = await SC2Replay.fromBuffer(buffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
@@ -211,7 +211,7 @@ describe('SC2Replay - Real Files', () => {
         duration: replay.duration,
         headerLength: replay.replayHeader?.length || 0,
       };
-    });
+    }));
 
     // All should have consistent basic structure
     results.forEach(result => {

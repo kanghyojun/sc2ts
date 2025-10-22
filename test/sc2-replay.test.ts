@@ -15,8 +15,8 @@ describe('SC2Replay', () => {
   });
 
   describe('fromBuffer', () => {
-    it('should create SC2Replay from buffer', () => {
-      const replay = SC2Replay.fromBuffer(replayBuffer, {
+    it('should create SC2Replay from buffer', async () => {
+      const replay = await SC2Replay.fromBuffer(replayBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
@@ -28,8 +28,8 @@ describe('SC2Replay', () => {
       expect(replay.replayDetails).not.toBeNull();
     });
 
-    it('should parse replay header correctly', () => {
-      const replay = SC2Replay.fromBuffer(replayBuffer, {
+    it('should parse replay header correctly', async () => {
+      const replay = await SC2Replay.fromBuffer(replayBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
@@ -44,8 +44,8 @@ describe('SC2Replay', () => {
       expect(header?.length).toBe(115);
     });
 
-    it('should parse replay details', () => {
-      const replay = SC2Replay.fromBuffer(replayBuffer, {
+    it('should parse replay details', async () => {
+      const replay = await SC2Replay.fromBuffer(replayBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
@@ -59,8 +59,8 @@ describe('SC2Replay', () => {
       expect(details?.title).toBeDefined();
     });
 
-    it('should parse player list', () => {
-      const replay = SC2Replay.fromBuffer(replayBuffer, {
+    it('should parse player list', async () => {
+      const replay = await SC2Replay.fromBuffer(replayBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
@@ -77,8 +77,8 @@ describe('SC2Replay', () => {
       expect(player.teamId).toBeDefined();
     });
 
-    it('should handle replay options', () => {
-      const replay = SC2Replay.fromBuffer(replayBuffer, {
+    it('should handle replay options', async () => {
+      const replay = await SC2Replay.fromBuffer(replayBuffer, {
         decodeGameEvents: false, // Keep false to avoid potential parsing errors
         decodeMessageEvents: false,
         decodeTrackerEvents: false,
@@ -93,8 +93,8 @@ describe('SC2Replay', () => {
   describe('utility methods', () => {
     let replay: SC2Replay;
 
-    beforeEach(() => {
-      replay = SC2Replay.fromBuffer(replayBuffer, {
+    beforeEach(async () => {
+      replay = await SC2Replay.fromBuffer(replayBuffer, {
         decodeGameEvents: false,
         decodeMessageEvents: false,
         decodeTrackerEvents: false,

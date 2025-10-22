@@ -1,56 +1,8 @@
-import seekBzip from "seek-bzip";
-
 import { VersionedDecoder, BitPackedDecoder, BitPackedBuffer } from "../sc2-decoder";
 import type { ProtocolDecoder, TypeInfo } from "../types";
 
-// Bzip2 decompression utility functions
-function isBzip2Compressed(data: Buffer): boolean {
-  // Check for bzip2 signature at offset 0 or offset 1
-  if (data.length >= 4) {
-    // Direct bzip2 header: 'BZh'
-    if (data[0] === 0x42 && data[1] === 0x5a && data[2] === 0x68) {
-      return true;
-    }
-
-    // SC2 bzip2 with 0x10 prefix: 0x10 + 'BZh'
-    if (
-      data[0] === 0x10 &&
-            data[1] === 0x42 && // 'B'
-            data[2] === 0x5a && // 'Z'
-            data[3] === 0x68
-    ) {
-      // 'h'
-      return true;
-    }
-  }
-  return false;
-}
-
-function decompressBzip2IfNeeded(data: Buffer): Buffer {
-  if (!isBzip2Compressed(data)) {
-    return data;
-  }
-
-  try {
-    // Determine bzip2 data start offset
-    let bzip2Data: Buffer;
-    if (data[0] === 0x10) {
-      // SC2 format: skip first 0x10 byte
-      bzip2Data = data.subarray(1);
-    } else {
-      // Direct bzip2 format
-      bzip2Data = data;
-    }
-
-    // Decompress using seek-bzip
-    const decompressed = seekBzip.decodeBzip2(bzip2Data);
-    return Buffer.from(decompressed);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn("Failed to decompress bzip2 data:", error);
-    return data; // Return original data if decompression fails
-  }
-}
+// Note: Bzip2 decompression is now handled by the MPQ archive layer
+// This protocol layer receives already-decompressed data
 
 function shouldUseBitPackedDecoder(data: Buffer): boolean {
   // BitPackedDecoder format typically starts with 0x00
@@ -1489,36 +1441,36 @@ function* decodeEventStreamBitPacked(
 const protocol80949: ProtocolDecoder = {
   version: 80949,
   decodeReplayHeader(data: Buffer): unknown {
-    const decompressedData = decompressBzip2IfNeeded(data);
-    const decoder = new VersionedDecoder(decompressedData, typeinfos);
+    // Data is already decompressed by MPQ archive layer
+    const decoder = new VersionedDecoder(data, typeinfos);
     return decoder.instance(replay_header_typeid);
   },
 
   decodeReplayDetails(data: Buffer): unknown {
-    const decompressedData = decompressBzip2IfNeeded(data);
-    const decoder = new VersionedDecoder(decompressedData, typeinfos);
+    // Data is already decompressed by MPQ archive layer
+    const decoder = new VersionedDecoder(data, typeinfos);
     return decoder.instance(game_details_typeid);
   },
 
   decodeReplayInitdata(data: Buffer): unknown {
-    const decompressedData = decompressBzip2IfNeeded(data);
-    const decoder = new VersionedDecoder(decompressedData, typeinfos);
+    // Data is already decompressed by MPQ archive layer
+    const decoder = new VersionedDecoder(data, typeinfos);
     return decoder.instance(replay_initdata_typeid);
   },
 
   decodeReplayGameEvents(data: Buffer): unknown[] {
-    const decompressedData = decompressBzip2IfNeeded(data);
+    // Data is already decompressed by MPQ archive layer
     const events = [];
 
-    if (shouldUseBitPackedDecoder(decompressedData)) {
+    if (shouldUseBitPackedDecoder(data)) {
       // Use BitPackedDecoder for decompressed build 94137+ data
-      const decoder = new BitPackedDecoder(decompressedData, typeinfos);
+      const decoder = new BitPackedDecoder(data, typeinfos);
       for (const event of decodeEventStreamBitPacked(decoder, game_eventid_typeid, game_event_types, true)) {
         events.push(event);
       }
     } else {
       // Use VersionedDecoder for standard format
-      const decoder = new VersionedDecoder(decompressedData, typeinfos);
+      const decoder = new VersionedDecoder(data, typeinfos);
       for (const event of decodeEventStream(decoder, game_eventid_typeid, game_event_types, true)) {
         events.push(event);
       }
@@ -1528,12 +1480,12 @@ const protocol80949: ProtocolDecoder = {
   },
 
   decodeReplayMessageEvents(data: Buffer): unknown[] {
-    const decompressedData = decompressBzip2IfNeeded(data);
+    // Data is already decompressed by MPQ archive layer
     const events = [];
 
-    if (shouldUseBitPackedDecoder(decompressedData)) {
+    if (shouldUseBitPackedDecoder(data)) {
       // Use BitPackedDecoder for decompressed build 94137+ data
-      const decoder = new BitPackedDecoder(decompressedData, typeinfos);
+      const decoder = new BitPackedDecoder(data, typeinfos);
       for (const event of decodeEventStreamBitPacked(
         decoder,
         message_eventid_typeid,
@@ -1544,7 +1496,7 @@ const protocol80949: ProtocolDecoder = {
       }
     } else {
       // Use VersionedDecoder for standard format
-      const decoder = new VersionedDecoder(decompressedData, typeinfos);
+      const decoder = new VersionedDecoder(data, typeinfos);
       for (const event of decodeEventStream(decoder, message_eventid_typeid, message_event_types, true)) {
         events.push(event);
       }
@@ -1554,12 +1506,12 @@ const protocol80949: ProtocolDecoder = {
   },
 
   decodeReplayTrackerEvents(data: Buffer): unknown[] {
-    const decompressedData = decompressBzip2IfNeeded(data);
+    // Data is already decompressed by MPQ archive layer
     const events = [];
 
-    if (shouldUseBitPackedDecoder(decompressedData)) {
+    if (shouldUseBitPackedDecoder(data)) {
       // Use BitPackedDecoder for decompressed build 94137+ data
-      const decoder = new BitPackedDecoder(decompressedData, typeinfos);
+      const decoder = new BitPackedDecoder(data, typeinfos);
       for (const event of decodeEventStreamBitPacked(
         decoder,
         tracker_eventid_typeid,
@@ -1570,7 +1522,7 @@ const protocol80949: ProtocolDecoder = {
       }
     } else {
       // Use VersionedDecoder for standard format
-      const decoder = new VersionedDecoder(decompressedData, typeinfos);
+      const decoder = new VersionedDecoder(data, typeinfos);
       for (const event of decodeEventStream(decoder, tracker_eventid_typeid, tracker_event_types, false)) {
         events.push(event);
       }

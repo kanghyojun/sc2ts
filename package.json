@@ -66,6 +66,7 @@
     "@eslint/js": "^9.35.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.5",
+    "@types/unbzip2-stream": "^1.4.3",
     "eslint": "^9.35.0",
     "eslint-plugin-import": "^2.32.0",
     "husky": "^9.1.7",
@@ -81,9 +82,8 @@
     "@logtape/logtape": "^1.1.0",
     "@optique/core": "^0.4.4",
     "@optique/run": "^0.4.4",
-    "compressjs": "^1.0.3",
     "fflate": "^0.8.2",
-    "seek-bzip": "^2.0.0",
+    "unbzip2-stream": "^1.4.3",
     "zod": "^4.1.9"
   }
 }

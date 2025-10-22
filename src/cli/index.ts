@@ -262,7 +262,7 @@ async function executeList(config: InferValue<typeof listCommand>, extractor: Fi
   if (config.details) {
     for (const filename of filteredFiles) {
       try {
-        const file = extractor.archive?.getFile(filename);
+        const file = await extractor.archive?.getFile(filename);
         if (file) {
           const fileInfo = OutputFormatter.formatFileInfo(file);
           fileInfo.split("\n").forEach((line) => console.log(line));

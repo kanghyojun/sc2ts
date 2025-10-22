@@ -1,7 +1,8 @@
 // MPQ Archive Main Class
 
-import Compress from "compressjs";
 import { gunzipSync, inflateSync } from "fflate";
+import { Readable } from "stream";
+import unbzip2Stream from "unbzip2-stream";
 
 import { MpqFileNotFoundError } from "./errors";
 import { getScLogger } from "./logger";
@@ -332,7 +333,7 @@ export class MpqArchive {
     return null;
   }
 
-  getFile(filename: string): MpqFile {
+  async getFile(filename: string): Promise<MpqFile> {
     let file = this.files.get(filename);
     if (!file) {
       // Try to find the file directly in the hash table even if not in list file
@@ -372,7 +373,7 @@ export class MpqArchive {
 
           // Auto-decompress bzip2 data if detected (for build 94137+)
           // This should only be applied to newer builds that use bzip2 compression
-          fileData = this.decompressBzip2IfNeeded(fileData);
+          fileData = await this.decompressBzip2IfNeeded(fileData);
 
           // Update the file with actual data
           file = {
@@ -387,7 +388,7 @@ export class MpqArchive {
     return file;
   }
 
-  private decompressBzip2IfNeeded(data: Buffer): Buffer {
+  private async decompressBzip2IfNeeded(data: Buffer): Promise<Buffer> {
     if (data.length === 0) {
       return data;
     }
@@ -439,9 +440,7 @@ export class MpqArchive {
 
     if (isBzip2AtStart || isBzip2AtOffset1) {
       try {
-        // Use compressjs for bzip2 decompression (fallback to existing library)
-        const bzip2 = Compress.Bzip2;
-
+        // Use unbzip2-stream for bzip2 decompression
         let bzip2Data: Buffer;
         if (isBzip2AtOffset1) {
           // Skip the first 0x10 byte
@@ -453,9 +452,22 @@ export class MpqArchive {
           logger.debug(`Auto-decompressing bzip2 data, size: ${bzip2Data.length}`);
         }
 
-        const decompressedBytes = bzip2.decompressFile(Array.from(bzip2Data));
-        const decompressed = Buffer.from(decompressedBytes);
+        // Create readable stream from buffer and pipe through unbzip2-stream
+        const inputStream = Readable.from(bzip2Data);
+        const decompressStream = unbzip2Stream();
 
+        const chunks: Buffer[] = [];
+
+        // Collect decompressed chunks
+        await new Promise<void>((resolve, reject) => {
+          inputStream
+            .pipe(decompressStream)
+            .on("data", (chunk: Buffer) => chunks.push(chunk))
+            .on("end", () => resolve())
+            .on("error", (err) => reject(err));
+        });
+
+        const decompressed = Buffer.concat(chunks);
         logger.debug(`Bzip2 decompression successful: ${data.length} -> ${decompressed.length} bytes`);
         return decompressed;
 

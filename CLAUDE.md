@@ -268,6 +268,7 @@ The library is structured around these main components:
     - Opens and parses MPQ files
     - Manages file listing and extraction
     - Handles both file and buffer inputs
+    - **IMPORTANT**: `getFile()` is now async due to bzip2 decompression
 
 2. **MpqReader**: Low-level binary reader
     - Reads MPQ headers, hash tables, and block tables
@@ -282,6 +283,12 @@ The library is structured around these main components:
     - MpqError (base class)
     - MpqInvalidFormatError, MpqDecryptionError, MpqDecompressionError
     - MpqFileNotFoundError
+
+5. **Compression Support**: Modern compression handling
+    - Uses `unbzip2-stream` for bzip2 decompression (replaces legacy `compressjs`)
+    - Uses `fflate` for gzip/deflate decompression
+    - Automatic compression detection and decompression at MPQ layer
+    - **Bundler Compatible**: Works with Next.js, Webpack, Vite without special configuration
 
 ## Command Line Interface (CLI)
 

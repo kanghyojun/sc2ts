@@ -21,7 +21,7 @@ describe('Build 94137 Protocol Compatibility', () => {
     expect(protocol.version).toBe(80949); // 94137 should map to 80949 protocol
 
     // Test game events parsing
-    const gameEventsFile = mpqArchive.getFile('replay.game.events');
+    const gameEventsFile = await mpqArchive.getFile('replay.game.events');
     const gameEvents = protocol.decodeReplayGameEvents(gameEventsFile.data);
 
     expect(gameEvents).toBeDefined();
@@ -35,7 +35,7 @@ describe('Build 94137 Protocol Compatibility', () => {
     expect(eventTypes.has('NNet.Game.SCmdEvent')).toBe(true);
 
     // Test message events parsing
-    const messageEventsFile = mpqArchive.getFile('replay.message.events');
+    const messageEventsFile = await mpqArchive.getFile('replay.message.events');
     const messageEvents = protocol.decodeReplayMessageEvents(messageEventsFile.data);
 
     expect(messageEvents).toBeDefined();
@@ -43,7 +43,7 @@ describe('Build 94137 Protocol Compatibility', () => {
     expect(messageEvents.length).toBe(16); // Known count from test replay
 
     // Test tracker events parsing
-    const trackerEventsFile = mpqArchive.getFile('replay.tracker.events');
+    const trackerEventsFile = await mpqArchive.getFile('replay.tracker.events');
     const trackerEvents = protocol.decodeReplayTrackerEvents(trackerEventsFile.data);
 
     expect(trackerEvents).toBeDefined();
@@ -66,7 +66,7 @@ describe('Build 94137 Protocol Compatibility', () => {
       listFile: 'replay.game.events'
     });
 
-    const gameEventsFile = mpqArchive.getFile('replay.game.events');
+    const gameEventsFile = await mpqArchive.getFile('replay.game.events');
     const data = gameEventsFile.data;
 
     // Should detect BitPacked format (starts with 0x00)

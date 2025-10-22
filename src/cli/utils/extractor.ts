@@ -62,7 +62,7 @@ export class FileExtractor {
     for (const filename of filesToExtract) {
       try {
         logger.debug(`Extracting file: ${filename}`);
-        const file = this._archive.getFile(filename);
+        const file = await this._archive.getFile(filename);
         result.files.set(filename, file);
         result.extracted++;
         logger.debug(`Successfully extracted: ${filename} (${file.fileSize} bytes)`);

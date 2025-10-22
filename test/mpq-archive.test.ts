@@ -74,10 +74,10 @@ describe('MpqArchive', () => {
       expect(archive.hasFile('nonexistent.txt')).toBe(false);
     });
 
-    it('should throw error when getting non-existent file', () => {
+    it('should throw error when getting non-existent file', async () => {
       const archive = MpqArchive.fromBuffer(mockBuffer);
 
-      expect(() => archive.getFile('missing.txt')).toThrow(MpqFileNotFoundError);
+      await expect(archive.getFile('missing.txt')).rejects.toThrow(MpqFileNotFoundError);
     });
 
     it('should return empty file list when no list file provided', () => {

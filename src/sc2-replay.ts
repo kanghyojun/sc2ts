@@ -39,41 +39,41 @@ export class SC2Replay {
   static async fromFile(filepath: string, options?: ReplayOptions): Promise<SC2Replay> {
     const mpqArchive = await MpqArchive.open(filepath, { listFile: this.listFiles.join("\n") });
     const replay = new SC2Replay(mpqArchive);
-    replay.parse(options);
+    await replay.parse(options);
     return replay;
   }
 
-  static fromBuffer(buffer: Buffer, options?: ReplayOptions): SC2Replay {
+  static async fromBuffer(buffer: Buffer, options?: ReplayOptions): Promise<SC2Replay> {
     const mpqArchive = MpqArchive.fromBuffer(buffer, { listFile: this.listFiles.join("\n") });
     const replay = new SC2Replay(mpqArchive);
-    replay.parse(options);
+    await replay.parse(options);
     return replay;
   }
 
-  private parse(options?: ReplayOptions): void {
+  private async parse(options?: ReplayOptions): Promise<void> {
     // Parse header from MPQ archive header
     this.parseHeader();
     this.decoder = new VersionedProtocol(this.header?.version?.build);
 
     // Parse details
-    this.parseDetails();
+    await this.parseDetails();
 
     // Parse init data if requested
     if (options?.decodeInitData === true) {
-      this.parseInitData();
+      await this.parseInitData();
     }
 
     // Parse events if requested
     if (options?.decodeGameEvents !== false) {
-      this.parseGameEvents();
+      await this.parseGameEvents();
     }
 
     if (options?.decodeMessageEvents !== false) {
-      this.parseMessageEvents();
+      await this.parseMessageEvents();
     }
 
     if (options?.decodeTrackerEvents !== false) {
-      this.parseTrackerEvents();
+      await this.parseTrackerEvents();
     }
   }
 
@@ -98,34 +98,34 @@ export class SC2Replay {
     this.header = header;
   }
 
-  private parseDetails(): void {
-    const detailsFile = this.mpqArchive.getFile("replay.details");
+  private async parseDetails(): Promise<void> {
+    const detailsFile = await this.mpqArchive.getFile("replay.details");
     const details = this.decoder.decodeReplayDetails(detailsFile.data);
     this.details = details;
   }
 
 
-  private parseInitData(): void {
-    const initDataFile = this.mpqArchive.getFile("replay.initData");
+  private async parseInitData(): Promise<void> {
+    const initDataFile = await this.mpqArchive.getFile("replay.initData");
     const initData = this.decoder.decodeReplayInitdata(initDataFile.data);
     this.initData = initData;
   }
 
-  private parseGameEvents(): void {
-    const gameEventsFile = this.mpqArchive.getFile("replay.game.events");
+  private async parseGameEvents(): Promise<void> {
+    const gameEventsFile = await this.mpqArchive.getFile("replay.game.events");
     const rawGameEvents = this.decoder.decodeReplayGameEvents(gameEventsFile.data);
 
     // Buffer 필드를 문자열로 변환
     this._gameEvents = this.convertBufferFieldsToStringsGame(rawGameEvents);
   }
 
-  private parseMessageEvents(): void {
-    const messageEventsFile = this.mpqArchive.getFile("replay.message.events");
+  private async parseMessageEvents(): Promise<void> {
+    const messageEventsFile = await this.mpqArchive.getFile("replay.message.events");
     this._messageEvents = this.decoder.decodeReplayMessageEvents(messageEventsFile.data);
   }
 
-  private parseTrackerEvents(): void {
-    const trackerEventsFile = this.mpqArchive.getFile("replay.tracker.events");
+  private async parseTrackerEvents(): Promise<void> {
+    const trackerEventsFile = await this.mpqArchive.getFile("replay.tracker.events");
     const rawTrackerEvents = this.decoder.decodeReplayTrackerEvents(trackerEventsFile.data);
     // Buffer 필드를 문자열로 변환
     this._trackerEvents = this.convertBufferFieldsToStrings(rawTrackerEvents);
